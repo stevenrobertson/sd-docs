@@ -310,19 +310,5 @@ Total                                                                  $375.00
 - Implementation of API finished
 - Final benchmarks complete
 
-# Decision Table for other Projects Under Consideration
-
----------------------------------------------------------------------------
-                  Afford-                                    Resume
-Project name      ability Interest  Modularity  Feasibility  Builder  Total
------------------ ------- --------  ----------  -----------  -------  -----
-Flame algorithm   5       5         2           4            4        20
-
-FPGA emulation of 4       4         3           4            3        18
-videogame console
-
-Home automation   2       3.5       4           4            3        6.5
-system
-----------------------------------------------------------------------------
 
 
