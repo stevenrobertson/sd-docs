@@ -5,10 +5,10 @@ $legacy-header$
 $else$
 \documentclass[11pt, letterpaper]{article}
 \usepackage{amssymb,amsmath}
+\usepackage{wrapfig}
 
 \usepackage{geometry}
 \geometry{letterpaper, textwidth=5.5in, textheight=9.5in, marginparsep=7pt, marginparwidth=.6in}
-
 
 
 $if(xetex)$
