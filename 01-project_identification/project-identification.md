@@ -20,6 +20,13 @@ real-time manipulation.
 
 ## Motivation
 
+\begin{wrapfigure}{r}{0.35\textwidth}
+    \begin{center}
+        \includegraphics[width=0.32\textwidth]{electricsheep.244.22897.png}
+    \end{center}
+    \caption{An example fractal flame, from the Electric Sheep project.}
+\end{wrapfigure}
+
 The fractal flame algorithm produces images strikingly beautiful still and
 moving images. Each flame is constructed from a limited number of parameters,
 which enables flames to be manipulated procedurally; [Electric
@@ -311,4 +318,8 @@ Total                                                                  $375.00
 - Final benchmarks complete
 
 
+# License
 
+This document is under a
+[CC-BY](http://creativecommons.org/licenses/by/3.0/us/) license. Images from
+the [Electric Sheep project](http://electricsheep.org/), under the same license.
