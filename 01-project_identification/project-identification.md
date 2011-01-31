@@ -155,34 +155,58 @@ design software.
 
 # Specifications and Requirements
 
-- Software will initially target the NVIDIA CUDA Compute Level 2.1 hardware
-  architecture[^1], which imposes the following limitations:
-    - 32-wide vector operation width
-    - 1536 threads per multiprocessor[^2]
+Only two classes of processors currently exist which are capable of delivering
+a suitable cost/performance ratio: GPUs by AMD and NVIDIA.  AMD GPUs, while
+capable of sustaining a larger rate of raw computation, lack the cache and
+synchronization primitives necessary to implement the flame algorithm
+efficiently. Older NVIDIA GPUs are also unsuitable. The only products capable
+of supporting this algorithm are based around NVIDIA's Fermi microarchitecture.
+
+Fermi parts conform to CUDA Compute Level 2.1, which imposes the following
+limitations:
+
+    - 32-wide vector operation ("warp") width
+    - 1536 threads per multiprocessor
     - 32768 registers per multiprocessor
     - 48KB shared memory per multiprocessor
     - 16KB L1 cache per multiprocessor
-    - 768KB L2 cache per device
-- Support single precision mode, with 64-bit compacted point logging
-    - Maximum resolution: 4096×4096, 8bpp
-    - Theoretical performance expectation: quality factor 10 at 1280×720@24fps
-      (220M points/sec; 16.8GB/sec point generation)
-- Support double precision mode, with 96-bit extended point logging
-    - Maximum resolution:   32768×32768, 16bpp
-    - No theoretical performance expectation set
 
-[^1]:   Only two classes of processors currently exist which are capable of
-        delivering a suitable cost/performance ratio: GPUs by AMD and NVIDIA.
-        AMD GPUs, while capable of sustaining a larger rate of raw computation,
-        lack the cache and synchronization primitives necessary to implement
-        the flame algorithm efficiently. NVIDIA parts are therefore required.
+These limitations do more than impose an upper bound on the performance of this
+device; together, they also set lower bounds for certain parameters. For
+example: due to deep pipelining, each 32-thread warp may only execute once
+every 22 cycles. If every warp performs pure computation, a minimum of 704
+threads per SM is necessary to fully utilize the device. Accessing memory can
+stall a warp temporarily, so that minimum figure must be increased by the
+proportion of time a warp may spend waiting for memory. Main memory accesses
+take several hundred cycles, so it is advantageous to have as many threads as
+possible — but then the number of registers per thread is reduced. This
+multidimensional give-and-take is an integral part of designing
+high-performance algorithms for GPUs.
 
-[^2]:   This is an upper bound. Assuming we are able to effectively manage
-        memory to eliminate bottlenecks therein, a lower bound of 704 threads
-        is given as the product of the minimum refresh latency for register
-        dispatch (22 cycles) and number of threads per warp (32 threads). These
-        threads must all be doing continuous computation in order to fully
-        utilize the chip.
+A goal of this project is to render a flame animation in real-time. To do
+quality factor 10 at a resolution of 800x600 and a framerate of 20 frames per
+second, 9.6 million iterations of the algorithm would need to occur, producing
+at least 9.1 GB/sec of data across five radix sort passes and two filter
+passes. On a single, top-of-the-line GPU, capable of executing 1.5 TFLOPS, each
+operation must complete in no more than 225 cycles, including amortized filter
+cost. This ceiling is unrealistically low; it is quite likely that multiple
+GPUs will need to work in parallel to produce such an image.
+
+Another goal of this project is to render flames in higher quality than the CPU
+implementation. This goal is independent of the previously-listed one. Desktop
+hardware performs single-precision computation between 4 and 16 times faster
+than double-precision computation, and the additional bandwidth required for
+intermediate data values would further constrain performance. As a result,
+"performance" and "quality" modes will operate differently. Performance mode
+will be limited to a resolution of 4096×4096 at 8 bits per pixel, and use a
+64-bit point log structure, while quality mode can generate images up to
+65535×65535 at 16bpp, using a 96-bit point log structure.
+
+Amazon Web Services offers EC2 instances which feature NVIDIA's professional
+line of graphics cards; these devices perform double precision computation at
+half the speed of single precision. These instances can be used to perform
+quality-oriented renders, and to ensure that our software scales well across up
+to eight GPUs.
 
 # Project Block Diagrams
 
