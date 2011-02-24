@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Cuburn Table Of Contents
 
 
@@ -43,3 +44,7 @@ Cuburn Table Of Contents
 
 
 
+=======
+HEY Y'ALL.
+wasup?
+>>>>>>> c6417cab7f930d225368ca9ac5a5e806f34fc6b9
