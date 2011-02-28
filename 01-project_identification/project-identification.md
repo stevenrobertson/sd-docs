@@ -217,7 +217,7 @@ to eight GPUs.
 
 # Project Block Diagrams
 
-See attached document for diagram.
+See the attached document for project block diagrams.
 
 # Project Budget and Financing
 
@@ -231,18 +231,22 @@ Total                                                                  $375.00
 # Project Milestones
 
 ## First semester
-- Basic, unoptimized flame algorithm working on GPU(s)
-- API specification finished
-- Preliminary benchmarks complete
-- Documentation of initial research for application-specific optimizations
-  for 'iterate', 'acculumate' , 'filter' , and 'sync' kernels.
-
+- March 1
+     - Unoptimized implementation of flam3 algorithm running on GPU, written in
+       CUDA's C dialect.
+     - `hsptx` capable of code generation and execution on GPU.
+     - First reports from team members on potential avenues for optimization
+       and alternate renderiing strategies
+- April 1
+     - Flame implementation ported to hsptx
+     - flam3 library used to implement flame interpolation
+     - First benchmarks of optimization techniques complete
+     - Documentation on potential optimizations complete
 
 ## Second semester
 - Fully functional, optimized flame algorithm working on GPU(s)
 - Implementation of API finished
 - Final benchmarks complete
-
 
 # License
 
