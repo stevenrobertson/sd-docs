@@ -7,12 +7,7 @@ The innovation is what the majority of this paper is about and as a guiding rule
 
 As unwise as it would be to assume our solution to our design problem has already been solved, it would also be unwise not to draw from previous knowledge from the aforementioned fields. Therefore knowledge from the mathematical, statistical, and ideas routed in the field of computer graphics will be supplemented as needed when we present design decisions later in the paper.
 
-Before we get into our innovation, we do wish to present ample background information on two fields of which warrant attention: fractal geometry and the aesthetic nature of fractal geometry. We justify our presentation of fractal geometry as the mathematics behind it is not blatantly intuitive and key concepts cannot be hand waved later in this paper. Had the famous equation:
-
-
-![Equation to produce the Mandelbrot Set](fractal/mandelbrot_equation.png)
-
-been intuitive then we would be able to visualize without the aid of computer graphics it as the Mandelbrot Set and understand its ability to scale infinitely without degradation.
+Before we get into our innovation, we do wish to present ample background information on two fields of which warrant attention: fractal geometry and the aesthetic nature of fractal geometry. We justify our presentation of fractal geometry as the mathematics behind it is not blatantly intuitive and key concepts cannot be hand waved later in this paper. Had the famous equation $z_{n+1} = z^2_n + C$ been intuitive then we would be able to visualize without the aid of computer graphics it as the Mandelbrot Set and understand its ability to scale infinitely without degradation.
 
 ![The Mandelbrot Set](fractal/mandelbrot.png)
 
@@ -61,9 +56,15 @@ We can do this using a variety of ways that formally define fractal dimensionali
 
 We will explain fractal dimensionality in an intuitive way rather than provide a heavy mathematical explanation. We will do this using the concept of a box-counting dimension which lends itself to ideas from the R[e']nyi dimension.
 
-To calculate the dimensionality of an object, we first superimpose an equidistant grid on the object and count the number of boxes that is necessary to cover the object. Next, we refine the grid by decreasing the size of the grid and repeat the process. We use the following formula to then compute the box-counting dimension:
+To calculate the dimensionality of an object, we first superimpose an equidistant grid on the object and count the number of boxes that is necessary to cover the object. Next, we refine the grid by decreasing the size of the grid and repeat the process. We use
 
-![Box Counting Formula](fractal/bc_equation.png)
+\begin{displaymath}
+    \text{Dimensionality}_{box}(S) =
+    \lim_{\varepsilon \to 0}
+        \frac{\log N(\varepsilon)}{\log \frac{1}{\varepsilon}}
+\end{displaymath}
+
+where $N(\varepsilon)$ is the number of boxes needed to cover the set, $\varepsilon$ is the side length of each box, and $S$ is the set we wish to cover.
 
 For a line with a known dimensionality of 1 we perform the box counting procedure. We will start with a side length of length 1 and continually half it until a pattern emerges.
 
