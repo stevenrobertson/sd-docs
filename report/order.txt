@@ -1,0 +1,3 @@
+gpu.rst
+other-impls.rst
+new_approach.rst
