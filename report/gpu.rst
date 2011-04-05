@@ -294,8 +294,11 @@ controller, and multiple front-ends can issue transactions simultaneously,
 this controller includes a transaction queue and arbitration facilities, as
 well as simplified ALUs for performing atomic operations.
 
-.. [#]  This is potentially a simplification, but one which does not impair
-        the generality of the explanation.
+.. [#]  Actually, there are typically several memory controllers connected
+        by a crossbar switch, ring bus, or even internal packet bus, with
+        address interleaving on the lower bits and any cache distributed
+        per-core. But since each address block maps uniquely to one core,
+        and typical access patterns hit all cores evenly, we ignore this.
 
 To simplify and accelerate the memory controller, memory transactions must
 be aligned to certain bounds, and may only be 32, 64, 128, or 256 bytes
@@ -368,4 +371,204 @@ rest of the chapter.
 
 TODO: need to expand this section?
 
-TODO: analysis of both GPUs
+Closer look: NVIDIA Fermi
+-------------------------
+
+Fermi is NVIDIA's latest architecture, as implemented in the GeForce 400
+and 500 series GPUs. The architecture represents a considerable retooling
+of the company's successful Tesla GPUs with a focus on increasing the set
+of programs that can be run efficiently rather than just on raw
+performance. This was done by adding some decidedly CPU-like features to
+the chip, including a globally-consistent L2D cache, 64KB of combined L1D
+and shared memory per core, unified virtual addressing, stack-based
+operations for recursive calls and unwinding, and double-precision support
+at twice the ops-per-clock rate of other GPUs.
+
+As might be imagined, the chip was months late, and only made it out the
+door with reduced clocks and terrible yields. TSMC's problems at the 40nm
+node was partly responsible for the troubled chip's delay, but the
+impressive single-generation jump in the card's GPGPU feature set also had
+a hand. NVIDIA architects were not ignorant of this risk, but judged it a
+worthwhie one; an uncharacteristic move from a graphics company. What
+pushed NVIDIA to focus so much on compute?
+
+In a word, Intel. Larrabee, the larger company's skunkworks project to
+develop stripped-down x86 CPUs with GPU-like vector extensions had the
+potential to grind away NVIDIA's enterprise compute abilities, not because
+of Larrabee's raw performance but because of its partial compatibility with
+legacy x86 code. These chips would be far more power-hungry than any GPU,
+but NVIDIA felt backward compatibility and a simplified learning curve
+would woo developers away from CUDA, leaving them a niche vendor in the
+enterprise compute market. Worse, Sandy Bridge, the new CPU architecture,
+was to include a GPU on-die, potentially cutting out NVIDIA's
+largest-volume market segments. NVIDIA's response was to invest in Tegra,
+their mobile platform, and to make Fermi an enterprise-oriented,
+feature-laden, unmanufacturable mess.
+
+Well, Larrabee was all but cancelled, Sandy Bridge graphical performace is
+decidedly lackluster, and TSMC got their 40nm process straightened out,
+leaving NVIDIA room to prepare the GF110 and GF114 architectures powering
+the GTX 500 series. These chips are almost identical to their respective
+first-generation Fermi counterparts at the system design level; tuning at
+the transistor level, however, greatly improved yield and power
+consumption, making these devices graphically competitive at their price
+level.
+
+The GF104 and GF114 have slightly reworked shader cores as compared to
+their GF1x0 counterparts. We discuss the conceptually simpler GF110 here,
+and cover the superscalar GF114 [TODO: in a sidebar?] after introducing the
+Cayman architecture.
+
+Shader multiprocessors
+``````````````````````
+
+NVIDIA refers to the smallest unit of independent execution as a *shader
+multiprocessor*, or SM. This is absolute marketing bollocks. We call it a
+core.
+
+[FERMI DIAGRAM] (either RWT, B3D, or home-grown)
+
+Each core in GF110 contains a 128KB register file, two sets of 16 ALUs, one
+set of 16 load/store units, and a single set of 4 special function units.
+It also contains two warp schedulers, assigned to handle even- and
+odd-numbered warps, respectively. This area is partitioned so that the
+ALUs, SFUs, memory, and likely register file [TODO: check] run at twice the
+rate of the warp schedulers and other frontend components. We refer to the
+clock driving the ALUs as the "hot clock", and likewise the "cold clock"
+for the rest of the chip.
+
+Every thread in a warp executes together. At each cold clock, a warp's
+instructions are loaded by the scheduler and issued to the appropriate
+group of units for execution. Normal execution for all 32 of a warp's
+threads takes a single cold clock, followed by result writeback. This
+process is pipelined; it takes 11 cold cycles [TODO: verify this on Fermi]
+for a register written in a previous instruction to become available.
+
+As mentioned previously, there is no register forwarding during pipelined
+instructions. In fact, every thread sees this delay between one instruction
+and the next, regardless of data dependencies [TODO: verify on Fermi]. On
+NVIDIA architectures, this is hidden by cycling through all warps which are
+resident on the core and executing one instruction from each before
+returning them to the queue. This is done independently for each warp
+scheduler.
+
+The SFUs, which handle transcendental functions (``sin``, ``sqrt``) and
+possibly interpolation, are limited in number. When dispatching an
+instruction to that unit, it takes 8 hot clocks to cycle through all 32
+threads of a warp. This stalls one warp scheduler for that duration, but
+doesn't interfere with the other; if the current thread in the other
+scheduler is waiting on access to that hardware, an NVIDIA-specific
+hardware component called the "scoreboard" marks the thread as unready and
+skips it until the required transactions complete.
+
+This same scoreboarding approach handles the highly variable latency of
+memory instructions. Each load/store operation appears to take a single
+instruction to execute, wherein the resulting transaction is posted to a
+queue; when the result is returned, another cold cycle is spent in the
+load/store units to move the result from cache to the register pipeline.
+Some memory transactions, including L1D cache hits and conflict-free shared
+memory access, appear to complete in a single cold cycle.
+
+Using thread-swapping is an elegant and simple way to hide latency, but it
+has an important drawback: the only way to avoid a stall is to always have
+a warp ready to run. Register file latency puts a hard lower bound on the
+number of threads required to reach theoretical performance, but memory
+access patterns can easily raise that number. Each of those threads,
+however, must contend for a limited register file, shared memory space, and
+bandwidth. Finding the right configuration to maximize occupancy without
+losing performance from offloading registers to private memory will be a
+theoretical and experimental challenge while developing our approach.
+
+Memory architecture
+```````````````````
+
+The GF110 has a very flexible memory model. Its most distinguishing feature
+among other GPUs is the large, globally-consistent L2D cache; at 128KB per
+memory controller across the Fermi lineup, GF110 has an impressive 768KB of
+high-speed SRAM to share across its cores. All global and texture memory
+transactions pass through the L2D, which generally uses an LRU eviction
+policy for its 128B cache lines, although hints exist which can prioritize
+lines for discarding either immediately or as soon as it is fully covered.
+
+Each core has a 64KB pool of memory which can be split to provide 16KB of
+shared memory and 48KB of L1D cache, or 48 and 16KB respectively. All
+global reads must use this cache, although writes are handed straight to
+L2D, invalidating the corresponding cache line in L1D in the process. While
+the L2D is always globally consistent, L1D is only consistent across a
+single core; writes to global memory from one core will *not* invalidate
+the corresponding cache lines in a neighboring core. Volatile loads treat
+all lines in L1D as invalid, but the data is still read in afterward.
+
+A limited number of atomic operations on shared memory are supported. A
+broader set is available
+
+TODO: finish
+
+Instruction set
+```````````````
+
+Brief description of how RISC-like PTX is very relevant? Or push this until
+later?
+
+AMD Cayman
+----------
+
+General info.
+
+
+Cayman cores
+````````````
+
+Divided into cores, with 16 lanes of VLIW4 execution units. 64-wide
+effective split. Each lane executes the same operation over 4 cycles;
+VLIW4 handles parallelizable computations, but can be underscheduled in
+case of register dependency (which happens frequently).
+
+Wavefront method of latency hiding. Instead of scoreboard, clauses are
+used, which always execute to completion on a given unit. Considerably
+simpler design allows higher peak theoretical performance but requires a
+much smarter compiler. Combination of explicit and external predication.
+
+Memory architecture
+```````````````````
+
+Incoherent global read and write caches, separate texture caches. Slow
+atomics.
+
+Instruction set
+```````````````
+
+Because of VLIW, and frequent architecture changes, should definitely use
+OpenCL-level code instead of assembly.
+
+Sidebar: vectorization and theoretical performance
+--------------------------------------------------
+
+  - GF100/GF110 dispatch has two single-issue schedulers for two ALUs, one
+    transcendental, one LD/ST, and one interp. In pure-FMA code, such a
+    part can be expected to attain its rated FLOPS consistently.
+
+  - GF104/GF114 dispatch actually has two dual-issue schedulers with
+    look-ahead.  To attain the peak rated SP FLOPS in pure-FMA code, at
+    least one warp must have an instruction within the look-ahead window (4
+    instrs) that does not have a serial dependency on the current thread or
+    on any pending memory transactions. If this doesn't happen, the
+    performance hit is 33% from the stated maximum. In practice,
+    straight-ALU code (with no transcendentals, memory, etc) is rare, and a
+    bit of assembly optimization (added by the driver at run-time) is
+    enough to make full performance a realistic goal.
+
+  - By constrast, AMD's static scheduler is free to extract any level of
+    parallelism it can. However, since memory ops can't be interleaved and
+    predication is limited, and since the thing has to schedule four lanes
+    per thread independently to do FMA, practically all workloads will
+    suffer a performance hit from insufficient vectorization. Worst-case,
+    that performance hit is a whopping 75%.
+
+  - In practice, the compiler manages to get about 50-60% of Cayman's
+    theoretical workload performance in games, which (not coincidentally)
+    makes parts at the same price level from both manufacturers similar in
+    real-world performance. Hard to know in advance which will be faster
+    for us.
+
+Note: this section might well be axed.
