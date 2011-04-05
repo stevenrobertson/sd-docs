@@ -1,7 +1,7 @@
 #Fractal Background
 ##Purpose of Section
 
-The fractal flame algorithm draws upon concepts across many fields including: statistics, mathematics, fractal geometry, the philosophy of art and aesthetics, computer graphics, computer science, and others. One may become short of breathe just trying to read that entire sentence on one breathe of air.  The point we wish to make is the fractal flame algorithm is arguably the most complex fractal process to date. The road ahead of us for not only optimizing but fundamentally changing the process for how fractal flames are rendered is not so clear and will require a solid knowledge as well as innovation. 
+The fractal flame algorithm draws upon concepts across many fields including: statistics, mathematics, fractal geometry, the philosophy of art and aesthetics, computer graphics, computer science, and others. One may become short of breathe just trying to read that entire sentence on one breathe of air.  The point we wish to make is the fractal flame algorithm is arguably the most complex fractal process to date. The road ahead of us for not only optimizing but fundamentally changing the process for how fractal flames are rendered is not so clear and will require a solid knowledge as well as innovation.
 
 The innovation is what the majority of this paper is about and as a guiding rule we let the words of Sir Francis Bacon lead us: *"When you wish to achieve results that have not been achieved before, it is an unwise fancy to think that they can be achieved by using methods that have been used before."*
 
@@ -10,11 +10,11 @@ As unwise as it would be to assume our solution to our design problem has alread
 Before we get into our innovation, we do wish to present ample background information on two fields of which warrant attention: fractal geometry and the aesthetic nature of fractal geometry. We justify our presentation of fractal geometry as the mathematics behind it is not blatantly intuitive and key concepts cannot be hand waved later in this paper. Had the famous equation:
 
 
-![Equation to produce the Mandelbrot Set](./images/mandelbrot_equation.png)
-		  
+![Equation to produce the Mandelbrot Set](fractal/mandelbrot_equation.png)
+
 been intuitive then we would be able to visualize without the aid of computer graphics it as the Mandelbrot Set and understand its ability to scale infinitely without degradation.
 
-![The Mandelbrot Set](./images/mandelbrot.png)
+![The Mandelbrot Set](fractal/mandelbrot.png)
 
 We will touch on these intriguing and sometimes counterintuitive fractal properties and also address their relevance in our project and what limitations they pose upon us for our approach. We also will explain the different types of fractals and how fractal flames, a variant of the iterated function system, vary from the Mandelbrot set shown above. Unlike classical geometry, fractal geometry is a rather new field of geometry and we believe presenting a comprehensive knowledge of the field in context of our new approach is absolutely feasible.
 
@@ -32,7 +32,7 @@ However as influential as the idea of Euclidean Geometry are its ideal shapes fa
 
 ##Fractal Geometry and Its Properties
 
-This new geometry Benoit Mandelbrot writes about in his book, he calls fractals which come from the Latin work fractus meaning "fractured".  These new shapes exhibited different properties than classical Euclidean shapes. These shapes were rough and did not belong to an integer valued dimension. Fractals also exhibited self-similarity in which parts of the figure repeat themselves. The images did not degrade with scale either like other classical shapes or like a photograph. 
+This new geometry Benoit Mandelbrot writes about in his book, he calls fractals which come from the Latin work fractus meaning "fractured".  These new shapes exhibited different properties than classical Euclidean shapes. These shapes were rough and did not belong to an integer valued dimension. Fractals also exhibited self-similarity in which parts of the figure repeat themselves. The images did not degrade with scale either like other classical shapes or like a photograph.
 These new shapes had been investigated in the Western World previous to Mandelbrot and were already an accepted part of African art and culture before Mandelbrot had been observed and published his findings which lead to their widespread use and acceptance.
 
 We summarize the properties in which Mandelbrot and his predecessors have found. We will freely reference these properties from this point forward when we need to draw upon knowledge.
@@ -43,14 +43,14 @@ Fractals contain the property of self-similarity. This self-similarity is classi
 
 **Exact Self-Similarity:** This type of self-similarity contains, as its name implies, exact copies of itself repeating at infinitely smaller scales. Classical examples include Sierpinski's gasket or the Koch Curve.
 
-![The Koch Curve](./images/koch_curve.png)
+![The Koch Curve](fractal/koch_curve.png)
 
 **Quasi Self-Similarity:** This type of self-similarity does not contain exact copies but rather distorted or degenerate forms of itself at infinitely smaller scales. Classical examples include the Mandelbrot set.
 
-**Statistical Self-Similarity:** This type of self-similarity is the weakest and is the type we encounter the most often in the real world. Statistical self-similarity refers to the fact that the object has numerical or statistical measurements that are maintained at different scales. When classifying shapes in nature as fractal-like we are referring to this definition. For example, the self-similar aspects of how a tree branches are never found to be exact and sometimes deviate from their expected pattern. We use this definition to account for this. We do not have the luxury of always talking about things in the ideal world. 
+**Statistical Self-Similarity:** This type of self-similarity is the weakest and is the type we encounter the most often in the real world. Statistical self-similarity refers to the fact that the object has numerical or statistical measurements that are maintained at different scales. When classifying shapes in nature as fractal-like we are referring to this definition. For example, the self-similar aspects of how a tree branches are never found to be exact and sometimes deviate from their expected pattern. We use this definition to account for this. We do not have the luxury of always talking about things in the ideal world.
 Another classical example is measuring a coastline such as Britain. When scaling the coastline it appears similar to at magnified scales. Additionally, what follows from this is the more accurately we measure the coastline (with a smaller base measurement) the more the length increases. This length increases without limit and contrary to intuition shows that the coastline of a country is infinite.
 
-![Statistical self-similarity found in the branching of trees.](./images/tree_branching.png)
+![Statistical self-similarity found in the branching of trees.](fractal/tree_branching.png)
 
 
 ###Fractal Dimensionality
@@ -63,23 +63,23 @@ We will explain fractal dimensionality in an intuitive way rather than provide a
 
 To calculate the dimensionality of an object, we first superimpose an equidistant grid on the object and count the number of boxes that is necessary to cover the object. Next, we refine the grid by decreasing the size of the grid and repeat the process. We use the following formula to then compute the box-counting dimension:
 
-![Box Counting Formula](./images/bc_equation.png)
+![Box Counting Formula](fractal/bc_equation.png)
 
 For a line with a known dimensionality of 1 we perform the box counting procedure. We will start with a side length of length 1 and continually half it until a pattern emerges.
 
-![Box Counting Dimension Process For a Line](./images/bc_line.png)
+![Box Counting Dimension Process For a Line](fractal/bc_line.png)
 
 We can solve the Box Counting equation by completing the pattern to solve what the pattern is as the side length approaches 0. This analysis is below:
 
-![Box Counting Dimension Process For a Line](./images/bc_line_analysis.png)
+![Box Counting Dimension Process For a Line](fractal/bc_line_analysis.png)
 
 Now we show a fractal dimension. We will use Sierpinski's gasket as our example. We again start with side length of 1 and continually half it until a pattern emerges.
 
-![Box Counting Dimension Process For Sierpinski's Gasket](./images/bc_sierpinski.png)
+![Box Counting Dimension Process For Sierpinski's Gasket](fractal/bc_sierpinski.png)
 
 We rewrite our results in the form of powers and show the pattern.
 
-![Box Counting Dimension Process For Sierpinski's Gasket](./images/bc_sierpinski_analysis.png)
+![Box Counting Dimension Process For Sierpinski's Gasket](fractal/bc_sierpinski_analysis.png)
 
 We call this dimensionality- **roughness** which measures its irregularity.
 
@@ -91,12 +91,12 @@ We call this dimensionality- **roughness** which measures its irregularity.
 
 ###Formation by Iteration
 
-The method for constructing a fractal relies on an iterative process. Regardless if  the fractal is a naturally occurring statistically self-similar fractal, a computer generated fractal, or even a mathematical calculation of a set that exhibits fractal-like properties they all rely on a process which involves multiple iterations of a specific process. This process could be for example in geometric fractals- scaling shapes or in the case of algebraic computer generated fractals - adjusting parameter values. 
+The method for constructing a fractal relies on an iterative process. Regardless if  the fractal is a naturally occurring statistically self-similar fractal, a computer generated fractal, or even a mathematical calculation of a set that exhibits fractal-like properties they all rely on a process which involves multiple iterations of a specific process. This process could be for example in geometric fractals- scaling shapes or in the case of algebraic computer generated fractals - adjusting parameter values.
 
 
 
 ##Fractal Types
-When one gets their first taste of fractal-geometry they notice the diversity of shapes and figures that encompass it. For our purposes, we will not classify the geometric figures by how they look but rather the process for creating them. We do this because given the nature of this project because we are focusing on the computational and algorithmic implementation of the fractal - the shape that it produces is secondary. It is not always apparent which creation method was used to create a certain pattern. By classifying fractals by their creation method, we can do the following: 
+When one gets their first taste of fractal-geometry they notice the diversity of shapes and figures that encompass it. For our purposes, we will not classify the geometric figures by how they look but rather the process for creating them. We do this because given the nature of this project because we are focusing on the computational and algorithmic implementation of the fractal - the shape that it produces is secondary. It is not always apparent which creation method was used to create a certain pattern. By classifying fractals by their creation method, we can do the following:
 
 1. Explain what this project is not
 2. Draw similarities from closely related fractal systems
@@ -121,15 +121,15 @@ and many others.
 
 Strange attractors are attractors whose final attractor set are that of a fractal dimension. An attractor is a set that a dynamical system approaches as it evolves. Dynamical systems are systems which describe the state of the system at any instant and contain a rule that specifies the future state of system. A difference of the strange attractor versus a traditional attractor is that strange attractors have a sensitive dependence on their initial conditions and often exhibit properties of chaos which makes their behavior hard to predict. When we refer to properties of chaos we mean that a point which is close to the attractor will become separated at an exponential rate.
 
-![Image of a Strange Attractor](./images/strange_attractor.jpg)
+![Image of a Strange Attractor](fractal/strange_attractor.jpg)
 
 ###Random Fractals
 Random fractal's iterative process relies on a non-deterministic process for creation (instead of a deterministic one seen above). By applying some process the resulting set or image exhibits fractal-like properties. Many landscapes and plants in nature exhibit this property. For example, mountains are not formed by a deterministic process yet exhibit statistical self-similarity. Fractal landscape generation is a stochastic process which tries to mimic this stochastic process in nature.
 
-![Image of a computer generated fractal landscape compared with a mountain landscape](./images/random_fractal.png)
+![Image of a computer generated fractal landscape compared with a mountain landscape](fractal/random_fractal.png)
 
 ###Iterated Function Systems
-This is the fractal system that our project will focus upon. Iterated function systems rely on performing a series of transformations which are generally contractive on average[2] stochastically to produce the output image. This stochastic process is called the **chaos game**. The chaos game starts with randomly choosing an initial point and then consecutively applying a randomly chosen transformation from the entire set of transformations that make up the iterated function system. 
+This is the fractal system that our project will focus upon. Iterated function systems rely on performing a series of transformations which are generally contractive on average[2] stochastically to produce the output image. This stochastic process is called the **chaos game**. The chaos game starts with randomly choosing an initial point and then consecutively applying a randomly chosen transformation from the entire set of transformations that make up the iterated function system.
 
 The entire iterated function system process and its intricacies will be articulated upon in the next section.
 
@@ -140,10 +140,10 @@ First and foremost, nature has is the most apparent in creating fractal-like fea
 
 Fractal Geometry has been a part of the African Culture, social hierarchy, and art predating any formal western knowledge on fractals. Village architecture, jewelry, and even religious rituals all exhibited the concepts of self-similarity - with features repeating on smaller scales. [4]
 
-Recently with the aid of computer aided image generation, the appreciation of fractals has spread to a wider community. For example, the application Electric Sheep uses distributed computing in order to evolve fractal flames which are displayed as screensavers to users. The community has membership of roughly 500,000 unique members[5] who appreciate viewing fractal flame images. 
+Recently with the aid of computer aided image generation, the appreciation of fractals has spread to a wider community. For example, the application Electric Sheep uses distributed computing in order to evolve fractal flames which are displayed as screensavers to users. The community has membership of roughly 500,000 unique members[5] who appreciate viewing fractal flame images.
 
 We hope that this background information shows the general interest in fractal-like patterns and with that our project focuses on this last group of individuals who appreciate computer generated fractal images. Our GPU rendered fractal algorithm hopes to deliver the existing community with the opportunity to continue viewing these fractal flame images without the need for distributed computing to render them in real time- a major improvement.
- 
+
 ##Limitations of Classical Fractal Algorithms
 The purpose of this section is to explain the shortcomings of existing fractal methods, along with their coloring techniques, ability to display fractal motion:
 
@@ -166,7 +166,7 @@ The purpose of this section is to explain the shortcomings of existing fractal m
 ** TODO: Revise citations in correct format and put in Acknowledgements section **
 
 
-[1] Brickmann, J. (1985), B. Mandelbrot: The Fractal Geometry of Nature, Freeman and Co., San Francisco 1982. 460 Seiten, Preis 
+[1] Brickmann, J. (1985), B. Mandelbrot: The Fractal Geometry of Nature, Freeman and Co., San Francisco 1982. 460 Seiten, Preis
 
 [2] Draves, Scott; Erik Reckase (July 2007). "The Fractal Flame Algorithm" (pdf). Retrieved 2008-07-17.
 

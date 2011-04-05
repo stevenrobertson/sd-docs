@@ -1,3 +1,4 @@
+fractal.md
 gpu.rst
 other_impls.rst
 new_approach.rst
