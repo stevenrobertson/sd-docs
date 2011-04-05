@@ -19,7 +19,7 @@ import System.IO
 
 import Text.Pandoc
 
-parseFile fn = readFunc startState <$> readFile fn
+parseFile fn = readFunc startState . filter (/= '\r') <$> readFile fn
   where
     readFunc = case takeExtension fn of
                     ".rst"  -> readRST
@@ -51,8 +51,8 @@ joinDocs docs = Pandoc (meta $ head docs) (concat $ map blocks docs)
 renderPDF :: FilePath -> FilePath -> IO ExitCode
 renderPDF tmpdir inpath =
     rawSystem "xelatex"
-        [ "-output-directory=" ++ tmpdir
-        , "-interaction=nonstopmode"
+        [ "-output-directory", tmpdir
+        , "-interaction", "nonstopmode"
         , inpath ]
 
 main = do
