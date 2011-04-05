@@ -99,7 +99,7 @@ visibility, xform density, and (most importantly) color. In later sections,
 we will re-extend the SFF to include most of these features.
 
 Solving the SFS with Monte Carlo sampling
------------------------------------------
+`````````````````````````````````````````
 
 Apart from a few notational differences, a simplified flame is defined to
 be a subset of a traditional flame, so it's not surprising that the
@@ -114,21 +114,93 @@ tuned to the simplified definition of a flame as a starting point for our
 comparisons. In the proposed traditional renderer,
 
 
+- Reduced data size, meaning less bandwidth but more importantly less cache
+  misses
 
+- Still have to generate an impractical number of samples, though
 
+Temporal redundancy
+```````````````````
 
+- The next image is going to look an awful lot like the current one for
+an animation to be smooth. Why not use that?
 
+- This is something we can't do with the regular algorithm
 
+- Technique is critical for the next sections, so let's spend a moment
+establishing it in the continuous domain
 
-without statically rendered flames from ``flam3`` in the video stream,
+- Energy map from one state to the next is given by:
 
+- Energy of set is calculated by iteration
 
+- Rate of convergence is expected to be high (in truth this is assumed;
+can be calculated w/ some accuracy for arbitrary xforms)
 
-``flam3``
+- Next frame given by integral of time over IFS functions
 
+Discrete approximation to function application
+``````````````````````````````````````````````
 
+- Implementation: for every point in the previous generation, apply the
+  translation function, and write the results to an output buffer.
 
-compatible with ``flam3``
+- Smoothness acheived by being very very fast (which this will do).
+  Motion blur acheived by merging several samples. (Maybe discuss linear
+  blending between the buffers, multiple buffers, having a single "last"
+  buffer, or something)
 
+- Contractive, visually pleasing xforms tend to have relatively smooth
+  derivatives (esp. given constraints on xforms) => local spatial
+  grouping => cache operators are quite happy
 
+- So this seems like a magnificent approach. Can take the energy of a
+  thousand samples and place it with a single evaluation of the xform.
+
+- Except the output looks *terrible*. (examples) Why?
+
+The frequency domain
+--------------------
+
+- We need to look at this problem through the lens of signals
+
+Aliasing in 2D sampling
+```````````````````````
+
+  - The first problem is aliasing. Gamers know this as the jaggies that
+    appear on lines (examples).
+
+  - Consequence of Nyquist theorem in 2D. Pixels are boxes, but we're
+    lighting them up with samples.
+
+  - Gaming solution: supersampling. During rasterization, casts extra
+    reverse samples around each point to more accurately determine
+    coverage, and blends. Requires extra space for depth buffer to
+    determine which triangle intersects at each point. (More
+    intricacies...)
+
+  - Technically this is like a selective lowpass. Kind of a
+    balancing operation because loss of detail in areas like textures is
+    also noticeable (our eyes have higher sampling rates than current
+    monitors, so
+
+  - flam3 solution: increase the buffer size, and downfilter. Larger the
+    buffer, better the approximation. Same idea.
+
+  - Would this help here? Yes, at quadratic cost. Is this sufficient? Well,
+    no.
+
+Self-similarity
+```````````````
+
+- Intuitively, think of an xform application as a frequency shift
+  operation. Nyquist says we need to have this resolution or we get
+  aliasing; xforms can violate that locally and globally on a cast.
+
+- Of course, that's so *mathy*. An intuitive understanding: Really
+  expansive transform regions will skip over pixels, leaving individual
+  points of light...
+
+- Will finish this after taking a closer look at less theoretical sections,
+  I think I might be duplicating too much stuff here
 
