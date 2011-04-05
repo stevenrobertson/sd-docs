@@ -40,7 +40,6 @@ renderLaTeX tmpl vars = writeLaTeX writeOpts
         , writerSourceDirectory = "."
         -- todo: writerBiblioFiles, writerCiteMethod
         , writerChapters = True
-        , writerListings = True
         }
 
 joinDocs docs = Pandoc (meta $ head docs) (concat $ map blocks docs)
