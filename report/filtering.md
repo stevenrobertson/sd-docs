@@ -16,10 +16,9 @@ The nearest neighbor method is an attempt to adapt the amount of smoothing to th
 
 ##Fixed-width Convolution vs Variable-width Convolution
 
-#Windowing Function
+##Windowing Function
 A window function is a mathematical function that is zero-values outside of some chosen interval and manipulates the values inside that interval.  The simplest window is the rectangular window.  It simply takes a chunk the portion of the signal fitting inside in the window leaving discontinuities at the edges (unless the signal is entirely within the limits of the window) [6].  Filter shapes available in flam3 are the Guassian (default), Bell, Blackman, Box, Bspline, Hamming, Hanning, Hermite, Mitchell, Quadratic, and Triangle [8].
 
-#Tone-Mapping
 
 #Filtering Techniques
 
@@ -54,8 +53,6 @@ Iterations can be used to generate smoother images similar to increasing the ran
 ##Contourlet Transform
 
 #Seperate Frame Buffers
-
-#Log Scaling
 
 References
 [1] http://en.wikipedia.org/wiki/Density_estimation
