@@ -7,4 +7,5 @@ rng.md
 color_and_log_scale.md
 filtering.md
 filtering_alt.md
+misc.rst
 new_approach.rst
