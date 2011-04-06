@@ -18,6 +18,7 @@ import System.Process
 import System.IO
 
 import Text.Pandoc
+import Text.Pandoc.Shared
 
 parseFile fn = readFunc startState . filter (/= '\r') <$> readFile fn
   where
@@ -42,7 +43,7 @@ renderLaTeX tmpl vars = writeLaTeX writeOpts
         , writerChapters = True
         }
 
-joinDocs docs = Pandoc (meta $ head docs) (concat $ map blocks docs)
+joinDocs docs = normalize $ Pandoc (meta $ head docs) (concat $ map blocks docs)
   where
     meta (Pandoc m _) = m
     blocks (Pandoc _ b) = b

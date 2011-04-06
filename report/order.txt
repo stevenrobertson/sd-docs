@@ -1,4 +1,6 @@
 fractal.md
-gpu.rst
+flame algorithm.md
 other_impls.rst
+gpu.rst
+impl.rst
 new_approach.rst
