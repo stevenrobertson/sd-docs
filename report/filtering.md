@@ -33,6 +33,10 @@ The bilateral filter is controlled by two parameters: σs and σr.  Increasing t
 
 Iterations can be used to generate smoother images similar to increasing the range parameter, except for being able to preserve strong edges.  Iterating tends to remove the weaker details in a signal or image and is desirable for applications such as stylization that seek to abstract away the small details.  Computational photography techniques tend to use a single iteration to be closer to the original image content [7].
 
+##KD-Trees
+
+##Permutohedral Lattice
+
 ##Filtering Algorithms
 
 ###Denoising
@@ -49,7 +53,7 @@ Iterations can be used to generate smoother images similar to increasing the ran
 
 ##Contourlet Transform
 
-#Seperate Frame Buffers (?)
+#Seperate Frame Buffers
 
 #Log Scaling
 
