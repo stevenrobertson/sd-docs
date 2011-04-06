@@ -1,16 +1,12 @@
-Other implementation challenges
-===============================
+# Other implementation challenges
 
 This chapter has some miscellaneous stuff which probably needs to make it
 into the report, but may or may not need its own chapter.
 
 
+## Xform selection
 
-Xform selection
----------------
-
-Why it's important
-``````````````````
+### Why it's important
 
 Xform selection by density a necessary component of the random transform.
 Correlations have a way of becoming perceptible. When intentional, can add
@@ -19,8 +15,7 @@ randomization can cause large deviations from expected image appearance.
 
 (Math to show this? probably unnecessary)
 
-Challenge
-`````````
+### Challenge
 
 On CPU, it's pretty thoughtless: just use a decent RNG to select an xform
 according to density. However, this doesn't work on GPUs due to
@@ -33,8 +28,7 @@ the same order, and they will quickly converge. That's the whole point.
 Simply keeping the points in the registers will be an effective 32x
 performance hit.
 
-Solutions
-`````````
+### Solutions
 
 Use shared memory to swap the points. This doesn't provide optimal
 feedback, but it's reasonable: (see benchmarks, previously generated file).
@@ -42,8 +36,7 @@ feedback, but it's reasonable: (see benchmarks, previously generated file).
 Or just accept the performance hit. Might be preferable, might not be,
 depending on a great many factors.
 
-Writeback
----------
+## Writeback
 
 Okay, so as we've established, flam3 generates an enormous number of points
 to render a high-quality image. We've looked at how to reduce the effects
@@ -70,8 +63,7 @@ image regions being written to, which [math] is just not gonna happen. Then
 turn on supersampling — which on CPU is essentially free — and watch all
 hope disappear.
 
-Reducing color traffic
-``````````````````````
+### Reducing color traffic
 
 There's a stopgap approach, which is this: subsample the color buffers.
 Humans have much more limited spatial resolution for color than for
@@ -93,8 +85,7 @@ cache lines occupied by the colors rather than alpha.
 Cutting the alpha buffer down to a half-precision float wouldn't be too bad
 either, although it would remove the ability to use fast atomics in L2.
 
-Point logging
-`````````````
+### Point logging
 
 Another approach would be to restore cache coherency, which would allow the
 memory and caches to function much closer to their theoretical throughput
@@ -108,8 +99,7 @@ instead of global.
 
 [Insert teaser for big new approach]
 
-Motion blur
------------
+### Motion blur
 
 - Motion blur is used in static flames to give a sense of implied motion.
   Also important for dynamic flames, as few systems can handle H.264
