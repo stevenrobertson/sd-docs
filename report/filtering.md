@@ -46,20 +46,19 @@ Iterations can be used to generate smoother images similar to increasing the ran
 
 ###3D Fairing
 
-#Structural Detection Techniques
+##Structural Detection Techniques
 
-##Morphological Anti-Aliasing
+###Morphological Anti-Aliasing
 
-##Contourlet Transform
-
-#Seperate Frame Buffers
+###Contourlet Transform
 
 References
-[1] http://en.wikipedia.org/wiki/Density_estimation
-[2] http://en.wikipedia.org/wiki/Probability_density_function
-[3] http://en.wikipedia.org/wiki/Histogram
-[4] Silverman Density Estimation
-[5] http://en.wikipedia.org/wiki/Kernel_density_estimation
-[6] http://en.wikipedia.org/wiki/Window_function
-[7] Bilateral Filtering
-[8] http://code.google.com/p/flam3/wiki/SpatialFilterExamples
+
+1. http://en.wikipedia.org/wiki/Density_estimation
+2. http://en.wikipedia.org/wiki/Probability_density_function
+3. http://en.wikipedia.org/wiki/Histogram
+4. Silverman Density Estimation
+5. http://en.wikipedia.org/wiki/Kernel_density_estimation
+6. http://en.wikipedia.org/wiki/Window_function
+7. Bilateral Filtering
+8. http://code.google.com/p/flam3/wiki/SpatialFilterExamples

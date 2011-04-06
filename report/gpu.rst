@@ -482,13 +482,14 @@ theoretical and experimental challenge while developing our approach.
 Memory architecture
 ```````````````````
 
-The GF110 has a very flexible memory model. Its most distinguishing feature
+The GF110 has a flexible memory model. Its most distinguishing feature
 among other GPUs is the large, globally-consistent L2D cache; at 128KB per
-memory controller across the Fermi lineup, GF110 has an impressive 768KB of
-high-speed SRAM to share across its cores. All global and texture memory
-transactions pass through the L2D, which generally uses an LRU eviction
-policy for its 128B cache lines, although hints exist which can prioritize
-lines for discarding either immediately or as soon as it is fully covered.
+memory controller across the Fermi lineup, GF110 has 768KB of high-speed
+SRAM to share across its cores. All global and texture memory transactions
+pass through the L2D, which uses an LRU eviction policy for its 128B cache
+lines, although an instruction can mark a cache line for discard
+immediately or upon being fully covered by write operations. The latter
+mode improves performance when threads perform sequential writes.
 
 Each core has a 64KB pool of memory which can be split to provide 16KB of
 shared memory and 48KB of L1D cache, or 48 and 16KB respectively. All
@@ -497,7 +498,19 @@ L2D, invalidating the corresponding cache line in L1D in the process. While
 the L2D is always globally consistent, L1D is only consistent across a
 single core; writes to global memory from one core will *not* invalidate
 the corresponding cache lines in a neighboring core. Volatile loads treat
-all lines in L1D as invalid, but the data is still read in afterward.
+all lines in L1D as invalid, but that flag only applies to memory
+instructions, not to addresses.
+
+Each work-group is assigned to a single core for the duration of its
+execution. Each thread acquires its registers and local memory as the
+work-group is assigned, and the work-group acquires shared memory; these
+resources are not released until the work-group is complete. This also
+indicates that
+
+Shared memory is allocated to a work-group
+
+Atomic operations in Fermi are available on both global and shared memory.
+Shared-memory atomics are implemented using
 
 A limited number of atomic operations on shared memory are supported. A
 broader set is available
