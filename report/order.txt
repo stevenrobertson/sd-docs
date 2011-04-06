@@ -1,8 +1,9 @@
 fractal.md
 flame_algorithm.md
 other_impls.rst
-color_and_log_scale.md
-filtering.md
 gpu.rst
 impl.rst
+rng.md
+color_and_log_scale.md
+filtering.md
 new_approach.rst
