@@ -69,7 +69,7 @@ To summarize, the RGB color system with red, green, and blue values ranging from
 **TODO: Formula confusion - elaborate later**
 
 \begin{displaymath}
-$b_{corrected} = b^{1/\gamma} 
+b_{corrected} = b^{1/\gamma} 
 \end{displaymath}
 
 As seen above the gamma correction is a non-linear function whose graph looks like the follpwing:
@@ -81,13 +81,13 @@ Because we present 4 gamma values applied to an image.
 *TODO IMPORTANT:* Clear up gamma confusion. In the wiki article they define gamma as:
 
 \begin{displaymath}
-$v_{corrected} = v^{\gamma}
+v_{corrected} = v^{\gamma}
 \end{displaymath}
 
 Whereas Draves defines it as: 
 
 \begin{displaymath}
-$b_{corrected} = b^{1/\gamma}.
+b_{corrected} = b^{1/\gamma}.
 \end{displaymath}
 
 Either correct the image text or the formula. But for now there's inconsistancies.
