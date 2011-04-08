@@ -1,7 +1,7 @@
 fractal.md
 flame_algorithm.md
 other_impls.rst
-gpu.rst
+gpu.md
 impl.rst
 rng.md
 color_and_log_scale.md
