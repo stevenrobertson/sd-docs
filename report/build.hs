@@ -19,13 +19,18 @@ import System.IO
 
 import Text.Pandoc
 import Text.Pandoc.Shared
+import Text.Pandoc.Biblio
+import Text.CSL
 
-parseFile fn = readFunc startState . filter (/= '\r') <$> readFile fn
+parseFile refs fn = readFunc startState . filter (/= '\r') <$> readFile fn
   where
     readFunc = case takeExtension fn of
                     ".rst"  -> readRST
                     _       -> readMarkdown
-    startState = defaultParserState { stateSmart = True }
+    startState = defaultParserState
+        { stateSmart = True
+        , stateCitations = map refId refs
+        }
 
 renderLaTeX :: FilePath -> [(String, String)] -> Pandoc -> String
 renderLaTeX tmpl vars = writeLaTeX writeOpts
@@ -39,7 +44,8 @@ renderLaTeX tmpl vars = writeLaTeX writeOpts
         , writerXeTeX = True
         , writerNumberSections = True
         , writerSourceDirectory = "."
-        -- todo: writerBiblioFiles, writerCiteMethod
+        , writerBiblioFiles = ["mendeley.bib"]
+        , writerCiteMethod = Citeproc
         , writerChapters = True
         }
 
@@ -55,15 +61,23 @@ renderPDF tmpdir inpath =
         , "-interaction", "nonstopmode"
         , inpath ]
 
+biblioAtEnd = False
+
 main = do
+    refs <- readBiblioFile "bib.bib"
     sourcePaths <- lines <$> readFile "order.txt"
-    sources <- mapM parseFile sourcePaths
+    sources <- mapM (parseFile refs) sourcePaths
 
     topmatter <- readFile "topmatter.tex"
     template <- readFile "../latex.template"
 
+    let doBib = processBiblio "../ieee.csl" refs
+    joined <- if biblioAtEnd
+                 then doBib $ joinDocs sources
+                 else joinDocs <$> mapM doBib sources
+
     let vars = [("report", "1"), ("include-before", topmatter)]
-        latex = renderLaTeX template vars $ joinDocs sources
+        latex = renderLaTeX template vars joined
 
     tmpdir <- fmap (</> "pandoc_report") getTemporaryDirectory
     createDirectoryIfMissing False tmpdir
