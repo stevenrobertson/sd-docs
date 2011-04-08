@@ -1,50 +1,46 @@
 %!TEX encoding = UTF-8 Unicode
 
-$if(legacy-header)$
-$legacy-header$
-$else$
-
 $if(report)$
 \documentclass[11pt, letterpaper]{report}
-\usepackage{fullpage}
 \usepackage{geometry}
 \geometry{letterpaper, textwidth=6.5in, textheight=9.5in,
           marginparsep=7pt, marginparwidth=.6in}
-
 $else$
 \documentclass[11pt, letterpaper]{article}
 \usepackage{geometry}
 \geometry{letterpaper, textwidth=5.5in, textheight=9.5in,
           marginparsep=7pt, marginparwidth=.6in}
-
 $endif$
 
 \usepackage{amssymb,amsmath}
 \usepackage{wrapfig}
 
-$if(xetex)$
-\usepackage{ifxetex}
-\ifxetex
-  \usepackage{fontspec,xltxtra,xunicode}
-  \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
-  \setromanfont [Ligatures={Common},BoldFont={Skolar:+smcp,+c2sc}]{Skolar}
-  \setsansfont [Ligatures={Common}]{Gill Sans Std}
-\else
-  \usepackage[mathletters]{ucs}
-  \usepackage[utf8x]{inputenc}
-\fi
-$else$
-\usepackage[mathletters]{ucs}
-\usepackage[utf8x]{inputenc}
-$endif$
+\usepackage{fontspec,xltxtra,xunicode}
+\defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+\setromanfont [Ligatures={Common},BoldFont={Skolar:+smcp,+c2sc}]{Skolar}
+\setsansfont [Ligatures={Common}]{Gill Sans Std}
+
+\usepackage[titles]{tocloft}
+\renewcommand{\cftchapfont}{\sffamily\bfseries\normalsize}
+
+\usepackage[font=sf,labelfont=bf]{caption}
+
+\usepackage{sectsty}
+\usepackage[normalem]{ulem}
+\sectionfont{\rmfamily\mdseries\upshape\Large}
+\subsectionfont{\sffamily\bfseries\upshape\normalsize}
+\subsubsectionfont{\sffamily\mdseries\upshape\normalsize}
+\tolerance=500
+
 $if(lhs)$
 \usepackage{listings}
 \lstnewenvironment{code}{\lstset{language=Haskell,basicstyle=\small\ttfamily}}{}
 $endif$
-$endif$
+
 $if(verbatim-in-note)$
 \usepackage{fancyvrb}
 $endif$
+
 $if(fancy-enums)$
 % Redefine labelwidth for lists; otherwise, the enumerate package will cause
 % markers to extend beyond the left margin.
@@ -81,20 +77,12 @@ $if(graphics)$
 \let\Oldincludegraphics\includegraphics
 \renewcommand{\includegraphics}[1]{\Oldincludegraphics[width=\maxwidth]{#1}}
 $endif$
-\usepackage[breaklinks=true,unicode=true]{hyperref}
-\hypersetup{linkcolor=blue,citecolor=blue,filecolor=black,urlcolor=blue,colorlinks=true}
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{6pt plus 2pt minus 1pt}
-$if(numbersections)$
-$else$
-\setcounter{secnumdepth}{0}
-$endif$
 
-\usepackage{sectsty}
-\usepackage[normalem]{ulem}
-\sectionfont{\rmfamily\mdseries\upshape\Large}
-\subsectionfont{\rmfamily\bfseries\upshape\normalsize}
-\subsubsectionfont{\rmfamily\mdseries\upshape\normalsize}
+\usepackage[breaklinks=true]{hyperref}
+\hypersetup{linkcolor=blue,citecolor=blue,filecolor=black,urlcolor=blue,colorlinks=true}
+\setcounter{secnumdepth}{1}
+\setcounter{tocdepth}{1}
+
 
 $if(verbatim-in-note)$
 \VerbatimFootnotes % allows verbatim text in footnotes
@@ -124,8 +112,11 @@ $include-before$
 $endfor$
 $if(toc)$
 \tableofcontents
-
 $endif$
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+
 $body$
 $for(include-after)$
 
