@@ -78,7 +78,8 @@ $if(graphics)$
 \renewcommand{\includegraphics}[1]{\Oldincludegraphics[width=\maxwidth]{#1}}
 $endif$
 
-\usepackage[breaklinks=true]{hyperref}
+\usepackage{url}
+\usepackage[xetex,breaklinks]{hyperref}
 \hypersetup{linkcolor=blue,citecolor=blue,filecolor=black,urlcolor=blue,colorlinks=true}
 \setcounter{secnumdepth}{1}
 \setcounter{tocdepth}{1}

@@ -1,5 +1,4 @@
 #!/usr/bin/runhaskell -Wall
-
 {-
 This program assembles the Senior Design report.
 
@@ -44,7 +43,6 @@ renderLaTeX tmpl vars = writeLaTeX writeOpts
         , writerXeTeX = True
         , writerNumberSections = True
         , writerSourceDirectory = "."
-        , writerBiblioFiles = ["mendeley.bib"]
         , writerCiteMethod = Citeproc
         , writerChapters = True
         }
@@ -61,10 +59,15 @@ renderPDF tmpdir inpath =
         , "-interaction", "nonstopmode"
         , inpath ]
 
+-- Fix links in bibliography. Could be better.
+urlize (Str "Available:":Space:Str u:xs) =
+    LineBreak : Link [Str u] ("", u) : urlize xs
+urlize x = x
+
 biblioAtEnd = False
 
 main = do
-    refs <- readBiblioFile "bib.bib"
+    refs <- readBiblioFile "mendeley.bib"
     sourcePaths <- lines <$> readFile "order.txt"
     sources <- mapM (parseFile refs) sourcePaths
 
@@ -77,7 +80,7 @@ main = do
                  else joinDocs <$> mapM doBib sources
 
     let vars = [("report", "1"), ("include-before", topmatter)]
-        latex = renderLaTeX template vars joined
+        latex = renderLaTeX template vars $ bottomUp urlize joined
 
     tmpdir <- fmap (</> "pandoc_report") getTemporaryDirectory
     createDirectoryIfMissing False tmpdir
