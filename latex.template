@@ -62,9 +62,6 @@ $endif$
 $if(subscript)$
 \newcommand{\textsubscr}[1]{\ensuremath{_{\scriptsize\textrm{#1}}}}
 $endif$
-$if(url)$
-\usepackage{url}
-$endif$
 $if(graphics)$
 \usepackage{graphicx}
 % We will generate all images so they have a width \maxwidth. This means
