@@ -150,12 +150,142 @@ swapping may be compounded in other warps and should be avoided.
 A simple way to prevent bank conflicts is to constrain each thread to access
 the bank corresponding to its lane ID, such that bits `[6:2]` of every shared
 memory address are equal to bits `[4:0]` of its thread ID. We follow this
-pattern — simplicity is something we're pretty desperate for at this point —
-and thereby keep the problem of determining read and write locations in a
-single dimension.
+pattern — with an inner loop this complex, simplicity is something we're pretty
+desperate for — and thereby keep the problem of determining read and write
+locations in a single dimension of length equal to the number of warps in a
+work-group.
 
+Within that dimension, we must still find a permutation of bank addresses for
+both read and write operations. Shuffling both read and write order provides no
+"extra randomness" over shuffling just one, so we allow one permutation to be
+in natural thread order; since registers cannot be traced on the GPU, reads are
+more challenging to debug, and so we choose to only shuffle the write orders.
 
-TODO: finish
+To further simplify matters, we fix the write offset against the bank address
+as a modular addition to the warp number. The resulting write-sync-read,
+therefore, turns each memory bank into a very wide barrel register. This scheme
+can be accomodated with, at most, a single broadcast byte per bank, one
+instruction per thread and no extra barriers. A more complex permutation would
+require considerable amounts of extra memory, a multi-stage coordination pass,
+and a lot of extra debugging; it is the latter which most condemns a full
+permutation. We'll examine the impact of this simulation a bit later in this
+section.
+
+In the end, the entire process resembles twisting the dials on a combination
+lock: a point can move in a ring around a column, but can't jump to another row
+or over other points in a column.
+
+### Shift amounts and sequence lengths
+
+Under this simplified model for swap, there is one free parameter for each lane
+of a warp, shared across all warps. Methods for choosing these parameters
+include providing a random number per vector lane and using the lane ID. We
+wish to determine how effective each method is at minimizing the length of
+repeated sequences in comparison with best- and worst-case arrangements.
+
+For a flame with $N$ transforms of equal density, the probability of selecting
+a given transform $n$ is $P(n) = \frac{1}{N}$. For two independent sequences of
+samples, the probability that one stream would have the same transform at the
+same index as the other stream is therefore $P(S) = P(n) = \frac{1}{N}$; the
+probability of having a sequence of identical selections of length $l$ is
+
+\begin{equation}\label{prob-ind}
+    P(S_l) = P(n)^l = \frac{1}{N^l}
+\end{equation}
+
+In any work-group using independent selection of transforms, any two pixel
+state threads $t_1, t_2 \in T,\; t_1 \neq t_2$ will also be independent, and
+therefore the probabilities do not depend on the work-group size $T$. This is
+the optimal case which corresponds to an efficient approximation of the
+attractor.
+
+For a work-group using warp-based branching without a swap, any two threads in
+different warps are essentially independent, and so $P(S_l|\bar{W}) = P(n)^l$.
+Threads in the same warp will always have the same transform, giving
+$P(S_l|W)=1$. For a warp size $W$, the chance that any thread $t_2$ shares a
+warp with a particular thread $t_1$ is $P(W)=\frac{W-1}{T-1}$, yielding a
+combined probability
+
+\begin{equation}\label{prob-noswap}
+  P(S_l)=\frac{W-1}{T-1}+(1-\frac{W-1}{T-1})\cdot\frac{1}{N^l}
+\end{equation}
+
+The shuffle mechanism modifies $P(W)$, introducing dependencies on vector
+lanes.  Since two threads in the same vector lane can never appear in the same
+warp, they are independent. Vector lanes are shared with
+$P(V)=\frac{T/W-1}{T-1}$; as a result, $P(S_l|V)=P(n)^l$. The probability of
+any $t_2$ being in the same warp as $t_1$ is $P(W)=P(\bar{V})\cdot\frac{1}{V}$.
+Threads sharing a warp will always have the same state at a given sequence
+index, but because threads in other vector lanes may now be swapped, each stage
+is independent. $P(S_1|\bar{V}) = P(W)\cdot 1 + P(\bar{W})\cdot P(n)$, and so
+
+\begin{align}
+  P(S_l) &= P(V)\cdot P(S_l|V) + P(\bar{V})\cdot P(S_l|\bar{V}) \nonumber \\
+  &= \frac{T/W-1}{T-1}\cdot \frac{1}{N^l}
+    + \frac{T-T/W}{T-1}\cdot (\frac{W-1}{T-T/W}\cdot 1
+        + \frac{T-W-W/T+1}{T-T/W}\cdot \frac{1}{N})^l
+    \label{prob-randswap}
+\end{align}
+
+In one sense, this model also extends to the case of fixed modular offsets;
+however, for cases where $W < T/W$ — that is, where the warp size is larger
+than the number of warps per work-unit — each lane equal under the modulus of
+the number of warps will never swap with respect to each other, which violates
+the assumptions of independent events and increases the expected length of
+identical sequences. We solve this, both in theory and in practice, by applying
+a different columnar rotation of each repeated section in the read pattern,
+which respects banking and thus adds little overhead.
+
+For reference, we also find the expected probability of a common sequence for a
+full shuffle, which whe have not implemented on the device. In this case,
+$P(W)=\frac{W-1}{T-1}$, and there are no independent values, so
+
+\begin{equation}\label{prob-allswap}
+  P(S_l) = (\frac{W-1}{T-1}\cdot 1 + (1 - \frac{W-1}{T-1}) \cdot \frac{1}{N})^l
+\end{equation}
+
+To compare the efficacy of each shuffle method to the independent case, we show
+the results of calculating these probabilities for a few configurations and
+lengths in Table \ref{probtable}. Fixed values of $N=8$ and $W=32$ are used.
+
+\begin{table}\label{probtable}
+  \begin{tabular}{ r l r r r r }
+    & & $l=2$ & $l=4$ & $l=8$ & $l=32$ \\
+    \cline{3-6}
+        & Independent (\ref{prob-ind})
+        & $0.0156$ & $2.441\cdot 10^{-4}$ & $5.960\cdot 10^{-8}$
+        & $1.262\cdot 10^{-29}$ \\
+    \\[-4pt]
+    \multicolumn{1}{r|}{}
+        & No shuffle (\ref{prob-noswap})
+        & $0.2314$ & $0.1352$ & $0.1218$ & $0.1216$ \\
+    \multicolumn{1}{r|}{$T=256$}
+        & Ring shuffle (\ref{prob-randswap})
+        & $0.0556$ & $3.145\cdot 10^{-3}$
+        & $1.013\cdot 10^{-5}$ & $1.144\cdot 10^{-20}$ \\
+    \multicolumn{1}{r|}{}
+        & Full shuffle (\ref{prob-allswap})
+        & $0.5353$ & $2.8658\cdot 10^{-3}$
+        & $8.213\cdot 10^{-6}$ & $4.550\cdot 10^{-21}$ \\
+    \\[-4pt]
+    \multicolumn{1}{r|}{}
+        & No shuffle (\ref{prob-noswap})
+        & $0.0753$ & $0.0608$ & $0.0607$ & $0.0607$ \\
+    \multicolumn{1}{r|}{$T=512$}
+        & Ring shuffle (\ref{prob-randswap})
+        & $0.0332$ & $1.1113\cdot 10^{-3}$
+        & $1.261\cdot 10^{-6}$ & $2.748\cdot 10^{-24}$ \\
+    \multicolumn{1}{r|}{}
+        & Full shuffle (\ref{prob-allswap})
+        & $0.0317$ & $1.006\cdot 10^{-3}$
+        & $1.011\cdot 10^{-6}$ & $1.048\cdot 10^{-24}$ \\
+  \end{tabular}
+  \caption{Probability of encountering identical transform sequences of
+    length $l$ with different shuffle types.}
+\end{table}
+
+TODO: center tabular inside table?
+
 
 
 ## Writeback
@@ -221,7 +351,7 @@ instead of global.
 
 [Insert teaser for big new approach]
 
-### Motion blur
+## Motion blur
 
 - Motion blur is used in static flames to give a sense of implied motion.
   Also important for dynamic flames, as few systems can handle H.264
