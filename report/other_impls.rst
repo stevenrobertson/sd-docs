@@ -40,12 +40,12 @@ speeds would therefore be useful to the Electric Sheep project.
 Apophysis
 ---------
 
-This_ aging application allows interactive design of flames, and is one of
-the most popular tools to do so. Apophysis includes its own rendering
-backend, which has proved to be somewhat easier to modify than ``flam3``;
-as a consequence, many variations now included in ``flam3`` started out as
-community experimentation within Apophysis, and more are yet being
-considered.
+Apophysis_ is an aging application for the interactive design of flames,
+and is one of the most popular tools to do so. Apophysis includes its own
+rendering backend, which has proved to be somewhat easier to modify than
+``flam3``; as a consequence, many variations now included in ``flam3``
+started out as community experimentation within Apophysis, and more are yet
+being considered.
 
 The Apophysis renderer lacks some of ``flam3``'s newer
 visual-quality-oriented features, so while it remains a viable choice for
@@ -126,5 +126,6 @@ implementation.
 .. _Apophysis:  http://apophysis.org
 .. _flam4:      http://sourceforge.net/projects/flam4/
 .. _Fractron 9000: http://fractron9000.sourceforge.net
-.. _Chaotica:   http://www.indigorenderer.com/forum/viewtopic.php?f=6&t=10205
+.. _Chaotica: http://www.indigorenderer.com/forum/viewtopic.php?f=6&t=10205
+.. _Indigo Renderer: http://www.indigorenderer.com/
 

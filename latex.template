@@ -17,7 +17,7 @@ $endif$
 
 \usepackage{fontspec,xltxtra,xunicode}
 \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
-\setromanfont [Ligatures={Common},SmallCapsFont={Skolar:+smcp,+c2sc}]{Skolar}
+\setromanfont [Ligatures={Common},BoldFont={Skolar:+smcp,+c2sc}]{Skolar}
 \setsansfont [Ligatures={Common}]{Gill Sans Std}
 
 \usepackage[titles]{tocloft}
@@ -29,7 +29,7 @@ $endif$
 \usepackage[normalem]{ulem}
 \sectionfont{\rmfamily\mdseries\upshape\Large}
 \subsectionfont{\sffamily\bfseries\upshape\normalsize}
-\subsubsectionfont{\rmfamily\mdseries\upshape\normalsize}
+\subsubsectionfont{\sffamily\mdseries\upshape\normalsize}
 \tolerance=500
 
 $if(lhs)$
