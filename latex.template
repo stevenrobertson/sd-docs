@@ -14,11 +14,13 @@ $endif$
 
 \usepackage{amssymb,amsmath}
 \usepackage{wrapfig}
+\usepackage[english]{babel}
 
 \usepackage{fontspec,xltxtra,xunicode}
 \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
 \setromanfont [Ligatures={Common},BoldFont={Skolar:+smcp,+c2sc}]{Skolar}
 \setsansfont [Ligatures={Common}]{Gill Sans Std}
+\raggedright
 
 \usepackage[titles]{tocloft}
 \renewcommand{\cftchapfont}{\sffamily\bfseries\normalsize}
@@ -50,12 +52,6 @@ $if(fancy-enums)$
 }\makeatother
 \usepackage{enumerate}
 $endif$
-$if(tables)$
-\usepackage{array}
-% This is needed because raggedright in table elements redefines \\:
-\newcommand{\PreserveBackslash}[1]{\let\temp=\\#1\let\\=\temp}
-\let\PBS=\PreserveBackslash
-$endif$
 $if(strikeout)$
 \usepackage[normalem]{ulem}
 $endif$
@@ -74,6 +70,12 @@ $if(graphics)$
 \let\Oldincludegraphics\includegraphics
 \renewcommand{\includegraphics}[1]{\Oldincludegraphics[width=\maxwidth]{#1}}
 $endif$
+
+\usepackage{array}
+% This is needed because raggedright in table elements redefines \\:
+\newcommand{\PreserveBackslash}[1]{\let\temp=\\#1\let\\=\temp}
+\let\PBS=\PreserveBackslash
+\usepackage{multirow}
 
 \usepackage{url}
 \usepackage[xetex,breaklinks]{hyperref}

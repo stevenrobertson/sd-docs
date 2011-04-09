@@ -60,8 +60,7 @@ renderPDF tmpdir inpath =
         , inpath ]
 
 -- Fix links in bibliography. Could be better.
-urlize (Str "Available:":Space:Str u:xs) =
-    LineBreak : Link [Str u] ("", u) : urlize xs
+urlize (Str "Available:":Space:Str u:xs) = Link [Str u] ("", u) : urlize xs
 urlize x = x
 
 biblioAtEnd = False
