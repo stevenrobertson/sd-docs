@@ -13,7 +13,7 @@ comsumers to the enterprise.
 
 Don't let the words *general purpose* fool you, however. While the major
 manufacturers have shown interest in this market, it remains at present a
-fraction of the size of these companies' core markets [CITE].   Every
+fraction of the size of these companies' core markets [@Voicu2010]. Every
 transistor spent making GPGPU faster and easier to program may come at the
 expense of doing the same for games, and that market is simply too small to bet
 the farm on at present [CITE?]. This tension between compute and gaming has
@@ -32,7 +32,7 @@ implementations of GPU computing platforms. We start with a summary of the
 OpenCL computing model, which subsets both NVIDIA's and AMD's hardware.
 Then, we consider the implementations of the two manufacturers, covering at
 first common approaches not covered by the OpenCL spec, followed by a deeper
-look at a leading card from each manufacturer.
+look at a leading card from each manufacturer [@Overbeck2009].
 
 ## OpenCL
 
@@ -569,4 +569,12 @@ OpenCL-level code instead of assembly.
     for us.
 
 Note: this section might well be axed.
+
+## Bibliography
+
+In the current mode, bibliographies get tacked on to the end of each chapter
+without a heading so that you don't need to skip around as much while editing
+the document. In the final version, they will be grouped together where-ever we
+want to put them. This section is only here as an example, and will be removed.
+TODO: remove this
 
