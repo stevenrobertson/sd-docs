@@ -1,5 +1,4 @@
 #!/usr/bin/runhaskell -Wall
-
 {-
 This program assembles the Senior Design report.
 
@@ -19,13 +18,18 @@ import System.IO
 
 import Text.Pandoc
 import Text.Pandoc.Shared
+import Text.Pandoc.Biblio
+import Text.CSL
 
-parseFile fn = readFunc startState . filter (/= '\r') <$> readFile fn
+parseFile refs fn = readFunc startState . filter (/= '\r') <$> readFile fn
   where
     readFunc = case takeExtension fn of
                     ".rst"  -> readRST
                     _       -> readMarkdown
-    startState = defaultParserState { stateSmart = True }
+    startState = defaultParserState
+        { stateSmart = True
+        , stateCitations = map refId refs
+        }
 
 renderLaTeX :: FilePath -> [(String, String)] -> Pandoc -> String
 renderLaTeX tmpl vars = writeLaTeX writeOpts
@@ -39,7 +43,7 @@ renderLaTeX tmpl vars = writeLaTeX writeOpts
         , writerXeTeX = True
         , writerNumberSections = True
         , writerSourceDirectory = "."
-        -- todo: writerBiblioFiles, writerCiteMethod
+        , writerCiteMethod = Citeproc
         , writerChapters = True
         }
 
@@ -55,15 +59,29 @@ renderPDF tmpdir inpath =
         , "-interaction", "nonstopmode"
         , inpath ]
 
+-- Fix links in bibliography. Could be better.
+urlize (Str "Available:":Space:Str u:xs) = Link [Str u] ("", u) : urlize xs
+urlize (Str "DOI:":Space:Str u:xs) =
+    Link [Str $ "doi:" ++ u] ("", "http://dx.doi.org/" ++ u) : urlize xs
+urlize x = x
+
+biblioAtEnd = False
+
 main = do
+    refs <- readBiblioFile "mendeley.bib"
     sourcePaths <- lines <$> readFile "order.txt"
-    sources <- mapM parseFile sourcePaths
+    sources <- mapM (parseFile refs) sourcePaths
 
     topmatter <- readFile "topmatter.tex"
     template <- readFile "../latex.template"
 
+    let doBib = processBiblio "../ieee.csl" refs
+    joined <- if biblioAtEnd
+                 then doBib $ joinDocs sources
+                 else joinDocs <$> mapM doBib sources
+
     let vars = [("report", "1"), ("include-before", topmatter)]
-        latex = renderLaTeX template vars $ joinDocs sources
+        latex = renderLaTeX template vars $ bottomUp urlize joined
 
     tmpdir <- fmap (</> "pandoc_report") getTemporaryDirectory
     createDirectoryIfMissing False tmpdir

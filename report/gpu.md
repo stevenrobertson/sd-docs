@@ -1,5 +1,4 @@
-A brief tour of GPU computing
-=============================
+# A brief tour of GPU computing
 
 Graphics processing units began as simple, fixed-function add-in cards, but
 they didn't stay there. Over many generations, demand for increasingly
@@ -13,14 +12,14 @@ nascent, market, with practical applications spanning the range from
 comsumers to the enterprise.
 
 Don't let the words *general purpose* fool you, however. While the major
-manufacturers have shown interest in this market [CITE], it remains at
-present a fraction of the size of these companies' core markets [CITE].
-Every transistor spent making GPGPU faster and easier to program may come
-at the expense of doing the same for games, and that market is simply too
-small to bet the farm on at present [CITE?]. This tension between compute
-and gaming has real implications in the design of current hardware, as
-we'll see in this chapter, and will be considered in depth when describing
-hardware decisions in the next chapter.
+manufacturers have shown interest in this market, it remains at present a
+fraction of the size of these companies' core markets [@Voicu2010]. Every
+transistor spent making GPGPU faster and easier to program may come at the
+expense of doing the same for games, and that market is simply too small to bet
+the farm on at present [CITE?]. This tension between compute and gaming has
+real implications in the design of current hardware, as we'll see in this
+chapter, and will be considered in depth when describing hardware decisions in
+the next chapter.
 
 Despite being "games first", GPUs still provide the highest performance per
 dollar for most math-intensive applications. In general, porting algorithms
@@ -32,11 +31,10 @@ This section is intended to give a grounding in the concepts and
 implementations of GPU computing platforms. We start with a summary of the
 OpenCL computing model, which subsets both NVIDIA's and AMD's hardware.
 Then, we consider the implementations of the two manufacturers, covering at
-first common approaches not covered by the OpenCL spec, followed by a
-deeper look at a leading card from each manufacturer.
+first common approaches not covered by the OpenCL spec, followed by a deeper
+look at a leading card from each manufacturer [@Overbeck2009].
 
-OpenCL
-------
+## OpenCL
 
 The OpenCL standard for heterogeneous computing is managed by the Khronos
 Group, an industry consortium of media companies that also produces the
@@ -52,8 +50,7 @@ starting place for our discussion. As much as we might like to rely on an
 open standard alone to inform our algorithm design, however, the
 specification doesn't tell the whole story.
 
-An editorialized history of OpenCL
-``````````````````````````````````
+### An editorialized history of the standard
 
 TODO: citations all through here
 
@@ -96,12 +93,11 @@ compute features over OpenCL, and those features are again exposed through
 CUDA. We'll take a look at this situation a bit later; for now, let's turn
 to the OpenCL model for computation.
 
-.. note: This section feels a little... off. When I sat down to write it,
-    it seemed necessary; now I'm not so sure, especially after putting the
-    Fermi+Larrabee discussion off for a later chapter.
+TODO: This section feels a little... off. When I sat down to write it, it
+seemed necessary; now I'm not so sure, especially after putting the
+Fermi+Larrabee discussion off for a later chapter.
 
-How to do math in OpenCL
-````````````````````````
+### How to do math in OpenCL
 
 OpenCL has something of a client/server model: a program running on an
 OpenCL *host* communicates with one or more *devices* through the OpenCL
@@ -114,13 +110,13 @@ the task's completion.
 By default, commands begin executing on the device as soon as the
 appropriate execution resources are available. Stricter ordering is
 possible; a *command-queue barrier* will stall until all previous commands
-in the queue are complete. A *stream*\ [#]_ provides a strict ordering for
-every task it contains, but multiple streams can execute concurrently.
+in the queue are complete. A *stream*[^stream] provides a strict ordering
+for every task it contains, but multiple streams can execute concurrently.
 
-.. [#]  We borrow the CUDA notation here. OpenCL allows any command to wait
-        on any other explicitly using *events*, which can be used to
-        implement a stream, but has no term (or API call) for the ordered
-        tasks as a group. It becomes a pain to talk about without a name.
+[^stream]: We borrow the CUDA notation here. OpenCL allows any command to
+wait on any other explicitly using *events*, which can be used to implement
+a stream, but has no term (or API call) for the ordered tasks as a group.
+It becomes a pain to talk about without a name.
 
 There is no hardware mechanism for a strict interleaved ordering of both
 host and device code. The OpenCL API exposes apparently-synchronous
@@ -145,10 +141,10 @@ metadata, including at least one entry point for program execution.  From
 the OpenCL API, the kernel's data is opaque on both host and device, so
 device-side run-time code modification is prohibited. After uploading a
 kernel, the host issues a command which sets up arguments for an entry
-point and begins executing it in one or more *device threads*\ [#]_.
+point and begins executing it in one or more *device threads*[^threads].
 
-.. [#]  We revert again to CUDA's terminology; this time, though, merely
-        because "work-unit" is just a clumsy, unnecessary neologism.
+[^threads]: We revert again to CUDA's terminology; this time, though, merely
+because "work-unit" is just a clumsy, unnecessary neologism.
 
 As in a typical OS, a device thread is a set of data and state registers,
 including a program counter indicating the thread's position within the
@@ -169,14 +165,14 @@ location [CITE myself].
 To facilitate inter-thread cooperation without mandating
 globally-consistent local caches, threads are collected into *work-groups*.
 A work-group is a 1-, 2-, or 3-dimensional grid of threads that share two
-important consistency features: a fast, small chunk of *shared memory*\
-[#]_ accessible only to threads within that work-group, and *barrier
-instructions*, which stall execution of any thread that executes the
-instruction until every thread in the work-group has done so.
+important consistency features: a fast, small chunk of *shared
+memory*[^shared] accessible only to threads within that work-group, and
+*barrier instructions*, which stall execution of any thread that executes
+the instruction until every thread in the work-group has done so.
 
-.. [#]  Another CUDA term. OpenCL calls this "local memory". Problem is,
-        CUDA uses the term "local memory" to refer to what OpenCL calls
-        "private memory". We choose the unambiguous name in both cases.
+[^shared]: Another CUDA term. OpenCL calls this "local memory". Problem is,
+CUDA uses the term "local memory" to refer to what OpenCL calls "private
+memory". We choose the unambiguous name in both cases.
 
 Work-groups themselves are arranged in a uniform grid of dimensionality ≤3.
 Every thread in a grid must execute the same kernel entry point with the
@@ -198,8 +194,7 @@ but high-latency method of accessing memory which can only perform lookups
 of 4-vectors but offers a read-only cache and essentially free address
 generation and linear interpolation.
 
-Common implementation strategies
---------------------------------
+## Common implementation strategies
 
 The OpenCL standard was constructed to subset GPU behavior at the time of
 its ratification, but for portability reasons it omits implementation
@@ -207,8 +202,7 @@ details even when techniques were used in both NVIDIA and AMD GPUs. While
 such details do not necessarily impact code correctness, they can have a
 considerable impact on the ultimate performance of an application.
 
-Dropping the front-end
-``````````````````````
+### Dropping the front-end
 
 In modern x86 processors, only a small portion of the chip is used to
 perform an operation; more die space and power is spent predicting,
@@ -260,7 +254,7 @@ The final technique used to save resources on the front-ends is simply to
 share them. A single GPU front-end will dispatch the same instruction to
 many ALUs and register files simultaneously, effectively vectorizing
 individual threads into an unit between a thread and a work-group. NVIDIA
-calls these units *warps*\ [#]_, with a vectorization width of 32 threads;
+calls these units *warps*[^warp], with a vectorization width of 32 threads;
 AMD uses *wave-fronts* of 64 threads. Because each thread retains its own
 register file, this kind of vectorization is not affected by serial
 dependencies in a single thread. In fact, the only condition in which it is
@@ -269,8 +263,8 @@ threads in the same warp branch to different targets, whereupon they are
 said to be *divergent*. Not coincidentally, the same approaches used to
 avoid branches in general also help to avoid thread divergence.
 
-.. [#]  We follow what is now a tradition and adopt NVIDIA's term, though
-        it does display a bit of whimsy on the part of Big Green.
+[^warp]: We follow what is now a tradition and adopt NVIDIA's term, though
+it does display a bit of whimsy on the part of Big Green.
 
 While these techniques seem of only passing interest, the peculiarities of
 the fractal flame algorithm are such that a naïve implementation which did
@@ -278,8 +272,7 @@ not heed these design parameters would suffer more than might be expected.
 We will need to make careful use of runtime compilation, predicated
 execution, and warp vectorization to write an efficient implementation.
 
-Memory coalescing
-`````````````````
+### Memory coalescing
 
 The execution units aren't the only part of a GPU trading granularity for
 performance; memory accesses are also subject to a different kind of
@@ -288,17 +281,18 @@ for certain classes of tasks.
 
 High-performance GPUs contain several front-ends. Because global memory is
 accessible from all front-ends, there is effectively a single, shared
-global memory controller which handles all global memory transactions\
-[#]_. Since each memory transaction must interact with this memory
-controller, and multiple front-ends can issue transactions simultaneously,
-this controller includes a transaction queue and arbitration facilities, as
-well as simplified ALUs for performing atomic operations.
+global memory controller which handles all global memory
+transactions[^controllers].  Since each memory transaction must interact
+with this memory controller, and multiple front-ends can issue transactions
+simultaneously, this controller includes a transaction queue and
+arbitration facilities, as well as simplified ALUs for performing atomic
+operations.
 
-.. [#]  Actually, there are typically several memory controllers connected
-        by a crossbar switch, ring bus, or even internal packet bus, with
-        address interleaving on the lower bits and any cache distributed
-        per-core. But since each address block maps uniquely to one core,
-        and typical access patterns hit all cores evenly, we ignore this.
+[^controllers]: Actually, there are typically several memory controllers
+connected by a crossbar switch, ring bus, or even internal packet bus, with
+address interleaving on the lower bits and any cache distributed per-core.
+But since each address block maps uniquely to one core, and typical access
+patterns hit all cores evenly, we ignore this.
 
 To simplify and accelerate the memory controller, memory transactions must
 be aligned to certain bounds, and may only be 32, 64, 128, or 256 bytes
@@ -347,8 +341,7 @@ will be an important focus of our design efforts.
 
 TODO: citations of course, and also a more ominous ending?
 
-Latency masking
-```````````````
+### Latency masking
 
 Memory transactions, even when coalesced, can take hundreds of cycles to
 complete. Branching without prediction requires a full pipeline flush, as
@@ -371,8 +364,7 @@ rest of the chapter.
 
 TODO: need to expand this section?
 
-Closer look: NVIDIA Fermi
--------------------------
+## Closer look: NVIDIA Fermi
 
 Fermi is NVIDIA's latest architecture, as implemented in the GeForce 400
 and 500 series GPUs. The architecture represents a considerable retooling
@@ -419,8 +411,7 @@ their GF1x0 counterparts. We discuss the conceptually simpler GF110 here,
 and cover the superscalar GF114 [TODO: in a sidebar?] after introducing the
 Cayman architecture.
 
-Shader multiprocessors
-``````````````````````
+### Shader multiprocessors
 
 NVIDIA refers to the smallest unit of independent execution as a *shader
 multiprocessor*, or SM. This is absolute marketing bollocks. We call it a
@@ -452,7 +443,7 @@ resident on the core and executing one instruction from each before
 returning them to the queue. This is done independently for each warp
 scheduler.
 
-The SFUs, which handle transcendental functions (``sin``, ``sqrt``) and
+The SFUs, which handle transcendental functions (`sin`, `sqrt`) and
 possibly interpolation, are limited in number. When dispatching an
 instruction to that unit, it takes 8 hot clocks to cycle through all 32
 threads of a warp. This stalls one warp scheduler for that duration, but
@@ -479,8 +470,7 @@ bandwidth. Finding the right configuration to maximize occupancy without
 losing performance from offloading registers to private memory will be a
 theoretical and experimental challenge while developing our approach.
 
-Memory architecture
-```````````````````
+### Memory architecture
 
 The GF110 has a flexible memory model. Its most distinguishing feature
 among other GPUs is the large, globally-consistent L2D cache; at 128KB per
@@ -517,20 +507,17 @@ broader set is available
 
 TODO: finish
 
-Instruction set
-```````````````
+### Instruction set
 
 Brief description of how RISC-like PTX is very relevant? Or push this until
 later?
 
-AMD Cayman
-----------
+## Closer look: AMD Cayman
 
 General info.
 
 
-Cayman cores
-````````````
+### Cayman cores
 
 Divided into cores, with 16 lanes of VLIW4 execution units. 64-wide
 effective split. Each lane executes the same operation over 4 cycles;
@@ -542,20 +529,17 @@ used, which always execute to completion on a given unit. Considerably
 simpler design allows higher peak theoretical performance but requires a
 much smarter compiler. Combination of explicit and external predication.
 
-Memory architecture
-```````````````````
+### Memory architecture
 
 Incoherent global read and write caches, separate texture caches. Slow
 atomics.
 
-Instruction set
-```````````````
+### Instruction set
 
 Because of VLIW, and frequent architecture changes, should definitely use
 OpenCL-level code instead of assembly.
 
-Sidebar: vectorization and theoretical performance
---------------------------------------------------
+## Vectorization and theoretical performance
 
   - GF100/GF110 dispatch has two single-issue schedulers for two ALUs, one
     transcendental, one LD/ST, and one interp. In pure-FMA code, such a
@@ -585,3 +569,12 @@ Sidebar: vectorization and theoretical performance
     for us.
 
 Note: this section might well be axed.
+
+## Bibliography
+
+In the current mode, bibliographies get tacked on to the end of each chapter
+without a heading so that you don't need to skip around as much while editing
+the document. In the final version, they will be grouped together where-ever we
+want to put them. This section is only here as an example, and will be removed.
+TODO: remove this
+
