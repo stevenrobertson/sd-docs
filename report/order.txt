@@ -9,3 +9,4 @@ filtering.md
 filtering_alt.md
 misc.md
 new_approach.rst
+glossary.md
