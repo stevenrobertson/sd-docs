@@ -179,7 +179,13 @@ the fully supersampled components.
 
 ## Denoising
 
-TO-DO: ADD OWN MATERIAL
+Image denoising algorithms is one of the most common and studied problems
+in image processing.  Noise occurs as seemingly random, unwanted pixel 
+inaccuracies as collected by the image source (commonly a camera, in our case,
+approximating objects via random sampling).  Most image denoising algorithms
+deal with this problem by treating noise the same as small details and then by
+removing all the small details with some form of blurring.
+
 Antialiasing deals with the problems caused by approximating objects via
 sampling along a regular 2D grid. Denoising, by contrast, deals with the
 problems caused by approximating objects via random sampling.
@@ -192,7 +198,6 @@ strategies to deal with it.
 
 ### The origins of noise
 
-TO-DO: ADD OWN MATERIAL
 Sampling noise from Monte Carlo IFS estimation arises from two main sources:
 coverage limitations and accuracy errors.
 
@@ -213,9 +218,27 @@ coverage limitations and accuracy errors.
 
 ### Visibility
 
-TO-DO: ADD OWN MATERIAL
+Both of these sources of error have something in common, though: they show
+up a lot more in darker image regions. The image is log-filtered, meaning
+the brightest image regions are covered by hundreds or even thousands of
+times more samples than the darkest. In many images,
+contrast-brightness-gamma settings cause extreme sensitivity in dark
+regions, so that a single sample in the middle of an otherwise-black image
+region causes a jump of, say, 5% of the total luminance scale of the final
+image. This is noticeable.
+
+When we say "dark", we mean pre-log-filtering. Since FLAM3 does color
+clamping, it's not uncommon to produce images where most of the energy lies
+outside of the final representable intensity scale. In those images, even
+mid-level tones have relatively few samples, and have visible point noise.
 
 ### Denoising a flame
+
+To combat this, FLAM3 does density estimation filtering. Within dark regions
+of the image, it applies a wider kernel, or a smaller blur. ...
+
+Problems: difficult to accelerate on GPU; usually requires hand tuning; it's
+"just another blur" which can reduce image details and textures. 
 
 - Kernel Estimator
   Besides for the histogram, the kernel estimator is probably the most commonly 
@@ -224,10 +247,32 @@ TO-DO: ADD OWN MATERIAL
   density estimation is a fundamental data smoothing problem where inferences 
   about the population are made, based on a finite data sample [5].
 
+- Adaptive Density Estimation Filter
+  The adaptive density estimation filter used by FLAM3 is a simplified algorithm
+  of the methods presented in Adaptive Filtering for Progressive Monte Carlo 
+  Image Rendering [CITE].  The algorithm creates a 2 dimensional histogram with 
+  each pixel representing a bin.  For each sample located in the spatial area 
+  of a pixel, the value for that bin is incremented.  Kernel estimation is then 
+  used to blur the image, with the size of the kernel being related to the 
+  number of iterations in a bin.  Lower number of iterations in a bin (low 
+  sample density areas) lead to larger kernel sizes and increased blurring.  
+  Higher number of interations in a bin (high sample density areas) lead to 
+  smaller kernel sizes and decreased blurring.  Specifically, the kernel width 
+  can be determined by the following relationship:
+  
+    KernelWidth = MaxKernelRadius / (Density^Alpha) [CITE]
+    
+  The MaxKernelRadius and Alpha values are determined by the user as they are 
+  properties of the flame.  MaxKernelRadius tells the algorithm the maximum 
+  width that the kernel can be and the Alpha value determines the estimator 
+  curve to use.  The ability to adjust the width of the kernel according to 
+  how many samples there are spatially increases the quality of the image by 
+  limiting the blur in the more accurate areas with higher sample density.
+
 - Gaussian Convolution
   Gaussian convolution filtering is a weighted average of the intensity of the 
   adjacent positions with a weight decreasing with the spatial distance to the 
-  center position   p.  The strength of the influence depends on the spatial 
+  center position p.  The strength of the influence depends on the spatial 
   distance between the pixels and not their values.  For instance, a bright 
   pixel has a strong influence over an adjacent dark pixel although these two 
   pixel values are quite different.  As a result, image edges are blurred 
