@@ -58,6 +58,28 @@ domain must be sampled along the 2D grid of pixels used in raster graphics.
 
 ### Spatial aliasing
 
+In the flame algorithm, as described, each generated (x, y) point is rounded
+to the nearest pixel, and then the color value is added to that pixel's
+accumulator. Effectively, each pixel represents the average value of the
+color function of the attractor across the area of that pixel. In other
+words, we sample the color values of the flame once per pixel.
+
+In 2D image space, this means any function with a higher spatial frequency
+than a single pixel will be aliased by the sampling process. Image
+discontinuities, such as object edges, are instantaneous, and therefore have
+an infinite frequency response (though with finite total energy). As a
+result, object edges are aliased in the spatial domain.
+
+The result is stair-step jaggies in images (demo). Since our brain depends
+so heavily on detecting object discontinuities for object recognition, these
+artifacts are extremely noticeable, especially in motion.
+
+The solution is to downfilter the highest spatial frequency components below
+the sampling threshold. Unfortunately, downfiltering any image component,
+especially surface textures, results in a reduction of detail across the
+image. Our brains notice artifacts from aliasing at object borders, but also
+notice reduced detail apart from those regions.
+
 ### Approaches to antialiasing
 
 - Supersample antialiasing is the most trivial method to solving the aliasing 
@@ -157,9 +179,41 @@ the fully supersampled components.
 
 ## Denoising
 
+TO-DO: ADD OWN MATERIAL
+Antialiasing deals with the problems caused by approximating objects via
+sampling along a regular 2D grid. Denoising, by contrast, deals with the
+problems caused by approximating objects via random sampling.
+
+A "regular random grid"? Isn't that an oxymoron? No, they're really two
+separate things: first, we use random sampling to approximate the IFS with
+Monte Carlo methods, then we use grid sampling to approximate the histogram
+of those samples' positions.  Two separate sources of error, two separate
+strategies to deal with it.
+
 ### The origins of noise
 
+TO-DO: ADD OWN MATERIAL
+Sampling noise from Monte Carlo IFS estimation arises from two main sources:
+coverage limitations and accuracy errors.
+
+- Because we don't know the shape of the attractor analytically, we can't
+  sample it directly; we must follow it along the IFS. This means that the
+  IFS will jump around from location to location within the image in a
+  generally unpredictable pattern. Because of this jumping, any errors in
+  the image show up as point noise, rather than along contours as with
+  aliasing.
+
+- Again, since we don't know the shape of the attractor, we choose random
+  points to start with. After picking a new random point, a thread runs a
+  few iterations without recording any data so that the point can join the
+  main body of the attractor. However, this number may sometimes be
+  insufficient, leading to random points placed "outside" the attractor.
+  Floating-point precision errors can similarly reduce the accuracy of
+  generated points.
+
 ### Visibility
+
+TO-DO: ADD OWN MATERIAL
 
 ### Denoising a flame
 
