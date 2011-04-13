@@ -201,15 +201,38 @@ Please refer to Chapter **X** for more detailed explaination covering the follow
 -	Color Correction Features
 -	Improved Implementation Details
 
-####Symmetry - Under Construction
-Under Construction
+####Symmetry
+The fractal flame algorithm inherently supports the concept of self-similarity but also supports the concept of *symmetry* of two kinds:
+
+-	Rotational
+-	Dihedral
+
+*TODO* This allow the algorithm to produce symmetrical images which are inherently attractive to the eye. 
+
+**Rotational Symmetry** is introduced by adding extra rotational transformations. To produce n-way symmetry you are implying that you wish to have {360/n} degrees symmetry. The set of transformations transformations necessary to add {360/n}
+
+*TODO* Fix set builder notation syntax
+$Transforms_Rotation = {  (360/n)*i | i = 1, 2, ... , n } where n = # of way symmetry
+
+For example, To produce six-way symmetry the following *5* transformations would be needed:
+
+-	$Transform_1 = Rotate by 60 degrees
+-	$Transform_2 = Rotate by 120 degrees
+-	$Transform_3 = Rotate by 180 degrees
+-	$Transform_4 = Rotate by 240 degrees
+-	$Transform_5 = Rotate by 300 degrees
+
+Each transformation is given an equal weighting, allowing the chaos game to realize the n-way symmetry the more it stochastically samples.
+
+**Dihedral Symmetry** is introduced by adding a function that inverts the x-coordinate. This is a reflection of the axis. An equal weighting is given to this reflection function which allows the chaos game to realize the dihedral symmetry.
   
 ============
 
-**TODO: Write section**
+*TODO:* Provide picture of both
 
 ============
 
+*TODO:* These are performed where?
 
 ####Filtering 
 Under Construction
