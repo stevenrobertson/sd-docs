@@ -11,7 +11,7 @@ module Main where
 import Control.Applicative
 import Control.Arrow
 import Control.Monad
-import Data.Char (toUpper)
+import Data.Char (toUpper, isSpace)
 import Data.Either
 import System.FilePath
 import System.Directory
@@ -38,7 +38,7 @@ data Annotation = Annotation
 -- return a copy of the input source stripped of annotations and a list of
 -- those annotations.
 parseAnno :: FilePath -> String -> (String, [Annotation])
-parseAnno fn s = either (error . show) ((concat . rights) &&& lefts)
+parseAnno fn s = either (error . show) (((concat . rights) &&& lefts) . finish)
                $ parse parser fn s
   where
     parser :: Parsec String () [Either Annotation String]
@@ -48,6 +48,10 @@ parseAnno fn s = either (error . show) ((concat . rights) &&& lefts)
     atype = choice [x <$ string (show x) | x <- [TODO ..]]
     amesg = unwords . words <$> (skipMany (char ':') *> many (noneOf "]"))
     content = Right <$> ((:) <$> anyChar <*> many (noneOf "["))
+    finish (Right s : Left anno : xs) | isSpace (last s) =
+        Right (init s) : Left anno : finish xs
+    finish (x:xs) = x : finish xs
+    finish [] = []
 
 parseFile :: [Reference] -> FilePath -> IO (Pandoc, [Annotation])
 parseFile refs fn =
