@@ -12,9 +12,9 @@ original.
 
 When rendering flames, there are two kinds of artifacts that need to be
 minimized in order to create more visually attactive flames: aliasing and noise.
-While these two problems and their solutions are related, we will need to
-approach them with different techniques.  We will address both of these problems
-and their solutions in more detail in the following sections.
+While these two problems and their solutions are related, they will need to
+be approached with different techniques.  The problems and their solutions are 
+discussed in more detail below.
 
 ## Aliasing
 
@@ -179,22 +179,16 @@ the fully supersampled components.
 
 ## Denoising
 
-Image denoising algorithms is one of the most common and studied problems
-in image processing.  Noise occurs as seemingly random, unwanted pixel 
-inaccuracies as collected by the image source (commonly a camera, in our case,
-approximating objects via random sampling).  Most image denoising algorithms
-deal with this problem by treating noise the same as small details and then by
-removing all the small details with some form of blurring.
-
 Antialiasing deals with the problems caused by approximating objects via
 sampling along a regular 2D grid. Denoising, by contrast, deals with the
-problems caused by approximating objects via random sampling.
-
-A "regular random grid"? Isn't that an oxymoron? No, they're really two
-separate things: first, we use random sampling to approximate the IFS with
-Monte Carlo methods, then we use grid sampling to approximate the histogram
-of those samples' positions.  Two separate sources of error, two separate
-strategies to deal with it.
+problems caused by approximating objects via random sampling. Image noise is one 
+of the most common and studied problems in image processing.  Noise occurs as 
+seemingly random, unwanted pixel inaccuracies as collected by an image source 
+(commonly a camera, in our case, approximating objects via random sampling).  
+Most image denoising algorithms deal with this problem by treating noise the 
+same as small details and then by removing all the small details with some form 
+of blurring.  This is done by replacing a pixel with a weighted average of all
+the nearby pixels.
 
 ### The origins of noise
 
@@ -202,7 +196,8 @@ Sampling noise from Monte Carlo IFS estimation arises from two main sources:
 coverage limitations and accuracy errors.
 
 - Because we don't know the shape of the attractor analytically, we can't
-  sample it directly; we must follow it along the IFS. This means that the
+  sample it directly; we must follow it along the IFS. We use random sampling to 
+  approximate the IFS with Monte Carlo methods.  This means that the
   IFS will jump around from location to location within the image in a
   generally unpredictable pattern. Because of this jumping, any errors in
   the image show up as point noise, rather than along contours as with
@@ -300,6 +295,15 @@ Problems: difficult to accelerate on GPU; usually requires hand tuning; it's
   Computational photography techniques tend to use a single iteration to be 
   closer to the original image content [7].
 
+- Nonlocal Means
+  The nonlocal means (NL-Means) algorithm is a relatively new solution to the
+  image noise problem.  Unlike most other algorithms that assume spatial
+  regularity, the nonlocal means filter looks for and exploits spatial geometric
+  patterns.  It will only use pixels that match the geometic correlation in the
+  local area causing irregular image noise to be canceled out.  This means a
+  more accurate color selection for the pixel in question.
+
 - KD-Trees
 
 - Permutohedral Lattice
+  
