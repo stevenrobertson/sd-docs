@@ -514,8 +514,23 @@ later?
 
 ## Closer look: AMD Cayman
 
-General info.
+Cayman is the latest GPU microarchitecture as implemented in the ATI
+Radeon 69xx graphics cards.  It is the most significant change in AMD's
+GPU architecture since the RV770 architecture.  The most notable change
+being the move from a 5-wide VLIW (Very Large Instruction Width) to a
+4-wide symmetric VLIW.  AMD has stayed focused on graphics performance 
+as opposed to general purpose computing but the Cayman architecture does
+make a modest step forward for AMD in the realm of GPGPU computing and 
+presents a few evolutionary, not revolutionary, improvements for both 
+general purpose computing and gaming.  
 
+The compute capabilities of Cayman GPU's can be accessed by one of two
+industry standard API's, OpenCL and Direct Compute.  While both of
+these API's have been embraced by all CPU and GPU vendors, they are
+both relatively young and do not offer the same features and performance
+that Nvidia's proprietary CUDA does.  However, support for these other
+two standards are increasing rapidly and are they are  posed to dethrown 
+CUDA as the API of choice for general purpose computing.
 
 ### Cayman cores
 

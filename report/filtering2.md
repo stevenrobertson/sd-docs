@@ -276,7 +276,7 @@ Problems: difficult to accelerate on GPU; usually requires hand tuning; it's
 - Bilateral filter
   The bilateral filter is also defined as a weighted average of nearby pixels, 
   in a manner very similar to the Gaussian convolution filter described above.  
-  The difference i s that the bilateral filter takes into account the difference
+  The difference is that the bilateral filter takes into account the difference
   in value with the neighbors to preserve edges while smoothing.  The key idea 
   of the bilateral filter is that for a pixel to influence another pixel, it 
   should not only occupy a nearby location but also have a similar value.
@@ -303,7 +303,8 @@ Problems: difficult to accelerate on GPU; usually requires hand tuning; it's
   local area causing irregular image noise to be canceled out.  This means a
   more accurate color selection for the pixel in question.
 
-- KD-Trees
+- Gaussian KD-Trees
+  A kd-tree is a binary tree data structure used to store a finite number of points from a k-dimensional space [Moore, 1991].  Each leaf stores one point and each inner node represents a d-dimensional rectangular cell [Adams et al].  The inner node stores the dimension n_d in which it cuts, value n_cut on the dimension to cut along, the bounds of the dimension n_min and n_max, and pointers to its children n_left and n_right [Adams et al].  For this implementation of the kd-tree, n_min and n_max have been added in addition to the standard data structure.  
 
 - Permutohedral Lattice
   
