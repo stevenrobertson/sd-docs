@@ -304,7 +304,59 @@ Problems: difficult to accelerate on GPU; usually requires hand tuning; it's
   more accurate color selection for the pixel in question.
 
 - Gaussian KD-Trees
-  A kd-tree is a binary tree data structure used to store a finite number of points from a k-dimensional space [Moore, 1991].  Each leaf stores one point and each inner node represents a d-dimensional rectangular cell [Adams et al].  The inner node stores the dimension n_d in which it cuts, value n_cut on the dimension to cut along, the bounds of the dimension n_min and n_max, and pointers to its children n_left and n_right [Adams et al].  For this implementation of the kd-tree, n_min and n_max have been added in addition to the standard data structure.  
+  The Gaussian filter, bilateral filter, and nonlocal means filters are 
+  non-linear filters whose performance can be accelerated by the use of Gaussian 
+  kd-trees.  All of these filters can be expressed by values with positions.  
+  The Gaussian filter can be described as a pixel color being the value with 
+  coordinate position (x,y).  The bilater filter can be describved as a pixel 
+  color with coordinate position (x,y,r,g,b).  The nonlocal means filter can be 
+  described as a pixel color with position relative to a patch color around the 
+  pixel.  The Gaussian kd-tree algorithm treats these structures similarly in 
+  that it assigns all the values in an image to some position in vector space 
+  and then replaces each of the values with a weighted linear combination of 
+  values with respect to distance.  By representing these images by a kd-tree 
+  data structure, the space and time complexity can be decreased significantly.  
+  These algorithms typically have a complexy of O(d^n) or O(n^2) whereas the 
+  kd-tree algorithm will have a space complexity of O(dn) and a time complexity 
+  of O(dn log n) [Adams et al].
+  
+  A kd-tree is a binary tree data structure used to store a finite number of 
+  points from a k-dimensional space [Moore, 1991].  Each leaf stores one point 
+  and each inner node represents a d-dimensional rectangular cell [Adams et al].  
+  The inner node stores the dimension n_d in which it cuts, value n_cut on the 
+  dimension to cut along, the bounds of the dimension n_min and n_max, and 
+  pointers to its children n_left and n_right [Adams et al].  For this 
+  implementation of the kd-tree, n_min and n_max have been added in addition to 
+  the standard data structure. 
+  
+  There are two main steps associated with these accelerated Gaussian kd-tree 
+  algorithms.  First, the tree must be built.  Generally, the tree should be 
+  built with the goal of minimizing query time.  In each leaf node is as likely 
+  to be accessed as any other leaf node, the kd-tree should ideally be balanced.  
+  Building a balanced tree can be accomplished by finding the bounding box of 
+  all the points being looked at, finding the diagonal length of the box, and if 
+  that length is less than the standard deviation, a leaf node is created and a 
+  point is set for the center of the bounding box.  If the length is not less 
+  than the standard deviation, split the box in the middle along the longest 
+  dimension and continue recursively.  The building of a tree is expected to 
+  have a time complexity of O(nd log m) with m being the number of leaf nodes.  
+  The second step in the algorithm is querying the tree.  Queries are used to 
+  find all the values and their weights given a position.  To be specific, a 
+  query should take in the pixel location, a standard deviation distance, and 
+  the maximum number of samples that should be returned.  The query will then 
+  find and return all the values and weights of pixels around that pixel, up to 
+  the standard deviation and maximum number of samples.  The complexity of 
+  performing queries is expected to be O(dn log n) [Adams et al].
+  
+  What's great about using Gaussian kd-trees to improve these algorithms is that 
+  not only is it faster serially but can have portions of it parallelized over a 
+  GPU.  The tree building portion of the algorithm relies on recursion which is 
+  not ideal for GPU's because of having no stack space (it can be converted to 
+  an interative algorithm but that will not give us any more performance).  But, 
+  the querying portion of the algorithm (where most of the computation time 
+  comes from) which searches through the binary tree is highly parallelizable. 
 
 - Permutohedral Lattice
+  The permutohedral lattice is a data structured designed to improve the performance of high-dimensional Gaussian filtering.  It is a projection of the scaled grid (d+1)Z^(d+1) along the vector 1-> = [1,...,1] onto the hyperplane H_d:x->.1-> = 0 and is spanned by the projection of the standard basis for (d+1)Z(d+1) onto H_d [Adams et al, 2010].  [TODO: Show permutohedral lattice matrix].  Each of the columns of B_d are basis vectors whose coordinates sum to zero and have a consistent remainder modulo d+1 and is how points on the lattice are determined (the lattice point coordinates have a sum of zero and remainder modulo d+1).  Lattice points with a remainder of k can be described as a "remainder-k" point.  The algorithm works by placing pixel values in a high-dimensional space, performing the blur in that space, then sampling the values at their original locations.  These three steps are often referred to as splatting, blurring, and splicing, respectively.
   
+  Using a permutohedral lattice for n values in d dimensions results in a space complexity in the order of O(dn) and a time complexity of O(d^2 n).  According to Adams et al, 2010, algorithms based on using the permutohedral lattice are fast enough to do bilateral filtering in real time.  
