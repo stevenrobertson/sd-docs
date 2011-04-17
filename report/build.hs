@@ -27,7 +27,7 @@ import qualified Text.PrettyPrint as P
 import Text.PrettyPrint (Doc, ($$), (<>), nest, vcat, fsep, text, int, colon)
 import Text.CSL
 
-data AnnoType = TODO | CITE deriving (Eq, Ord, Enum, Show)
+data AnnoType = TODO | CITE | CHECK | REF deriving (Eq, Ord, Enum, Show)
 data Annotation = Annotation
     { anType    :: AnnoType
     , anPos     :: SourcePos
@@ -45,7 +45,7 @@ parseAnno fn s = either (error . show) (((concat . rights) &&& lefts) . finish)
     parser = (:) <$> (anno <|> content) <*> (([] <$ eof) <|> parser)
     anno = try $ between (char '[') (char ']')
                $ Left <$> (Annotation <$> atype <*> getPosition <*> amesg)
-    atype = choice [x <$ string (show x) | x <- [TODO ..]]
+    atype = choice [x <$ try (string $ show x) | x <- [TODO ..]]
     amesg = unwords . words <$> (skipMany (char ':') *> many (noneOf "]"))
     content = Right <$> ((:) <$> anyChar <*> many (noneOf "["))
     finish (Right s : Left anno : xs) | isSpace (last s) =
