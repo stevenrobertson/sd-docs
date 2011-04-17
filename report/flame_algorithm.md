@@ -16,7 +16,7 @@ This primer aims to present the fundamental concepts of iterated function system
 These concepts are the building blocks of the flame algorithm. If the reader is already familiar with the concept of iterated function systems feel free to skip over this section and start reading how fractal flames differ from the classical iterated function system that is described below. 
 
 ###Definition
-An **Iterated Function System** is defined as a finite set of **affine contraction transformations** (Fi where i=1,2, ... N)(1, 3) that map a **metric space** onto itself. Mathematically this is:
+An **Iterated Function System** is defined as a finite set of **affine contraction transformations** $F_{i}$ where i= 1, 2, ..., N(1, 3) that map a **metric space** onto itself. Mathematically this is:
 
 ![Definition of an Iterated Function System[1]](./flame/ifs_equation.png)
 
@@ -66,9 +66,9 @@ However, using the affine transformation matrix described in we can equivalently
 
 ![Affine Transformations Variation 2](./flame/sierpinski_transform_var2.png)
 
-Each of these transformations pulls the current point halfway between one of the vertices of the triangle and the current point. F0 performs scaling only. F1 and F2 perform scaling and translation.
+Each of these transformations pulls the current point halfway between one of the vertices of the triangle and the current point. $F_{0}$ performs scaling only. $F_{1}$ and $F_{2}$ perform scaling and translation.
 
-We now begin the *chaos game*. We first select a random point on the biunit square. In this case we have pseudorandomly selected x = 0.40 and y = 0.20. We then pseudorandomly pick transformations. The first three transformations shown are F0, F2, and then F1. These are shown below.
+We now begin the *chaos game*. We first select a random point on the biunit square. In this case we have pseudorandomly selected x = 0.40 and y = 0.20. We then pseudorandomly pick transformations. The first three transformations shown are $F_{0}$, $F_{2}$, and then $F_{1}$. These are shown below.
 
 ![Affine Transformations Applied](./flame/sierpinski_vertex_pull.png)
 
@@ -118,26 +118,32 @@ Unlike the classical IFS examples presented previously which apply one transform
 
 The multiple variations as well as their order of application on the initial point choosen at random are described below:
 
-1.	**Affine Transformation - Under construction**
+1.	**Affine Transformation**
 
 The affine transformation we will be working with for the flame algorithm is of the form:
 
-**TODO: Graphic of formula:**  x' = x * a + y * b + c
-**TODO: Graphic of formula:**  y' = x * d + y * e + f
+\begin{displaymath}
+F_{i}(x,y)=(a_{i}x + b_{i}y+c_{i}, d_{i}x+e_{i}y+f_{i})
+\end{displaymath}
+
 
 Again, this transformation makes it possible to provide rotation, scaling, and sheer to the points. The information that is represented in this form is both space (x and y coordinates) as well as color - which will be expanded upon over the next sections.
 
-2.	**Variation - Under construction**
+2.	**Variation**
 
 To provide the complex realm of shapes the algorithm can produce we introduce a non-linear functions called variations.
 
 The affine transformed point is further applied to the variation resulting in the transformation being of this form:
 
-**TODO: Graphic of formula:** Fi(x,y) = Vj(aix + biy + ci, dix + eiy + fi)
+\begin{displaymath}
+F_{i}(x,y)=V_{j}(a_{i}x + b_{i}y+c_{i}, d_{i}x+e_{i}y+f_{i})
+\end{displaymath}
 
 Furthermore, multiple variations can be applied to an affine transformed point. Each point also is multiplied by a blending coefficient named vij which controls the intensity of the variation being applied. The expanding formula is the following:
 
-**TODO: Graphic of formula:** Fi(x,y) = sum ( ... )
+\begin{displaymath}
+F_{i}(x,y)=\sum_{j}^{ } v_{ij} V_{j}(a_{i}x + b_{i}y+c_{i}, d_{i}x+e_{i}y+f_{i})
+\end{displaymath}
 
 By applying variations, the resulting solution is changed in a particular way. Fundamentally there are 3 different types of variations in which can be applied. These are either: Simple Remappings, Dependent Variations, or Parametric Variations
 
@@ -150,31 +156,34 @@ By applying variations, the resulting solution is changed in a particular way. F
 For a visual supplement as well as an extensive collection of many catalogued variations please refer to the Appendeix of the original Flame Algorithm Paper.
 
 
-3. **Post Transformation - Under construction**
+3. **Post Transformation**
 
 After applying the variations which shape the characteristics of the system we apply what is known as a post transform which allows the coordinate system to be altered. This is done with another affine transformtion labeled Pi. By adding to our previous definition the definition for all of the collective transformations is:
 
-**TODO: Graphic of formula:** 
+\begin{displaymath}
+F_{i}(x,y)= P_{i}(\sum_{j}^{ } v_{ij} V_{j}(a_{i}x + b_{i}y+c_{i}, d_{i}x+e_{i}y+f_{i}))
+\end{displaymath}
 
-where Pi is equal to:
+where $P_{i}$ is equal to:
 
-**TODO: Graphic of formula:**  Pi(x,y) = ...
+\begin{displaymath}
+P_{i}(x,y) = (\alpha_{i}x+\beta_{i}y+\gamma_{i}. \delta_{i}x + \epsilon_{i}y + \varsigma_{i})
+\end{displaymath}
 
-
-4. **Final Transformation - Under construction**
+4. **Final Transformation**
 
 Finally, because the image is eventually outputted to the user we apply the last transformation in which we applying a non-linear transformation
 
-Note: isn't applied directly to the computational loop - merely for visual output
+*Note:* isn't applied directly to the computational loop - merely for visual output
 Non-linear camera
 
 ####Log-Density Display of Plotted Points
-
+\label{logdensitydisplay}
 In the classical Iterated Function System, described previously, points were either members in the set or not. For every subsequent time the chaos game selected a point that was already shown to have membership in the set we actually lost information about the density of the points. To remedy this for the fractal flame algorithm we instead use a histogram for plotting points in the chaos game. Given that points are now plotted onto the histogram we have several different methods we could go about plotting them into a resulting image which include:
 
 1. **Binary Mapping:** As described before, this did result in the images we wished to produce but were not smooth and contained no shades of gray- only black and white. 
 
-2. **Linear Mapping:** A linear mapping of the histogram provides an improvement but the range of data is lost in the process. The linear mapping has problems differentiating large scales of range. For example, a point plotted 1 time, 50 times, and 5000 times would be a great illustrative example. Compared a point of density 5000 both point densities 1 and 50 appear to be of relatively same magnitude however there is a great different in them.
+2. **Linear Mapping:** A linear mapping of the histogram provides an improvement but the range of data is lost in the process. The linear mapping has problems differentiating large scales of range. For example, a point plotted 1 time, 50 times, and 5,000 times would be a great illustrative example. Compared a point of density 5,000 both point densities 1 and 50 appear to be of relatively same magnitude however there is a great different in them.
  
 3. **Logarithmic Mapping:** This mapping proves to be superior to it's counterparts. The logarithmic function allows a great range of densities relationship to oneanother to be persered. This is the type of mapping the flame algorithm employs. 
 
@@ -209,18 +218,19 @@ The fractal flame algorithm inherently supports the concept of self-similarity b
 
 *TODO* This allow the algorithm to produce symmetrical images which are inherently attractive to the eye. 
 
-**Rotational Symmetry** is introduced by adding extra rotational transformations. To produce n-way symmetry you are implying that you wish to have {360/n} degrees symmetry. The set of transformations transformations necessary to add {360/n}
+**Rotational Symmetry** is introduced by adding extra rotational transformations. To produce n-way symmetry you are implying that you wish to have $\frac{360^\circ}{n}$ degrees symmetry. The set of transformations transformations necessary to add $\frac{360^\circ}{n}$ symmetry is:
 
-*TODO* Fix set builder notation syntax
-$Transforms_Rotation = {  (360/n)*i | i = 1, 2, ... , n } where n = # of way symmetry
+\begin{displaymath}
+\mbox{Rotational Transforms}_{i}= \left ( \frac{360^\circ}{n}\times i \mbox{  } | i = 1, 2,..,n\right ) \mbox{where n = number of way symmetry}
+\end{displaymath}
 
 For example, To produce six-way symmetry the following *5* transformations would be needed:
 
--	$Transform_1 = Rotate by 60 degrees
--	$Transform_2 = Rotate by 120 degrees
--	$Transform_3 = Rotate by 180 degrees
--	$Transform_4 = Rotate by 240 degrees
--	$Transform_5 = Rotate by 300 degrees
+-	$\mbox{Rotational Transforms}_{1}= 60^\circ$
+-	$\mbox{Rotational Transforms}_{2}= 120^\circ$
+-	$\mbox{Rotational Transforms}_{3}= 180^\circ$
+-	$\mbox{Rotational Transforms}_{4}= 240^\circ$
+-	$\mbox{Rotational Transforms}_{5}= 300^\circ$
 
 Each transformation is given an equal weighting, allowing the chaos game to realize the n-way symmetry the more it stochastically samples.
 

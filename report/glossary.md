@@ -63,6 +63,11 @@ Device
     run asynchronously to the CPU. In our case, one of the GPUs available in a
     system.
 
+Flame
+
+~	TODO: Talk about when somebody mentions a 'flame' in context to refering to the
+	output of the algorithm
+	
 IFS iteration
 
 ~   An application of one transform function from an iterated function system
