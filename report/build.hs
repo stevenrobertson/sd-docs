@@ -9,7 +9,10 @@ into the public domain.
 module Main where
 
 import Control.Applicative
+import Control.Arrow
 import Control.Monad
+import Data.Char (toUpper, isSpace)
+import Data.Either
 import System.FilePath
 import System.Directory
 import System.Exit
@@ -19,9 +22,40 @@ import System.IO
 import Text.Pandoc
 import Text.Pandoc.Shared
 import Text.Pandoc.Biblio
+import Text.Parsec hiding ((<|>), many)
+import qualified Text.PrettyPrint as P
+import Text.PrettyPrint (Doc, ($$), (<>), nest, vcat, fsep, text, int, colon)
 import Text.CSL
 
-parseFile refs fn = readFunc startState . filter (/= '\r') <$> readFile fn
+data AnnoType = TODO | CITE | CHECK | REF deriving (Eq, Ord, Enum, Show)
+data Annotation = Annotation
+    { anType    :: AnnoType
+    , anPos     :: SourcePos
+    , anMsg     :: String
+    } deriving (Show)
+
+-- Given a filename (for proper source description) and an input source,
+-- return a copy of the input source stripped of annotations and a list of
+-- those annotations.
+parseAnno :: FilePath -> String -> (String, [Annotation])
+parseAnno fn s = either (error . show) (((concat . rights) &&& lefts) . finish)
+               $ parse parser fn s
+  where
+    parser :: Parsec String () [Either Annotation String]
+    parser = (:) <$> (anno <|> content) <*> (([] <$ eof) <|> parser)
+    anno = try $ between (char '[') (char ']')
+               $ Left <$> (Annotation <$> atype <*> getPosition <*> amesg)
+    atype = choice [x <$ try (string $ show x) | x <- [TODO ..]]
+    amesg = unwords . words <$> (skipMany (char ':') *> many (noneOf "]"))
+    content = Right <$> ((:) <$> anyChar <*> many (noneOf "["))
+    finish (Right s : Left anno : xs) | isSpace (last s) =
+        Right (init s) : Left anno : finish xs
+    finish (x:xs) = x : finish xs
+    finish [] = []
+
+parseFile :: [Reference] -> FilePath -> IO (Pandoc, [Annotation])
+parseFile refs fn =
+    first (readFunc startState) . parseAnno fn . filter (/= '\r') <$> readFile fn
   where
     readFunc = case takeExtension fn of
                     ".rst"  -> readRST
@@ -67,10 +101,23 @@ urlize x = x
 
 biblioAtEnd = False
 
+-- Creates a pretty-print document which covers a single file's annotations
+pprAnnos :: [Annotation] -> Doc
+pprAnnos [] = P.empty
+pprAnnos annos = header $$ nest 2 (vcat $ map go annos)
+  where
+    header = text ("In file '" ++ (sourceName . anPos $ head annos) ++ "':")
+    go anno = text "Line " <> int (sourceLine $ anPos anno) <> colon
+            $$ nest 10 (msg (typeStr (anType anno)) (anMsg anno))
+    typeStr CITE = text "Citation"
+    typeStr t = text (show t)
+    msg ty [] = ty
+    msg ty m = fsep ((ty <> colon) : map text (words m))
+
 main = do
     refs <- readBiblioFile "mendeley.bib"
     sourcePaths <- lines <$> readFile "order.txt"
-    sources <- mapM (parseFile refs) sourcePaths
+    (sources, annos) <- unzip <$> mapM (parseFile refs) sourcePaths
 
     topmatter <- readFile "topmatter.tex"
     template <- readFile "../latex.template"
@@ -95,6 +142,9 @@ main = do
     putStrLn "Running xelatex again to update TOC"
     _ <- renderPDF tmpdir tex
 
+    putStrLn "\n\nDocument annotations:"
+    print . vcat $ map pprAnnos annos
+
     haveOutput <- doesFileExist pdf
     if haveOutput
        then do
@@ -107,4 +157,5 @@ main = do
                 putStrLn $ "NOTE: xelatex exited with errors. "
                         ++ "You may wish to verify the output."
        else putStrLn "ERROR: xelatex did not create an output file."
+
 

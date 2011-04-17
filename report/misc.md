@@ -53,8 +53,8 @@ it is chosen, and this behavior prevents the system as a whole from converging
 on a fixed point.
 
 However, since each thread in a warp applies the same transform, each
-application brings every point in the warp closer to the *same* fixed point,
-and therefore to the other points in the warp. It doesn't matter that the next
+application brings every point in the warp closer to the same fixed point, and
+therefore to the other points in the warp. It doesn't matter that the next
 transform will have a different fixed point; the same effect will happen. While
 the points won't converge to a single fixed point across the image, they will
 quickly converge on one another. The precision of the accumulation grid is
@@ -81,13 +81,13 @@ the lower bound is actually determined by the precision of the floating point
 format in use. However, these systems tend to be highly unstable under
 interpolation and are not often found in practice.
 
-TODO: expand the IFS chapter to include an explanation that the nonlinear
+[TODO: expand the IFS chapter to include an explanation that the nonlinear
 functions used in flames are often not technically contractive, because they
 can have multiple fixed points, and that for practical purposes we can
 characterize whether or not they are contractive on the bounds of the image by
 computing the first moment of the distance from the center of the camera over
 the domain of the image and call it "contractiveness" or come up with a better
-name for it.
+name for it.]
 
 It is therefore not necessary to ensure that every instance of the system under
 simulation receive an entirely independent sequence of transforms; rather, it
@@ -131,10 +131,15 @@ accessing this memory. Bits `[1:0]` of each address identify position within a
 4-byte dword, and are handled entirely by the ALU datapaths. The next five
 bits, `[6:2]`, identify which of the 32 bank controllers to send a read or
 write request to, and the remaining nine upper bits `[15:7]` form the address
-used by an individual bank's memory controller.  Each memory controller can
-service one read or write per cold clock. A crossbar allows 1-to-N broadcast
-from every bank port on read operations and 1-to-1 access to any bank port for
-write operations, all handled automatically.
+used by an individual bank's memory controller[^guess].  Each memory controller
+can service one read or write per cold clock. A crossbar allows 1-to-N
+broadcast from every bank port on read operations and 1-to-1 access to any bank
+port for write operations, all handled automatically.
+
+[^guess]: Some details in this subsection are conjecture. The described
+implementation is consistent with publicly disclosed information from NVIDIA
+and benchmarks run by the authors and third parties, but has not been confirmed
+by the company.
 
 This memory architecture is flexible and fast, and most shared memory
 operations can be designed to run in a single cold clock across all 32 threads.
@@ -232,9 +237,9 @@ however, for cases where $W < T/W$ — that is, where the warp size is larger
 than the number of warps per work-unit — each lane equal under the modulus of
 the number of warps will never swap with respect to each other, which violates
 the assumptions of independent events and increases the expected length of
-identical sequences. We solve this, both in theory and in practice, by applying
-a different columnar rotation of each repeated section in the read pattern,
-which respects banking and thus adds little overhead.
+identical sequences. We solve this by applying a different columnar rotation of
+each repeated section in the read pattern, which respects banking and thus adds
+little overhead.
 
 For reference, we also find the expected probability of a common sequence for a
 full shuffle, which whe have not implemented on the device. In this case,
@@ -248,7 +253,7 @@ To compare the efficacy of each shuffle method to the independent case, we show
 the results of calculating these probabilities for a few configurations and
 lengths in Table \ref{probtable}. Fixed values of $N=8$ and $W=32$ are used.
 
-\begin{table}\label{probtable}
+\begin{table}
   \begin{tabular}{ r l r r r r }
     & & $l=2$ & $l=4$ & $l=8$ & $l=32$ \\
     \cline{3-6}
@@ -265,7 +270,7 @@ lengths in Table \ref{probtable}. Fixed values of $N=8$ and $W=32$ are used.
         & $1.013\cdot 10^{-5}$ & $1.144\cdot 10^{-20}$ \\
     \multicolumn{1}{r|}{}
         & Full shuffle (\ref{prob-allswap})
-        & $0.5353$ & $2.8658\cdot 10^{-3}$
+        & $0.0535$ & $2.8658\cdot 10^{-3}$
         & $8.213\cdot 10^{-6}$ & $4.550\cdot 10^{-21}$ \\
     \\[-4pt]
     \multicolumn{1}{r|}{}
@@ -282,74 +287,171 @@ lengths in Table \ref{probtable}. Fixed values of $N=8$ and $W=32$ are used.
   \end{tabular}
   \caption{Probability of encountering identical transform sequences of
     length $l$ with different shuffle types.}
+  \label{probtable}
 \end{table}
 
-TODO: center tabular inside table?
+[TODO: center tabular inside table?]
 
+The results display a strong preference towards higher efficiency at larger
+work-group sizes; this is an important and challenging constraint on launch
+parameters, as more effort is required to avoid stalls and inadequate occupancy
+of shader cores when using large work-groups. It's also clear that the simple
+and efficient ring shuffle methods work nearly as well as a full shuffle. Less
+clear, however, is how well the ring shuffle works as compared to completely
+independent threads. While the probability of a chain decays asymptotically to
+zero, as it does in the independent case, the ring shuffle algorithm does not
+do so as quickly. So, does it do so quickly *enough*?
 
+Alas, the answer is image-dependent, and not amenable to easy statistical
+manipulation. The probabilities derived are a good way to gain insight about
+different strategies for swapping points without an implementation — we
+discarded several mechanisms that proved too slow or complex for the relative
+gain in statistical performance in this manner — but there is no way to apply
+this information. We will simply have to implement and compare.
 
-## Writeback
+If a ring-shuffled implementation loses little or no perceptual quality per
+sample due to point convergence on test images, we will be satisfied.  However,
+in the unexpected event that it is not, the best solution may simply be to
+allow threads to diverge. This will cause extra computation to be done, but in
+the end may not significantly impact rendering speed; as it turns out, the
+bottleneck on current-generation GPUs is likely to lie in the memory subsystem.
 
-Okay, so as we've established, flam3 generates an enormous number of points
-to render a high-quality image. We've looked at how to reduce the effects
-of noise due to undersampling the IFS, which may allow us to reduce the
-number of samples required for satisfactory images, but half of a ton of
-points is still a lot of points. For the classical approach, most of our
-time will be spent performing iterations.
+## Accumulating results (another try)
 
-As has been discussed, GPUs have a much higher ratio of computation to
-memory bandwidth and cache size than CPUs do, and have a strong
-architectural preference for coalesced memory operations. Unfortunately, as
-we've also mentioned, the IFS follows the attractor around the image space,
-jumping from region to region, so there is little temporal coherence in
-memory access patterns.  Also, since we need each point to pass through a
-different sequence of transforms, there's no spatial locality to our
-accesses either.
+At each iteration, the current sample must be added to the accumulation buffer.
+In a typical implementation, each accumulator is 16 bytes in size, holding four
+4-byte single-precision floating point values. Adding a sample to an
+accumulator requires a read, to find the original value, followed by a write of
+the updated value. Because many different threads will be accumulating points
+simultaneously, this process may cause updates to be lost if threads write to
+the same location, so global atomic instructions, which execute on dedicated
+ALUs located near the memory controllers, are called for.
 
-All of this adds up to an unavoidable worst-case scenario for the
-traditional flame algorithm. For chips with no coherent cache — basically
-everything other than Fermi — the memory subsystem would be an almost
-certain bottleneck.  [show math] Even for newer chips, the only way the
-memory bottleneck can be avoided is if L2 happens to cover most of the
-image regions being written to, which [math] is just not gonna happen. Then
-turn on supersampling — which on CPU is essentially free — and watch all
-hope disappear.
+If an accumulator is in cache, the local ALUs allow the update operation to
+complete very quickly. However, accumulation buffers can be hundreds of
+megabytes in size, and write locations do not typically display spatial
+cohesiveness across threads; in fact, as above, warps that are consistently in
+the same neighborhood are ineffecient. Additionally, due to locally chaotic
+behavior among transform functions, sample locations do not display any general
+pattern in typical flames, making temporal re-use of a particular cache line
+unlikely. As a consequence, most accumulations will result in an L2 cache miss.
 
-### Reducing color traffic
+Fermi devices use 128-byte lines in L2. Consequently, each L2 miss triggers a
+128-byte load, irrespective of the amount of data to be accessed. For a 16 byte
+read, this indicates an 8× bandwidth penalty on reads. Similarly, cache lines
+are marked as dirty in their entirety [TODO: verify with microbenchmark],
+placing an equal bandwidth penalty on writes.
 
-There's a stopgap approach, which is this: subsample the color buffers.
-Humans have much more limited spatial resolution for color than for
-luminosity, so we don't notice color bleed like that. In fact, almost all
-compressed video uses that technique. This cuts down on the total
-framebuffer size considerably. But, [math], not enough. Also, it requires
-splitting the color buffers apart, which can actually reduce performance by
-requiring extra cache lines to be loaded.
+The average number of operations required to complete an iteration will vary
+considerably depending on the variations in use and the precision requirements
+of the render, but a trace of the execution of one iteration in the abstract
+[TODO: reference previous] demonstrates that the simplest cases generally
+require very few operations. While this may not be useful to determine final
+running time without benchmarks, it is sufficient to determine whether
+alternative accumulation strategies bear investigating: if the difference
+between theoretical iteration rate and accumulation rate is large, accumulation
+is likely to be a bottleneck in actual implementations.  A A mid-level Fermi
+GPU attains 750 GFLOPs for single precision operations (and twice that if an
+FMA is counted as two operations). With an arbitrary, but reasonable, estimate
+of 50 operations required to complete an iteration, this yields an upper bound
+of $15\cdot 10^9$ points per second. If points were written linearly, such
+cards' peak pixel fill-rate — in the neighborhood of $25\cdot 10^9$ pixels per
+second — would be more than enough to capture all points efficiently. However,
+with an eightfold penalty on writes, a doubling of that cost for the reads, and
+limited numbers of L2-local ALUs to perform atomic operations, that peak figure
+drops by more than an order of magnitude to become the clear bottleneck.
 
-Another approach is to use probabilistic writeback of color. We again
-exploit the human visual system's color weaknesses, and the knowledge that
-the effect of any given sample upon the final color decreases in proportion
-to the number of samples in that pixel's area. Write the pixel's alpha
-value first; then, calculate a probability like $2^{-k\alpha}$ for writing
-back that color. This doesn't reduce the size of the color buffer, but in
-concert with the above, it greatly reduces the memory traffic and number of
-cache lines occupied by the colors rather than alpha.
+Not all flames will encounter this bottleneck. Renders to small framebuffers
+that fit inside L2 are expected to have more cache hits, and consequently the
+steep bandwidth penalty on reads and writes to DRAM will be lessened in the
+average case. Iterations can also take longer; complex transform functions with
+many parameters that use double precision will take considerably more
+computation to complete, relieving the memory bottleneck. However, such
+situations are rare. Given the severity of the bottleneck for a trivial flame,
+it seems likely that memory bandwidth may be a limiting factor in the average
+case.
 
-Cutting the alpha buffer down to a half-precision float wouldn't be too bad
-either, although it would remove the ability to use fast atomics in L2.
+To ensure optimal performance, then, a GPU implementation of the fractal flame
+algorithm may employ alternate strategies for accumulation. In this section, we
+discuss several possible individual techniques which reduce memory traffic or
+increase efficiency, and describe how they can be combined to raise the limit
+on the number of accumulations per second.
 
-### Point logging
+### Color strategies
 
-Another approach would be to restore cache coherency, which would allow the
-memory and caches to function much closer to their theoretical throughput
-and remove the bottleneck. The way to do it? Sort the points first.
+As discussed in previous sections [TODO: backref or drop], human vision has
+considerably less sensitivity and spatial resolution for color than for
+luminance. In existing implementations of the flame algorithm, however, color
+is given three times the storage space and bandwidth of density information in
+the accumulator. Reducing the amount of color traffic during accumulation may
+result in bandwidth savings without visible quality loss.
 
-GPU friendly sorts, such as radix-based bucket sort and bitonic sort, can
-churn through the point log relatively quickly. With large bucket sizes and
-clever timing, the sort could be done in two or three passes, and writeback
-could be accelerated by doing all atomic compaction on shared memory
-instead of global.
+After rendering, individual flames are typically compressed with the JPEG image
+codec, and animations with H.264 or MPEG-4 ASP video codecs. These compression
+formats, and many others, store color information at a fraction of the spatial
+resolution
 
-[Insert teaser for big new approach]
+In lossy still-image formats such as JPEG [CITE], and nearly every common video
+format [CITE],
+
+- Treat color differently, because our eyes are less sensitive
+
+- Chroma subsampling: separate color components from alpha, and sample the
+  color grid at a much lower resolution; cuts framebuffer size by ≥75%.
+  However, on its own, causes misses to increase; definitely causes
+  ineffeciency to increase.
+
+- Chroma undersampling: only calculate chroma for a limited number of points.
+  Possibility to leave some points unmapped, must use other methods (mipmapped
+  chroma? post-hoc search?) to handle
+
+- Data-dependent probabilistic chroma writeback: reduce number of times chroma
+  written in logarithmic proportion to intensity of point. Requires that atomic
+  intensity be written first. Doesn't do much good without chroma subsampling.
+
+### Manipulating the cache
+
+- Explicit L2 manipulation using cache instructions and read. By hitting the
+  cache with a read over a particular intensity, data can be kept local.
+
+  - Run the math, but I'm doubtful. Depends on image variance.
+
+  - Probably won't have too strong an effect on core image performance.
+
+  - L2 is a latency reducer, not a bandwidth amplifier. Reductions should
+    bypass the L1 and may amplify bandwidth, but need to benchmark.
+
+  - Result => may actually reduce bandwidth.
+
+- There was another one?
+
+### Attaining spatial coherence
+
+- Log and sort
+
+  - Log the points linearly. 32 bits for an alpha sample, 64 for color; size
+    decreases as addresses get more finely resolved
+
+  - Radix/bucket sort can dispatch efficiently to local lines in shared memory,
+    which can be written to global buffers only when fully covered, improving
+    efficiency of transactions and bringing them in line with atomics
+
+  - Final accumulation can be done in shared memory, taking advantage of much
+    faster atomics therein (bank penalties much smaller than overall crippling)
+
+- A further method will be covered in a later chapter
+
+### Final thoughts
+
+- Best theoretical combination from: (my guess is, chroma subsampling, chroma
+  undersampling, log and sort)
+
+- Depends on number of scatter buckets. Probable best bet: heterogeneous
+  workloads, using small, continuous, memory-intensive kernel in parallel with
+  giant ones
+
+- Done right, this can use shared memory and mostly skip L1, leaving it and the
+  texture caches ready to handle the enormous genome structures.
 
 ## Motion blur
 
@@ -376,5 +478,4 @@ instead of global.
 - Solution 3: cooperation across SMs to avoid needing to reload too many
   points.
 
-
-
+<!-- vim: syntax=pdcf: -->

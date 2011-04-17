@@ -12,9 +12,9 @@ original.
 
 When rendering flames, there are two kinds of artifacts that need to be
 minimized in order to create more visually attactive flames: aliasing and noise.
-While these two problems and their solutions are related, we will need to
-approach them with different techniques.  We will address both of these problems
-and their solutions in more detail in the following sections.
+While these two problems and their solutions are related, they will need to
+be approached with different techniques.  The problems and their solutions are 
+discussed in more detail below.
 
 ## Aliasing
 
@@ -34,7 +34,7 @@ triangle.  Problems arise when the pixel is sampled from only one fragment in
 the pixel.  This causes all the other data from the other fragments to be loss 
 and will result in an inaccurate image.
 
-![Left: aliased image, right: antialiased image](filtering/Aliasing_a.png) 
+![Left: aliased image, right: antialiased image](filtering/Aliasing_aSmall.png) 
 
 ### Visual image information
 
@@ -82,39 +82,36 @@ notice reduced detail apart from those regions.
 
 ### Approaches to antialiasing
 
-- Supersample antialiasing is the most trivial method to solving the aliasing 
-  problem.  It is a relatively naive algorithm and works well but is expensive 
-  in terms of resources.  Aliasing distortion occurs when continuous objects 
-  cannot be represented correctly because of a relatively low sampling rate
-  (resolution).  Supersampling solves this problem by rendering an image at a 
-  higher resolution and performing downsampling, using multiple points to 
-  calculate the value of a single pixel.  The sampling points lie within the 
-  area of a pixel and their location is determined by the type of algorithm.
-  The number of sampling points is directly related to the quality and 
-  performance of the filter and is the biggest factor of cost in antialiasing.  
-  Turning on 4x SSAA (4 samples per pixel) will require four times as many 
-  samples to rendered, the fill rate will be four times longer and will have 1/4 
-  the original frame-rate.
+**Supersample antialiasing** is the most trivial method to solving the aliasing 
+problem.  It is a relatively naive algorithm and works well but is expensive 
+in terms of resources.  Aliasing distortion occurs when continuous objects 
+cannot be represented correctly because of a relatively low sampling rate
+(resolution).  Supersampling solves this problem by rendering an image at a 
+higher resolution and performing downsampling, using multiple points to 
+calculate the value of a single pixel.  The sampling points lie within the 
+area of a pixel and their location is determined by the type of algorithm.
+The number of sampling points is directly related to the quality and 
+performance of the filter and is the biggest factor of cost in antialiasing.  
+Turning on 4x SSAA (4 samples per pixel) will require four times as many 
+samples to rendered, the fill rate will be four times longer and will have 1/4 
+the original frame-rate.
   
-  The grid algorithm is the simplest and fastest - each pixel is evenly divided 
-  into subsections with samples being taken at the center of each subsections.  
-  However, because of the sample being extremely regular and lying directly on 
-  the axis, the quality of this algorithm may suffer in certain cases.  The 
-  rotated grid algorithm is a similar to the grid algorithm in that the pixel is 
-  even divided into regular subsections, but with samples not lying directly on 
-  the axis.  This algorithm is similar in performance to the regular grid 
-  algorithm but with significantly improved filter quality.  Supersampling 
-  algorithms exist that randomly chose sample locations and can produce better 
-  quality images, but with a significant trade-off in performance.  (See Random, 
-  Poisson, and Jitter algorithm depictions below).
+The grid algorithm is the simplest and fastest - each pixel is evenly divided 
+into subsections with samples being taken at the center of each subsections.  
+However, because of the sample being extremely regular and lying directly on 
+the axis, the quality of this algorithm may suffer in certain cases.  The 
+rotated grid algorithm is a similar to the grid algorithm in that the pixel is 
+even divided into regular subsections, but with samples not lying directly on 
+the axis.  This algorithm is similar in performance to the regular grid 
+algorithm but with significantly improved filter quality.  Supersampling 
+algorithms exist that randomly chose sample locations and can produce better 
+quality images, but with a significant trade-off in performance.  (See Random, 
+Poisson, and Jitter algorithm depictions below).
 
-  ![Grid algorithm](filtering/SuperSamplingGrid.png)
-  ![Rotated grid algorithm](filtering/SuperSamplingRotatedGrid.png)
-  ![Random algorithm](filtering/SuperSamplingRandom.png)
-  ![Poisson algorithm](filtering/SuperSamplingPoisson.png)
-  ![Jitter algorithm](filtering/SuperSamplingJitter.png)
+![From left to right: Grid algorithm, Rotated Grid algorithm, Jitter algorithm, 
+Poisson algorithm, Random algorithm](filtering/SuperSamplingSmall.png)
 
-- Multisample antialiasing, also known as full scene antialiasing, is a special 
+**Multisample antialiasing**, also known as full scene antialiasing, is a special 
 case of supersampling where not all of the components of a pixel are 
 supersampled.  This algorithm can achieve near supersampling quality at a much 
 higher performance.  Pixels are generated using a collection of data called a 
@@ -124,77 +121,70 @@ fragment to "supersample" so that some of that computational cost can be shared
 between samples.  Commonly, z-buffer, stencil, and/or color data is chosen to be
 the fully supersampled components.
 
-- Coverage antialiasing is a special case of multisample aliasing, and therefore 
-  also a special case of supersample aliasing.  The algorithm has been designed 
-  to further improve the performance of multisample antialiasing while keeping 
-  quality as high as possible.  Multisample antialiasing will usually store only 
-  one value for texture and shader samples for an entire pixel.  This is also 
-  true for coverage antialiasing but we take it a step further and limit the 
-  number of stored color and Z data samples.  Coverage antialiasing can store 
-  more than a single value for the color and Z data, the point is to just hold 
-  less than multisampling.  Usually, 4 or 8 color and Z data samples are used as 
-  opposed to 8 and 16, respectively.  Holding more data constant allows for an 
-  even smaller memory footprint and less bandwidth.
+Coverage antialiasing is a special case of multisample aliasing, and therefore 
+also a special case of supersample aliasing.  The algorithm has been designed 
+to further improve the performance of multisample antialiasing while keeping 
+quality as high as possible.  Multisample antialiasing will usually store only 
+one value for texture and shader samples for an entire pixel.  This is also 
+true for coverage antialiasing but we take it a step further and limit the 
+number of stored color and Z data samples.  Coverage antialiasing can store 
+more than a single value for the color and Z data, the point is to just hold 
+less than multisampling.  Usually, 4 or 8 color and Z data samples are used as 
+opposed to 8 and 16, respectively.  Holding more data constant allows for an 
+even smaller memory footprint and less bandwidth.
 
-    Coverage sample points are boolean values that indicate whether or not a 
-    sample is covered by a triangle in the pixel.  These samples are stored 
-    usually stored as 4 bit data structures with 1 bit representing the boolean 
-    value and with the other 3 bits used to index up to 8 color/Z values.  The 8 
-    bytes required for 16 samples will be much less then the memory needed for the 
-    color data so the extra overhead should be insignificant compared to the 
-    bandwidth reduction.
+Coverage sample points are boolean values that indicate whether or not a 
+sample is covered by a triangle in the pixel.  These samples are stored 
+usually stored as 4 bit data structures with 1 bit representing the boolean 
+value and with the other 3 bits used to index up to 8 color/Z values.  The 8 
+bytes required for 16 samples will be much less then the memory needed for the 
+color data so the extra overhead should be insignificant compared to the 
+bandwidth reduction.
 
-- Morphological antialiasing is a significantly different antialiasing approach.  
-  It does not rely on supersampling and is a completely post-process algorithm.  
-  It works by blending colors after looking for and recognizing special pixel 
-  patterns in an image.  The algorithm can be explained using the following 
-  steps:
-    1. Look for discontinuities in an image - We scan through all adjacent rows 
-    and columns and store the lines where we find disconituity.  Edges of the 
-    images are extended so that unnecessary blending does not occur around the 
-    borders of the image.
-    2. Identify special pixel patterns - We can through the list of 
-    discontinuous edges and identify crossing orthogonal lines.  These locations 
-    will mark an area for one of three predefined pixel patterns (Z-shaped 
-    pattern, U-shaped pattern, L-shaped pattern).  See figures below for 
-    depiction.
-    3. Blend colors in pattern areas - The pixels that make make up the vertices 
-    of the identified patterns are sampled and blended together.
-  Notice that more samples do not have to be rendered when using morphological 
-  antialiasing.  The computational resources required to do the above steps are 
-  far less than the resources needed to render 4x, 8x, or 16x as many pixels.  
-  Supersampling will generally produce slightly higher quality results but will 
-  not be worth the performance trade-off, especially if real-time rendering is 
-  needed.
+Morphological antialiasing is a significantly different antialiasing approach.  
+It does not rely on supersampling and is a completely post-process algorithm.  
+It works by blending colors after looking for and recognizing special pixel 
+patterns in an image.  The algorithm can be explained using the following 
+steps:
+  1. Look for discontinuities in an image - We scan through all adjacent rows 
+  and columns and store the lines where we find disconituity.  Edges of the 
+  images are extended so that unnecessary blending does not occur around the 
+  borders of the image.
+  2. Identify special pixel patterns - We can through the list of 
+  discontinuous edges and identify crossing orthogonal lines.  These locations 
+  will mark an area for one of three predefined pixel patterns (Z-shaped 
+  pattern, U-shaped pattern, L-shaped pattern).  See figures below for 
+  depiction.
+  3. Blend colors in pattern areas - The pixels that make make up the vertices 
+  of the identified patterns are sampled and blended together.
+Notice that more samples do not have to be rendered when using morphological 
+antialiasing.  The computational resources required to do the above steps are 
+far less than the resources needed to render 4x, 8x, or 16x as many pixels.  
+Supersampling will generally produce slightly higher quality results but will 
+not be worth the performance trade-off, especially if real-time rendering is 
+needed.
 
-- Window function
-  A window function is a mathematical function that is zero-valued outside of 
-  some chosen interval while manipulating the values inside that interval.  The 
-  simplest window is the rectangular window.  It simply takes a chunk the 
-  portion of the signal fitting inside in the window leaving discontinuities at 
-  the edges (unless the signal is entirely within the limits of the window) [6].
-  Filter shapes available in flam3 are the Guassian (default), Bell, Blackman, 
-  Box, Bspline, Hamming, Hanning, Hermite, Mitchell, Quadratic, and Triangle 
-  [8].
+A **window function** is a mathematical function that is zero-valued outside of 
+some chosen interval while manipulating the values inside that interval.  The 
+simplest window is the rectangular window.  It simply takes a chunk the 
+portion of the signal fitting inside in the window leaving discontinuities at 
+the edges (unless the signal is entirely within the limits of the window) [6].
+Filter shapes available in flam3 are the Guassian (default), Bell, Blackman, 
+Box, Bspline, Hamming, Hanning, Hermite, Mitchell, Quadratic, and Triangle 
+[8].
 
 ## Denoising
 
-Image denoising algorithms is one of the most common and studied problems
-in image processing.  Noise occurs as seemingly random, unwanted pixel 
-inaccuracies as collected by the image source (commonly a camera, in our case,
-approximating objects via random sampling).  Most image denoising algorithms
-deal with this problem by treating noise the same as small details and then by
-removing all the small details with some form of blurring.
-
 Antialiasing deals with the problems caused by approximating objects via
 sampling along a regular 2D grid. Denoising, by contrast, deals with the
-problems caused by approximating objects via random sampling.
-
-A "regular random grid"? Isn't that an oxymoron? No, they're really two
-separate things: first, we use random sampling to approximate the IFS with
-Monte Carlo methods, then we use grid sampling to approximate the histogram
-of those samples' positions.  Two separate sources of error, two separate
-strategies to deal with it.
+problems caused by approximating objects via random sampling. Image noise is one 
+of the most common and studied problems in image processing.  Noise occurs as 
+seemingly random, unwanted pixel inaccuracies as collected by an image source 
+(commonly a camera, in our case, approximating objects via random sampling).  
+Most image denoising algorithms deal with this problem by treating noise the 
+same as small details and then by removing all the small details with some form 
+of blurring.  This is done by replacing a pixel with a weighted average of all
+the nearby pixels.
 
 ### The origins of noise
 
@@ -202,7 +192,8 @@ Sampling noise from Monte Carlo IFS estimation arises from two main sources:
 coverage limitations and accuracy errors.
 
 - Because we don't know the shape of the attractor analytically, we can't
-  sample it directly; we must follow it along the IFS. This means that the
+  sample it directly; we must follow it along the IFS. We use random sampling to 
+  approximate the IFS with Monte Carlo methods.  This means that the
   IFS will jump around from location to location within the image in a
   generally unpredictable pattern. Because of this jumping, any errors in
   the image show up as point noise, rather than along contours as with
@@ -281,7 +272,7 @@ Problems: difficult to accelerate on GPU; usually requires hand tuning; it's
 - Bilateral filter
   The bilateral filter is also defined as a weighted average of nearby pixels, 
   in a manner very similar to the Gaussian convolution filter described above.  
-  The difference i s that the bilateral filter takes into account the difference
+  The difference is that the bilateral filter takes into account the difference
   in value with the neighbors to preserve edges while smoothing.  The key idea 
   of the bilateral filter is that for a pixel to influence another pixel, it 
   should not only occupy a nearby location but also have a similar value.
@@ -300,6 +291,95 @@ Problems: difficult to accelerate on GPU; usually requires hand tuning; it's
   Computational photography techniques tend to use a single iteration to be 
   closer to the original image content [7].
 
-- KD-Trees
-
+- Nonlocal Means
+  The nonlocal means (NL-Means) algorithm is a relatively new solution to the
+  image noise problem.  Unlike most other algorithms that assume spatial
+  regularity, the nonlocal means filter looks for and exploits spatial geometric
+  patterns.  It will only use pixels that match the geometic correlation in the
+  local area causing irregular image noise to be canceled out.  This means a
+  more accurate color selection for the pixel in question.
+  
 - Permutohedral Lattice
+  The permutohedral lattice is a data structured designed to improve the 
+  performance of high-dimensional Gaussian filters including bilateral filtering 
+  and nonlocal means filtering.  It is a projection of the scaled grid 
+  (d+1)Z^(d+1) along the vector 1-> = [1,...,1] onto the hyperplane
+  H_d:x->.1-> = 0 and is spanned by the projection of the standard basis for 
+  (d+1)Z(d+1) onto H_d [Adams et al, 2010].  [TODO: Show permutohedral lattice 
+  matrix].  Each of the columns of B_d are basis vectors whose coordinates sum 
+  to zero and have a consistent remainder modulo d+1 which is how points on the 
+  lattice are determined (the lattice point coordinates have a sum of zero and 
+  remainder modulo d+1).  Lattice points with a remainder of k can be described 
+  as a "remainder-k" point.  The algorithm works by placing pixel values in a 
+  high-dimensional space, performing the blur in that space, then sampling the 
+  values at their original locations.  These three steps are often referred to 
+  as splatting, blurring, and splicing, respectively [Adams, 2010].
+  
+  Using a permutohedral lattice for n values in d dimensions results in a space 
+  complexity in the order of O(dn) and a time complexity of O(d^2 n).  According 
+  to Adams et al, 2010, algorithms based on using the permutohedral lattice are 
+  fast enough to do bilateral filtering in real time.  There are four major 
+  steps in algorithms that use the permutohedral lattice.  First, position 
+  vectors for all the locations in high-dimensional space must be generated and 
+  stored in the lattice.  Generating the position vectors for the lattice has a 
+  time complexity of O(d).  Secondly,  splatting is performed by moving pixels 
+  onto the vertices of their enclosing simplex using barycentric weights.  
+  Splatting has a time complexity of O(d^2 n).  The next step is the blurring 
+  stage which convoles a kernel in each lattice dimension and is performed in 
+  O(d^2 l).  The final step is the slicing stage which is similar to the 
+  splatting stage, except done in reverse order; barycentric weights are used to 
+  pull pixel values out of the permutohedral lattice.  The entire algorithm has 
+  a time complexity of O(d^2 (n+l)) [Adams, 2010].
+
+- Gaussian KD-Trees
+  The Gaussian filter, bilateral filter, and nonlocal means filters are 
+  non-linear filters whose performance can be accelerated by the use of Gaussian 
+  kd-trees.  All of these filters can be expressed by values with positions.  
+  The Gaussian filter can be described as a pixel color being the value with 
+  coordinate position (x,y).  The bilater filter can be describved as a pixel 
+  color with coordinate position (x,y,r,g,b).  The nonlocal means filter can be 
+  described as a pixel color with position relative to a patch color around the 
+  pixel.  The Gaussian kd-tree algorithm treats these structures similarly in 
+  that it assigns all the values in an image to some position in vector space 
+  and then replaces each of the values with a weighted linear combination of 
+  values with respect to distance.  By representing these images by a kd-tree 
+  data structure, the space and time complexity can be decreased significantly.  
+  These algorithms typically have a complexy of O(d^n) or O(n^2) whereas the 
+  kd-tree algorithm will have a space complexity of O(dn) and a time complexity 
+  of O(dn log n) [Adams et al].
+  
+  A kd-tree is a binary tree data structure used to store a finite number of 
+  points from a k-dimensional space [Moore, 1991].  Each leaf stores one point 
+  and each inner node represents a d-dimensional rectangular cell [Adams et al].  
+  The inner node stores the dimension n_d in which it cuts, value n_cut on the 
+  dimension to cut along, the bounds of the dimension n_min and n_max, and 
+  pointers to its children n_left and n_right [Adams et al].  For this 
+  implementation of the kd-tree, n_min and n_max have been added in addition to 
+  the standard data structure. 
+  
+  There are two main steps associated with these accelerated Gaussian kd-tree 
+  algorithms.  First, the tree must be built.  Generally, the tree should be 
+  built with the goal of minimizing query time.  In each leaf node is as likely 
+  to be accessed as any other leaf node, the kd-tree should ideally be balanced.  
+  Building a balanced tree can be accomplished by finding the bounding box of 
+  all the points being looked at, finding the diagonal length of the box, and if 
+  that length is less than the standard deviation, a leaf node is created and a 
+  point is set for the center of the bounding box.  If the length is not less 
+  than the standard deviation, split the box in the middle along the longest 
+  dimension and continue recursively.  The building of a tree is expected to 
+  have a time complexity of O(nd log m) with m being the number of leaf nodes.  
+  The second step in the algorithm is querying the tree.  Queries are used to 
+  find all the values and their weights given a position.  To be specific, a 
+  query should take in the pixel location, a standard deviation distance, and 
+  the maximum number of samples that should be returned.  The query will then 
+  find and return all the values and weights of pixels around that pixel, up to 
+  the standard deviation and maximum number of samples.  The complexity of 
+  performing queries is expected to be O(dn log n) [Adams et al].
+  
+  What's great about using Gaussian kd-trees to improve these algorithms is that 
+  not only is it faster serially but can have portions of it parallelized over a 
+  GPU.  The tree building portion of the algorithm relies on recursion which is 
+  not ideal for GPU's because of having no stack space (it can be converted to 
+  an interative algorithm but that will not give us any more performance).  But, 
+  the querying portion of the algorithm (where most of the computation time 
+  comes from) which searches through the binary tree is highly parallelizable. 
