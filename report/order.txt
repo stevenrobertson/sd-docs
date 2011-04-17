@@ -2,7 +2,7 @@ fractal.md
 flame_algorithm.md
 other_impls.rst
 gpu.md
-impl.rst
+tools.md
 rng.md
 color_and_log_scale.md
 filtering.md
