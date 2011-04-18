@@ -5,7 +5,7 @@ gpu.md
 tools.md
 rng.md
 color_and_log_scale.md
-filtering2.md
+filtering.md
 misc.md
 new_approach.rst
 glossary.md
