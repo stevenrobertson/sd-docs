@@ -8,5 +8,4 @@ rng.md
 color_and_log_scale.md
 filtering.md
 misc.md
-new_approach.rst
 glossary.md
