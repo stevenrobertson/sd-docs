@@ -27,7 +27,7 @@ import qualified Text.PrettyPrint as P
 import Text.PrettyPrint (Doc, ($$), (<>), nest, vcat, fsep, text, int, colon)
 import Text.CSL
 
-data AnnoType = TODO | CITE | CHECK | REF deriving (Eq, Ord, Enum, Show)
+data AnnoType = TODO | CITE | CHECK | REF | FIG deriving (Eq, Ord, Enum, Show)
 data Annotation = Annotation
     { anType    :: AnnoType
     , anPos     :: SourcePos
