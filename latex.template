@@ -112,6 +112,8 @@ $include-before$
 $endfor$
 $if(toc)$
 \tableofcontents
+\newpage
+\pagenumbering{arabic}
 $endif$
 
 \setlength{\parindent}{0pt}
