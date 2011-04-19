@@ -3,6 +3,113 @@
 This chapter has some miscellaneous stuff which probably needs to make it
 into the report, but may or may not need its own chapter.
 
+## Variations
+
+- More than 100 variations in `flam3`
+
+- Indirect branching still not implemented in Fermi; enormous and very slow
+  fall-through
+
+- Data structure is more than 8K in size... for each xform. With 1000 control
+  poins per frame, this is very hard to keep in cache
+
+- Can we optimize this?
+
+### Feature detection
+
+- Xforms only use a few variations
+
+- Set of variations in use across a single edge or loop in an animation do not
+  change from one control point to the next
+
+- Many other parts of the flame algorithm are only used on rare occasions
+
+- Without branch predictors and large caches, a streamlined implementation of
+  the flame algorihm implementing only the features used in a particular flame
+would have quite an edge over a generic, full-featured version
+
+### Just-in-time compilation
+
+- Do feature detection on example of genome to determine the features required
+
+- Run the feature set through a process which turns out three things:
+
+    - A pile of code, ready to be compiled for the target
+
+    - A definition of the data structure which will be read by the target, that
+      will be used to pack this data
+
+    - Resource allocations and other sizing info required by the code
+
+- Easy enough, right?
+
+### Template OpenCL
+
+- The only way we've seen this done is to spit out C code that's handled by
+  OpenCL
+
+- This doesn't scale to an implementation as complex and data-dependent as this
+  one
+
+    - Can't even verify that different bits of code which are intended to do a
+      particular thing will compile when swapped for another such block of code
+
+    - Side effects, loops, etc become exceedingly difficult to track
+
+    - Easy to fuzz variables (e.g. incorrectly cast void-typed pointers)
+
+    - Info on how to pack the data for the target kept separate from the code,
+      and many potential screwups there too
+
+### Haskell EDSL
+
+- Haskell offers a better way: use an EDSL
+
+- Code for device is expressed as statements that "feel" native; i.e. 1+1
+
+- Underneath, x+y actually composes a representation of the operation rather
+  than computing the result; the native Haskell value is something like ...
+
+- Side effects such as memory loads and stores must be explicitly demarcated
+  and propagate up, so that they are never hidden
+
+- Newtype wrappers distinguish between values that have the same run-time
+  representation but different meanings, without any run-time overhead
+
+- Dynamic code packer: simply provide the accessor used to read the data value
+  against a suspended representation of the runtime data, and it gets replaced
+on the host with a function to pack the data and on the device with aligned
+load instructions
+
+- All of this is enforced at the type level. The corner cases that could plague
+  an all-ifdef system will be caught by the compiler with an error, not in the
+field with a crash
+
+### Testing and benchmarking
+
+- GPU testing is generally awful. Multithreadedness means that debugging
+  statements will often make problems disappear, getting into or out of a
+particular state is difficult, test harnesses can be as complicated as entire
+programs
+
+- Haskell's type system is so good, "if it compiles, it's almost certainly
+  correct" [CITE]
+
+- Our testing plan is, whenever possible, avoid needing to test. Use the type
+  system to prevent bugs.
+
+- Where that fails, use optimization to test
+
+    - Throughout this document, we offer alternative implementation strategies
+      for performance reasons
+
+    - Many of these should behave identically
+
+    - Simply keep even older, suboptimal code in the system, and compare
+      results when swapping out different segments of code
+
+- More subtle bugs, and those affecting all implementations, can be caught by
+  comparing against `flam3` reference images
 
 ## Function selection
 
@@ -180,6 +287,8 @@ In the end, the entire process resembles twisting the dials on a combination
 lock: a point can move in a ring around a column, but can't jump to another row
 or over other points in a column.
 
+[FIG: could get some nice diagrams of the shuffle process]
+
 ### Shift amounts and sequence lengths
 
 Under this simplified model for swap, there is one free parameter for each lane
@@ -316,166 +425,403 @@ allow threads to diverge. This will cause extra computation to be done, but in
 the end may not significantly impact rendering speed; as it turns out, the
 bottleneck on current-generation GPUs is likely to lie in the memory subsystem.
 
-## Accumulating results (another try)
+## Accumulating results
 
-At each iteration, the current sample must be added to the accumulation buffer.
-In a typical implementation, each accumulator is 16 bytes in size, holding four
-4-byte single-precision floating point values. Adding a sample to an
-accumulator requires a read, to find the original value, followed by a write of
-the updated value. Because many different threads will be accumulating points
-simultaneously, this process may cause updates to be lost if threads write to
-the same location, so global atomic instructions, which execute on dedicated
-ALUs located near the memory controllers, are called for.
+The simplest transform functions can be expressed in a handful of instructions;
+with careful design of fixed loop components, many common flames may require an
+average considerably less than 50 instructions per iteration. Single-GPU cards
+in the current hardware generation can retire more than $750\cdot 10^{9}$
+instructions per second[^FMA] [CITE] [TODO: I'm thinking about the GTX 560 Ti
+OC'd to 1GHz here; should that be specified here and below?]; it's not
+unreasonable to expect normal consumer hardware to be able to calculate more
+than 15 billion IFS samples in a single second.  Each of these samples needs to
+make it from a core to the accumulation buffer.  Can the memory subsystem keep
+up?
 
-If an accumulator is in cache, the local ALUs allow the update operation to
-complete very quickly. However, accumulation buffers can be hundreds of
-megabytes in size, and write locations do not typically display spatial
-cohesiveness across threads; in fact, as above, warps that are consistently in
-the same neighborhood are ineffecient. Additionally, due to locally chaotic
-behavior among transform functions, sample locations do not display any general
-pattern in typical flames, making temporal re-use of a particular cache line
-unlikely. As a consequence, most accumulations will result in an L2 cache miss.
+[^FMA]: The FLOPs figures commonly cited by graphics manufacturers are twice
+this value, as they count multiplies and adds as separate operations in an FMA.
 
-Fermi devices use 128-byte lines in L2. Consequently, each L2 miss triggers a
-128-byte load, irrespective of the amount of data to be accessed. For a 16 byte
-read, this indicates an 8× bandwidth penalty on reads. Similarly, cache lines
-are marked as dirty in their entirety [TODO: verify with microbenchmark],
-placing an equal bandwidth penalty on writes.
+Each element in a typical CPU implementation's accumulation buffer is 16 bytes
+wide, holding one single-precision floating point value representing density
+and three representing the unscaled sums of the red, green, and blue color
+values for the points within that accumulator's sampling region. With full
+utilization of the 150 GB/s or so of global memory bandwidth in current-gen
+hardware, one device may be expected to perform about 5 billion of the 16-byte
+read-modify-write cycles required to accumulate a sample.
 
-The average number of operations required to complete an iteration will vary
-considerably depending on the variations in use and the precision requirements
-of the render, but a trace of the execution of one iteration in the abstract
-[TODO: reference previous] demonstrates that the simplest cases generally
-require very few operations. While this may not be useful to determine final
-running time without benchmarks, it is sufficient to determine whether
-alternative accumulation strategies bear investigating: if the difference
-between theoretical iteration rate and accumulation rate is large, accumulation
-is likely to be a bottleneck in actual implementations.  A A mid-level Fermi
-GPU attains 750 GFLOPs for single precision operations (and twice that if an
-FMA is counted as two operations). With an arbitrary, but reasonable, estimate
-of 50 operations required to complete an iteration, this yields an upper bound
-of $15\cdot 10^9$ points per second. If points were written linearly, such
-cards' peak pixel fill-rate — in the neighborhood of $25\cdot 10^9$ pixels per
-second — would be more than enough to capture all points efficiently. However,
-with an eightfold penalty on writes, a doubling of that cost for the reads, and
-limited numbers of L2-local ALUs to perform atomic operations, that peak figure
-drops by more than an order of magnitude to become the clear bottleneck.
+A three-fold drop in performance due to memory limitations is easy to accept
+for an offline renderer. In fact, such a limitation might simplify the entire
+project; an externally-imposed performance cap would limit the need for more
+complex optimizations and provide a concrete stopping place for ongoing
+optimization efforts. Unfortunately, the iteration rate limit imposed by
+accumulation speed is far more severe than the 3× penalty implied by the raw
+bandwidth.
 
-Not all flames will encounter this bottleneck. Renders to small framebuffers
-that fit inside L2 are expected to have more cache hits, and consequently the
-steep bandwidth penalty on reads and writes to DRAM will be lessened in the
-average case. Iterations can also take longer; complex transform functions with
-many parameters that use double precision will take considerably more
-computation to complete, relieving the memory bottleneck. However, such
-situations are rare. Given the severity of the bottleneck for a trivial flame,
-it seems likely that memory bandwidth may be a limiting factor in the average
-case.
+### Chaos and coalescing
 
-To ensure optimal performance, then, a GPU implementation of the fractal flame
-algorithm may employ alternate strategies for accumulation. In this section, we
-discuss several possible individual techniques which reduce memory traffic or
-increase efficiency, and describe how they can be combined to raise the limit
-on the number of accumulations per second.
+The flame algorithm, and the chaos game in general, estimates the shape of an
+attractor by accumulating point information across many iterations. While
+visually interesting flames have well-defined attractors, the trajectory of a
+point traversing an attractor is chaotic, jumping across the image in a manner
+that varies greatly depending on the starting state of its thread. As a result,
+there is little colocation of accumulator addresses in a thread's access
+pattern over time. Spatial coherence is also unattainable, due to the need to
+avoid warp convergence discussed in the previous section.
 
-### Color strategies
+Each accumulation, therefore, is to an effectively random address. While the
+energy density across an image is not uniformly distributed, most flames spread
+energy over a considerable portion of the output region [TODO: insert variance
+statistics]. Accumulation buffers can be quite large; for a 1080p image
+rendered using 2× supersampling, the framebuffer is over 100MB[^fbsize]. This
+access pattern would challenge even traditional CPU caches, which tend to be
+spacious and include advanced prefetching components; it renders the small,
+simple caches found in GPUs useless.
 
-As discussed in previous sections [TODO: backref or drop], human vision has
-considerably less sensitivity and spatial resolution for color than for
-luminance. In existing implementations of the flame algorithm, however, color
-is given three times the storage space and bandwidth of density information in
-the accumulator. Reducing the amount of color traffic during accumulation may
-result in bandwidth savings without visible quality loss.
+[^fbsize]: $(1920 \cdot 1080) \text{accumulators} \cdot 2^2
+\text{accumulators}/\text{sample} \cdot 16 \text{bytes}/\text{accumulator} =
+132710400 bytes$
 
-After rendering, individual flames are typically compressed with the JPEG image
-codec, and animations with H.264 or MPEG-4 ASP video codecs. These compression
-formats, and many others, store color information at a fraction of the spatial
-resolution
+[TODO: verify eqn renders properly]
 
-In lossy still-image formats such as JPEG [CITE], and nearly every common video
-format [CITE],
+With each cache miss, a GPU reads in an entire cache line; each dirty cache
+line is also flushed to RAM as a unit [TODO: verify on Fermi]. In the Fermi
+[TODO: and Cayman?] architecture, cache lines are 128 bytes. If nearly every
+access to an accumulator results in a miss, then the actual amount of bus
+traffic caused by one accumulation is effectively eight times higher than the
+accumulator size suggests — and consequently, the peak rate of accumulation is
+eight times lower.
 
-- Treat color differently, because our eyes are less sensitive
+To make matters worse, DRAM modules only perform at rated speeds when reading
+or writing contiguously. There is a latency penalty for switching the active
+row in DRAM, as must be done before most operations in a random access pattern.
+This penalty is negligible for sustained transfers, but is a considerable
+portion of the time required to complete a small transaction; when applied to
+every transaction, attainable memory throughput drops by more than 20% [CITE
+GDDR5 spec] [CHECK I pulled this number out of thin air].
 
-- Chroma subsampling: separate color components from alpha, and sample the
-  color grid at a much lower resolution; cuts framebuffer size by ≥75%.
-  However, on its own, causes misses to increase; definitely causes
-  ineffeciency to increase.
+A 3× penalty may be acceptable, but one of more than 30× cannot be overlooked.
+Meeting this project's performance goals will require finding
+higher-performance alternatives to the traditional accumulation method.
 
-- Chroma undersampling: only calculate chroma for a limited number of points.
-  Possibility to leave some points unmapped, must use other methods (mipmapped
-  chroma? post-hoc search?) to handle
+### Taking advantage of L2
 
-- Data-dependent probabilistic chroma writeback: reduce number of times chroma
-  written in logarithmic proportion to intensity of point. Requires that atomic
-  intensity be written first. Doesn't do much good without chroma subsampling.
+In many situations, the level-2 cache on Fermi GPUs is large and fast enough to
+accelerate random access patterns, with no specific development effort required
+to attain reasonable performance. This is not the case for the flame algorithm;
+the buffers involved are simply too large relative to the cache to make it
+likely that the next accumulator will already be in L2.
 
-### Manipulating the cache
+If accesses to L2 did result in a cache hit in the majority of cases, it would
+improve accumulation speed, reducing the bottleneck or eliminating it entirely.
+To that end, techniques which can increase the chance of this are presented
+below. In general, any algorithm depending on the availability of cached data
+will not scale, even with these tricks; increasing the framebuffer size beyond
+a certain threshold will cause significant loss of performance.
 
-- Explicit L2 manipulation using cache instructions and read. By hitting the
-  cache with a read over a particular intensity, data can be kept local.
+#### Color subsampling
 
-  - Run the math, but I'm doubtful. Depends on image variance.
+As discussed in previous sections [REF or drop], human vision has considerably
+less sensitivity and spatial resolution for color than for luminance. In
+existing implementations of the flame algorithm, however, color is given three
+times the storage space of density information in the accumulator. Since still
+images are typically compressed with JPEG, and animations with H.264 or MPEG-4
+ASP, most of this information never makes it to the viewer; each of these
+codecs downsamples color information before transforming and applies more
+aggressive quantization to increase compression efficiency. Applying similar
+techniques during rendering could reduce the size of the accumulation buffer,
+allowing a larger proportion of it to remain cached.
 
-  - Probably won't have too strong an effect on core image performance.
+In most video transmission systems, RGB tristimulus values are encoded to
+YUV[^yuv] via an invertible transform. The Y channel encodes the luminance
+value of the image sample, while the remaining two channels store the
+information needed to distinguish between multiple colors. YUV encodings are
+linear and time-invariant, and so behave like RGB under addition;
+pre-converting color values in the palette to YUV and post-converting back to
+RGB would provide the same data (apart from rounding error) as unconverted
+accumulation.
 
-  - L2 is a latency reducer, not a bandwidth amplifier. Reductions should
-    bypass the L1 and may amplify bandwidth, but need to benchmark.
+- In flame algorithm, "density" and "color"; color != chrominance
 
-  - Result => may actually reduce bandwidth.
+- In YUV, Y contains most visual and nonredundant information
 
-- There was another one?
+- In DYUV, D contains more information than averaged Y, much more than averaged
+  UV in most images
 
-### Attaining spatial coherence
+- Schemes that subsample YUV and just UV should be considered
 
-- Log and sort
+- Place subsampled channels in separate planes. On its own, not a great
+  solution
 
-  - Log the points linearly. 32 bits for an alpha sample, 64 for color; size
-    decreases as addresses get more finely resolved
+- Interleave channels in larger units. Pros and cons
 
-  - Radix/bucket sort can dispatch efficiently to local lines in shared memory,
-    which can be written to global buffers only when fully covered, improving
-    efficiency of transactions and bringing them in line with atomics
+#### Color discard
 
-  - Final accumulation can be done in shared memory, taking advantage of much
-    faster atomics therein (bank penalties much smaller than overall crippling)
+- On principle that color is averaged, and subsequent color samples are less
+  important, make recording the color probabilistic
 
-- A further method will be covered in a later chapter
+- Based on color density; points with a lot of color samples don't need more
 
-### Final thoughts
+- Or simply based on an overall scale; will leave some points undercovered but
+  that's what filtering is for
 
-- Best theoretical combination from: (my guess is, chroma subsampling, chroma
-  undersampling, log and sort)
+- In this case, makes sense to separate planes into density-only and a second
+  color-only DRGB / DYUV
 
-- Depends on number of scatter buckets. Probable best bet: heterogeneous
-  workloads, using small, continuous, memory-intensive kernel in parallel with
-  giant ones
+- Density can fit as 4 bytes per accumulator, to efficiently fill the space
 
-- Done right, this can use shared memory and mostly skip L1, leaving it and the
-  texture caches ready to handle the enormous genome structures.
+- We can do better
 
-## Motion blur
+#### Compact fixed-point representation
 
-- Motion blur is used in static flames to give a sense of implied motion.
-  Also important for dynamic flames, as few systems can handle H.264
-  1080p60 at great bitrates, and 1080p24 is unsatisfying without at least
-  some motion blur
+- Limited by what atomics can support
 
-- Critically important to the illusion of depth
+- Range much smaller than full range given by single-precision floating point.
+  32-bit fixed-point is more than capable of handling it
 
-- flam3 implements motion blur by performing 1,000 interpolations in a
-  narrow range around a single time value, and distributing samples across
-  this time range in a serial fashion
+- Most of the 32-bit number is never touched; waste of cache
 
-- For the GPU, this would result in too much memory bandwidth; would lose
-  out on the benefit of the constant cache (or L1).
+- Two accumulation buffers. One holds full 32-bit values, either float or
+  fixed-point; the other holds small fixed-point values, tightly packed
 
-- Solution 1: use fewer motion blur steps; might it give acceptable visual
-  approximation?
+- Add to a fixed-point value. When it overflows, add its contents to the real
+  accumulation buffer. (Plus a final pass through at the end to collect any
+  remaining values)
 
-- Solution 2: use piecewise linear interpolation via the texture hardware.
-  If data loads can be vectorized, it's almost free.
+- Problem: GPU atomics only work on 32-bit integers or floats
 
-- Solution 3: cooperation across SMs to avoid needing to reload too many
-  points.
+- Use atomic adds with the addend shifted to the appropriate place within a
+  32-bit field, and test for overflow manually
+
+- When it happens, issue a sub to clear the current state of that individual
+  slice (and the overflow from the one above), then add to the full buffer
+
+- This works even if intermediate instructions write to the same pixel; only
+  one thread will detect the overflow, and the subtract won't affect any data
+  written while preparing to fix overflow
+
+- Only special case is when a value and the one above it in the same dword
+  are about to overflow, the overflow catches both locations, *and* an
+  instruction writes to the higher value before the lower one can be adjusted
+
+- Will implement a trap for this in debugging mode to see if it happens often
+  enough to require handling in normal code
+
+- What vword size to use? Must fit into 32-bit dword. Useful choices seem to be
+  16-bit x 2, 10 bit x 3 (also useful as it has overflow bits which eliminate
+  the weird special case above), 8 bit x 4, 6 bit x 5, 5 bit x 6, 4 bit x 8
+
+- Asymmetrical packing an option too, although that may be too complex
+
+- Tradeoff: more compact code requires more oveflow spills. Overflow spills are
+  reductions, and typically won't stall a warp, so no special divergence
+  protection needed, but still, savings/bandwidth ratio must be considered.
+
+#### Dithering
+
+- Most flames use visibility values of 1.0 or 0.0 for all xforms, letting us
+  use 0 bits after decimal in density
+
+- Rounding an intermediate visibility would result in a substantial bias. Just
+  as true for color.
+
+- When quantizing these components, use dithering. At each write, round up if a
+  random number is smaller than the bits being chopped off.
+
+- Over many rounds, same result as floating accumulation
+
+#### Combining techniques
+
+Color subsampling reduces the size of the color buffer. Color discard ensures
+that the color buffer doesn't need to be kept in the cache. Fixed-point storage
+shrinks both density and color buffers, and dithering makes sure it doesn't
+trash image quality.
+
+With these combined, the most frequently-accessed information can be stored in
+as little as 4 bits per pixel. At 4BPP, the entire density information of an
+unsupersampled 1280x720 image fits in L2, and a good deal of a 1080P one too.
+
+A lot of parameters in this one; no substitute for experimentation.
+
+Also, it doesn't scale. We'd like an approach that does, for turning on SS and
+rendering very large images. The big images need it most.
+
+### Acheiving spatial locality
+
+- The only truly scalable techniques can't depend on the cache; must use
+  bandwidth more efficiently
+
+- Can't attain spatial or temporal locality in access pattern to accumulators.
+  There is a way, though: don't write straight to accumulators, sort first.
+
+- Seems unlikely, no? Indeed, a comparison sort would almost certainly be too
+  slow. But we don't need a generalized sort; we can optimize in certain ways.
+
+#### Logging a point
+
+- What exactly are we sorting?
+
+- Info required: accumulator address and color to log. In floating values,
+  that's 24 bytes; ick.
+
+- How are color values determined? Palette index and temporal position.
+
+    - Palette changes very slowly across time; only need a few bits to fully
+      specify temporal position, and dithering should be fine
+
+    - Palette uses linear blending between elements, but not across whole
+      palette; 8 bits minimum with dithering
+
+    - Visibility also affects palette values when present. Absolute dithering
+      works, but only with very large numbers of samples; better to dither a
+visibility value
+
+- In the best case, where all visibilities are binary and the palette is nearly
+  stationary across time, can represent color with 8-bit dithered address with
+  deferred tex lookup.
+
+- If temporal palette address and/or visibility are required, bump that up to a
+  16-bit color address. (Less is probably OK, but non-power-of-two sizes add
+  too much complexity here)
+
+- Accumulator address. 2D coordinate, but address calculations turn it into a
+  1D index.
+
+- Number of bits required is simply log-2 number of accumulators. Round up to
+  nearest 8-bit number for simplicity. Worth noting that 720P with up to 4X
+  supersampling and 2560P with up to 2X supersampling fit in 24 bits.
+
+- Thus, for most flames, we can fit in 32 bits: a 24-bit accumulator index and
+  an 8-bit color value. We assume that this is the case for now.
+
+#### Quick review of radix sorting
+
+- Brief review of MSB first radix sort:
+
+  - Radix of size R. For binary numbers, want power of two; use N bits, so
+    $R=2^N$.
+
+  - Create R empty buckets, indexed from 0 to R-1.
+
+  - For each value, examine the largest radix (mask and shift to look at the
+    top N bits); call this I. Choose the bucket with index I, and append the
+    value to that bucket.
+
+  - After all values accumulated, repeat process on each bucket by itself with
+    the next radix.
+
+- Radix sort is not comparison sort; we can beat the number of comparisons
+  required.
+
+#### Efficient sort of point log
+
+- To write efficiently, want to avoid read-modify-write and not waste any
+  bytes; therefore, work to only write complete cache lines.
+
+- For each bucket, set up a single cache-line's worth of shared memory, and an
+  index in main memory  [FIG a nice flowchart for this loop]
+
+  - Each thread loads a sample, pulls the radix, and identifies the
+    corresponding bucket index
+
+  - Atomically add to the index
+
+  - If the modified index is less than the line length, write the point. If
+    it's greater, don't. If it's equal, flag overflow.
+
+  - Overflow detect loop
+
+    - Perform a hack warp vote. Clear a shared memory location, then have every
+      thread which flagged overflow write its index to it.
+
+    - If it's empty, exit this loop.
+
+    - If not, every thread in the warp picks up the cache line and writes it
+      together. Presto, serial write.
+
+    - If offset >= line length, overflow index == index, and line length >= 0,
+      write out point to appropriate line. Clear offset.
+
+    - Loop.
+
+- We choose a radix size of 7. As discussed later, the shared-memory
+  accumulation process N+3 bits of address.  With a radix of 6, an extra pass
+is required to finish sorting; a radix size of 8 uses too much shared memory
+and won't fit on the GPU. For N=7, 16KB are required for the radix sort buffer.
+
+#### Iterating and sorting
+
+- This algorithm requires frequent synchronization across all participating
+  threads, and storage space in proportion to the number of threads.  It works
+best in a single warp.
+
+- There is no explicit cross-work-group synchronization primitive, so
+  producer-consumer queues are incredibly challenging.
+
+- Therefore, we want to attach one warp of this to a work-group of iterating
+  threads, and use work-group barriers to ensure things stay synchronized.
+
+- Here's how it goes: [FIG another flowchart]
+
+  - On start, the sort warp immediately goes to the sort barrier, and the
+    iterating threads move through an iteration.
+
+  - After completing the iteration and swap, the iterands compact the point
+    into the 32-bit sortable index and store it in the swap buffer.
+
+  - Iterands hit sort barrier, which is now full; all threads now free to run
+
+  - Sort warp reads a line of samples to sort from the swap buffer, and
+    executes Algorithm N.1
+
+  - After sort warp is finished with swap buffer, it hits swap barrier, and
+    waits for iterands
+
+  - Meanwhile, iterands are performing an iteration. When they finish, they hit
+    the swap buffer, and wait for sort warp
+
+  - After both arrive, swapping starts, and process repeats
+
+- This interleaved producer/consumer model prevents starvation with very little
+  overhead on synchronization.
+
+- It also provides firm bounds on work-group sizes. Radix of N=7 means 16KB
+  radix sort buffer. We desire the largest size work-group attainable. The swap
+buffer is proportional to the number of iterands. On Fermi, with 48KB
+available, we can fit two radix buffers, but not three - there's overhead, plus
+the swap buffers. Fermi only supports 1536 threads per core; across two, that's
+768 per. Since we want a power-of-two size for the number of iterands, it's
+512. Add in the sort warp and it's 544 threads per work-group.
+
+[TODO: the description of the bucket mechanism, and how to move them down each
+level, is so complicated and hardware-dependent that it would take dozens of
+pages to explain the alternatives before we run the benchmarks to determine
+what works best. I'm going to simply avoid mentioning the implementation of
+buckets at all and hope nobody notices.]
+
+#### Accumulating values in shared memory
+
+- After accumulations fill a bucket, it is sent back through the sorting thread
+  for an additional round of splitting.
+
+- After the second pass, each point is in a bucket where the upper 14 bits of
+  each index are the same, leaving only the lower 10 bits.
+
+- Each bucket thus spans a range of 1024 index positions.
+
+- Accumulators are 16 bytes wide, and the shared memory sort buffer is 16KB in
+  size.
+
+- The sort buffer is zeroed, then each point in the bucket is read in turn. The
+  index is peeled from the value, the color is used to do a palette lookup, and
+the shared-memory copy of the accumulator is updated just as if it were in main
+memory.
+
+- Once the entire bucket has been read, the shared-memory accumulators are
+  added to their global memory counterparts.
+
+- The whole process is considerably more complex than other writeback
+  mechanisms, and there are in fact hardware-dependent details which have been
+elided in this description. However, it ends up being considerably faster
+overall. [TODO: make this point better.]
 
 <!-- vim: syntax=pdcf: -->
