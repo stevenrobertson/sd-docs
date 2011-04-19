@@ -165,7 +165,7 @@ Random fractal's iterative process relies on a non-deterministic process for cre
 
 \begin{figure}[h]
 	\centering
-	\includegraphics{./fractal/random_fractal.jpg}
+	\includegraphics{./fractal/random_fractal.png}
 	\caption{Image of a computer generated fractal landscape compared with a mountain landscape}
 	\label{randomfractal}
 \end{figure}
