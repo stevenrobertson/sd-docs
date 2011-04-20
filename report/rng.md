@@ -5,6 +5,18 @@ Random numbers are used in this project because of their importance in calculati
 
     In selecting the right PRNG, it is common to look at its period (or numbers it outputs until it starts repeating itself), its speed and its spectral properties, the latter which determine its true randomness. For this project, we are looking for a simple and fast PRNG that meets out minimum needs.
 
+## Bias, Oh my!
+
+[TODO Change section name and finish this]
+
+
+\begin{figure}[h]
+	\centering
+	\includegraphics{./rng/bias.png}
+	\caption{Sierpinski's Triangle generated with different biases of Vertex A.}
+	\label{sierpinskibias}
+\end{figure}
+	
 ##  Pseudo Random Number Generators
 There are various properties that a PRNG can have, but for this project, we are looking for maximized speed and spectrum properties, and a PRNG that can be implemented in a GPU.
 

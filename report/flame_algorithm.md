@@ -8,6 +8,7 @@ Also included in this section is a comprehensive history of the Flame algorithm 
 Finally, we end with a concluding section summarizing our current knowledge on the topic and describe how it influenced our proposed implementation for rendering fractal flames using the flame algorithm which is described in the following section.
 
 ##Iterated Function System (IFS) Primer
+\label{ifsprimer}
 This primer aims to present the fundamental concepts of iterated function systems along with several classic examples that will visually and mathematically convey two important concepts:
 
 1. The importance of random application of defined affine transformations on a random starting point in the plane
@@ -16,55 +17,169 @@ This primer aims to present the fundamental concepts of iterated function system
 These concepts are the building blocks of the flame algorithm. If the reader is already familiar with the concept of iterated function systems feel free to skip over this section and start reading how fractal flames differ from the classical iterated function system that is described below. 
 
 ###Definition
-An **Iterated Function System** is defined as a finite set of **affine contraction transformations** $F_{i}$ where i= 1, 2, ..., N(1, 3) that map a **metric space** onto itself. Mathematically this is:
+An **Iterated Function System** is defined as a finite set of **affine contraction transformations** $F_{i}$ where i= 1, 2, ..., N(1, 3) that map a **metric space** onto itself. Mathematically this is [1]:
 
-![Definition of an Iterated Function System[1]](./flame/ifs_equation.png)
+$\left \{  f_{i} : X \mapsto X  \right \}, N \text{ } \epsilon \text{ } \mathbb{N}$
+
 
 A **metric space** is any space whose elements are points, and between any two of which a non-negative real number can be defined as the distance between the points - an example is Euclidean space.[2]
 
-An **affine transformation** from one vector space to another comprises a linear transformed (rotation, scaling, or shear) following by a translation. Mathematically this is:
+An **affine transformation** from one vector space to another comprises a linear transformed (rotation, scaling, or shear) following by a translation. Mathematically this is [3]:
 
-![Definition of an Affine Transformation [3]](./flame/affine_transform_equation.png)
+$x \mapsto Ax +b$
 
 These transforms can be represented in one of two ways:
 
 1.	By applying matrix multiplication (which is the linear transform) and then performing vector addition (which represents the translations).
 
-==============
-
-** TODO: Add Example
-
-==============
 
 2.	By using a transformation matrix. To do this we must use homogeneous coordinates. Homogenous coordinates have the property that preserves the coordinates in which the point refers even if the point is scaled. By using the transformation matrix we can represent the coefficients as matrix elements and combine multiple transformation steps by multiplying the matrices. This has the same effect as multiplying each point by each transform in the sequence. This effectively cuts down the number of multiplications needed- this is worth noting as it will be utilized in our implementation.
 
-==============
+\begin{figure}[h]
+	\centering
+	\includegraphics{./flame/sheer_trans_rot_scale.png}
+	\caption{Visual representation of Sheer, Translation, Rotation, and Scaling.}
+	\label{affineoperations}
+\end{figure}
 
-** TODO: Add Example
 
-** Provide graphic such as : http://people.gnome.org/~mathieu/libart/libart-affine-transformation-matrices.html **
+**Rotation Matrix** \newline
+To perform rotation using the transformation matrix the matrix positions $A_{0,0}$, $A_{0,1}$, $A_{1,0}$, and $A_{1,1}$ should be modified (where $A$ is the matrix). By using the transformation matrix below and setting $\theta$ you effectively rotate your points by $\theta$ degrees. \newline
 
-==============
+$\begin{vmatrix}
+\cos{\theta}     & -\sin{\theta}  & 0  \\
+\sin{\theta}     &  \cos{\theta}  & 0  \\
+0                &  0             & 1  \\
+\end{vmatrix}$
+
+\newline
+**Shear Matrix**\newline
+To perform sheer using the transformation matrix the matrix position $A_{0,1}$ should be modified (where $A$ is the matrix). By using the transformation matrix below and setting $Amount$ you effectively perform sheer of value $Amount$ on your points. \newline
+
+$\begin{vmatrix}
+1         &  Amount        & 0 \\
+0         &  1             & 0 \\
+0         &  0             & 1 \\
+\end{vmatrix}$
+
+\newline
+**Scaling Matrix**\newline
+To perform scaling using the transformation matrix the matrix positions $A_{0,0}$ and $A_{1,1}$ should be modified (where $A$ is the matrix). By using the transformation matrix below and setting $Scale\text{ }Factor_{x}$ to the magnification you would like your x-axis and $Scale\text{ }Factor_{y}$ to the magnification you would like your y-axis you effectively scale your points by that amount.
+
+\newline
+
+$\begin{vmatrix}
+Scale\text{ }Factor_{x} & 0                       & 0 \\
+0                       & Scale\text{ }Factor_{y} & 0 \\
+0                       & 0                       & 1 \\
+\end{vmatrix}$
+\newline
+
+**Translation Matrix**
+To perform translation using the transformation matrix the matrix positions $A_{0,2}$ and $A_{1,2}$ should be modified (where $A$ is the matrix). By using the transformation matrix below and  setting $Translation_{x}$ to the offset from your current x-point and $Translation_{y}$ to the offset from your current y-point you effectively translate your points by that amount.
+\newline
+$\begin{vmatrix}
+1 & 0 & Translation_{x} \\
+0 & 1 & Translation_{y} \\
+0 & 0 & 1 \\
+\end{vmatrix}$
+
+\newline
+
+
+
 
 3. The term **contraction mapping** in plain English refers to a mapping which maps two points closer together. The distance between these points is uniformly shrunk. This contraction will be seen when performing the classic Sierpinski Triangle problem.[4] The properties above can be proved by the Contraction Mapping Theorem and because of this proves the convergence of the linear iterated function systems we present in this section.
 
 ###Chaos Game
-The most common way of constructing an Iterated Function System is referred to as the *chaos game* as coined by Michael Barnsley. Our initial fractal flame algorithm will also use this approach. In the *chaos game* a random point on the plane (in our case between -1 and 1) is selected. Next, one of the affine transformations to describe the system is then applied to this point and the new resulting point is then plotted and the procedure repeats. Selection of the affine transformation to apply is either random (in the case of Sierpinski's triangle) or probabilistic (in the case of Barnsley's Fern). The procedure is repeated for N iterations where N is left up to the user. The more iterations you allow the chaos game to run for the more closely your resulting image resembles the iterated function system.
+The most common way of constructing an Iterated Function System is referred to as the *chaos game* as coined by Michael Barnsley. Our initial fractal flame algorithm will also use this approach. In the *chaos game* a random point on the plane (in our case between -1 and 1) is selected. Next, one of the affine transformations to describe the system is then applied to this point and the new resulting point is then plotted and the procedure repeats. Selection of the affine transformation to apply is either random (in the case of Sierpinski's triangle) or probabilistic (in the case of Barnsley's Fern). The procedure is repeated for N iterations where N is left up to the user. The more iterations you allow the chaos game to run for the more closely your resulting image resembles the iterated function system. A flow chart of this procedure is found in Figure \ref{ifs_flowchart}
 
-Again, this procedure in pseudocode is as follows:
-
-![Psuedocode procedure of IFS](./flame/ifs_pseudocode.png)
+\begin{figure}[h]
+	\centering
+	\includegraphics{./flame/ifs_flowchart.png}
+	\caption{Flow chart of IFS Procedure}
+	\label{ifs_flowchart}
+\end{figure}
 
 ###Classical IFS Example : Sierpinski Triangle 
 We will start with the illustrative example of Sierpinski's Triangle. This example is suitable to show how the fractal will begin to show itself with a certain number of iterations. We will also observe the contractive nature of the affine transformations.
 
 To construct the Sierpinski Triangle using the Chaos Game we need to describe the affine transformations that will be used. Using the most basic version of an affine transformation described in variation 1, we can describe the system with the following 3 transformations:
 
-![Affine Transformations Variation 1](./flame/sierpinski_transform_var1.png)
+$A_{0}=
+\begin{vmatrix}
+\frac{1}{2} & 0             \\ 
+0           & \frac{1}{2}   \\
+\end{vmatrix}
+\text{ }b_{0}=
+\begin{vmatrix}
+0 \\
+0 \\
+ \end{vmatrix}
+\text{ selected with a probability of }
+\frac{1}{3}
+\text{. (Pulls point towards Vertex A)}$
+
+$A_{1}=
+\begin{vmatrix}
+\frac{1}{2} & 0             \\ 
+0           & \frac{1}{2}   \\
+\end{vmatrix}
+\text{ }b_{0}=
+\begin{vmatrix}
+\frac{1}{2} \\
+0           \\
+ \end{vmatrix}
+\text{ selected with a probability of }
+\frac{1}{3}
+\text{. (Pulls point towards Vertex B)}$
+
+$A_{2}=
+\begin{vmatrix}
+\frac{1}{2} & 0             \\ 
+0           & \frac{1}{2}   \\
+\end{vmatrix}
+\text{ }b_{0}=
+\begin{vmatrix}
+0           \\
+\frac{1}{2} \\
+ \end{vmatrix}
+\text{ selected with a probability of }
+\frac{1}{3}
+\text{. (Pulls point towards Vertex C)}$
 
 However, using the affine transformation matrix described in we can equivalently write the transformations as:
 
-![Affine Transformations Variation 2](./flame/sierpinski_transform_var2.png)
+$F_{0}=
+\begin{vmatrix}
+\frac{1}{2}   & 0           &  0           \\
+0             & \frac{1}{2} &  0           \\
+0             & 0           &  1           \\
+\end{vmatrix}
+\text{selected with a probability of }
+\frac{1}{3}
+\text{. (Pulls point towards Vertex A)}$
+
+$F_{1}=
+\begin{vmatrix}
+\frac{1}{2}   & 0           &  \frac{1}{2} \\
+0             & \frac{1}{2} &  0           \\
+0             & 0           &  1           \\
+\end{vmatrix}
+\text{selected with a probability of }
+\frac{1}{3}
+\text{. (Pulls point towards Vertex B)}$
+
+$F_{2}=
+\begin{vmatrix}
+\frac{1}{2}   & 0           &  0           \\
+0             & \frac{1}{2} &  \frac{1}{2} \\
+0             & 0           &  1           \\
+\end{vmatrix}
+\text{selected with a probability of }
+\frac{1}{3}
+\text{. (Pulls point towards Vertex C)}$
+
 
 Each of these transformations pulls the current point halfway between one of the vertices of the triangle and the current point. $F_{0}$ performs scaling only. $F_{1}$ and $F_{2}$ perform scaling and translation.
 
@@ -72,7 +187,7 @@ We now begin the *chaos game*. We first select a random point on the biunit squa
 
 ![Affine Transformations Applied](./flame/sierpinski_vertex_pull.png)
 
-Notice how the next point is the midpoint between the Vertex and current point. These mappings guarantee the convergence of the algorithm to the desired IFS. This process continues on with each point being plotted. We have provided coloring for a visual representation of what transformation was responsible for each point. Points transformed by F0 are labeled yellow, F1 are labeled Red, F2 are labeled Blue. Iterations 2,500, 10,000, and 25,000 are displayed:
+Notice how the next point is the midpoint between the Vertex and current point. These mappings guarantee the convergence of the algorithm to the desired IFS. This process continues on with each point being plotted. We have provided coloring for a visual representation of what transformation was responsible for each point. Points transformed by $F_{0}$ are labeled [TODO yellow], $F_{1}$ are labeled [TODO Red], $F_{2}$ are labeled [TODO Blue]. Iterations $2,500$, $10,000$, and $25,000$ are displayed:
 
 ![Sierpinski's Triangle after numerous iterations.](./flame/sierpinski_iterations.png)
 
@@ -153,7 +268,7 @@ By applying variations, the resulting solution is changed in a particular way. F
 
 **Parametric Variations:** TODO - Write a sentence about what it is.
 
-For a visual supplement as well as an extensive collection of many catalogued variations please refer to the Appendeix of the original Flame Algorithm Paper.
+For a visual supplement as well as an extensive collection of many catalogued variations please refer to the Appendeix of the original Flame Algorithm Paper. [CITE]
 
 
 3. **Post Transformation**
