@@ -30,19 +30,24 @@ smooth edges and gradients in the original image can not be represented
 properly.  It is usually observed as distortion or artifacts on lines, edges, 
 and smooth curves.  Aliasing occurs when high resolution graphics are mapped to 
 a lower resolution that cannot support the smooth gradients in the original 
-graphic which results in what's commonly known as "jaggies" as shown in figure
-8.1 [@Yang2009].
+graphic which results in what's commonly known as "jaggies" 
+(Figure \ref{aliasing}) [@Yang2009].
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics{./filtering/Aliasing_aSmall.png}
+	\caption{Left: aliased image, right: antialiased image}
+	\label{aliasing}
+\end{figure}
 
 Graphical images are at the simplest level a collection of discrete color dots, 
-or  pixels, that are displayed on some graphic medium.  These pixels are 
+or pixels, that are displayed on some graphic medium.  These pixels are 
 generated, or rendered, from collections of data called fragments.  The data 
 contained in a fragment can include texture, shader, color, Z location, and 
-other data.  Each pixel is made up of one or more fragments, with each fragment 
-representing a triangle.  Problems arise when the pixel is sampled from only one 
-fragment in the pixel.  This causes all the other data from the other fragments 
-to be loss and will result in an inaccurate image.
-
-![Left: aliased image, right: antialiased image](filtering/Aliasing_aSmall.png) 
+other such data.  Each pixel is made up of one or more fragments, with each 
+fragment representing a triangle.  Problems arise when the pixel is sampled from 
+only one fragment in the pixel.  This causes all the other data from the other 
+fragments to be lossed and will result in an inaccurate image [@Schwarz2009].
 
 ### Visual image information
 
@@ -55,8 +60,7 @@ stimulate traditional object recognition pathways in novel ways, rather
 than, say, white noise.
 
 2D object recognition in our brains depends on recognition of sharp
-discontinuities in images [TODO: CITE(I have papers which you can cite to show 
-this, you don't even have to read 'em if you don't have time).]  Since so much 
+discontinuities in images [CITE].  Since so much 
 of our neural hardware depends on discontinuities at object boundaries, they
 become important.  However, our algorithm runs in the discrete domain; 
 ultimately the results get sent to monitors. As a result, the perfect curves in 
@@ -92,51 +96,67 @@ regions.
 problem.  It is a relatively naive algorithm and works well but is expensive 
 in terms of resources.  Aliasing distortion occurs when continuous objects 
 cannot be represented correctly because of a relatively low sampling rate
-(resolution).  Supersampling solves this problem by rendering an image at a 
-higher resolution and performing downsampling, using multiple points to 
-calculate the value of a single pixel.  The sampling points lie within the 
-area of a pixel and their location is determined by the type of algorithm.
-The number of sampling points is directly related to the quality and 
-performance of the filter and is the biggest factor of cost in antialiasing.  
-Turning on 4x SSAA (4 samples per pixel) will require four times as many 
-samples to rendered, the fill rate will be four times longer and will have 1/4 
-the original frame-rate [@Beets2000].
+(resolution) used in the output medium.  Supersampling solves this problem by 
+rendering an image at a higher resolution and performing downsampling, using 
+multiple points to calculate the value of a single pixel.  Using the average 
+value of multiple samples for one pixel leads to a more accurate color 
+representation for that pixel.  The sampling points all lie within the area of a 
+pixel and their location is determined by the type of algorithm.  The number of 
+sampling points is directly related to the desired quality as higher quality 
+filtering will need more sampling points.  This directly affects the performance 
+of the filter and is the biggest factor of cost in antialiasing.  Turning on 4x 
+SSAA (4 samples per pixel) will require four times as many samples to rendered, 
+causing the fill rate to be four times longer (meaning animations will have a 
+quarter of the original frame-rate [@Beets2000].  Going back to sample
+locations, the specific supersampling algorithm will decide how these samples 
+will be chosen.  These algorithms are explained below.
   
-The Ordered Grid algorithm is the simplest and fastest - each pixel is evenly divided 
-into subsections with samples being taken at the center of each subsections.  
+The Ordered Grid algorithm is the most trivial supersampling method.  It is the 
+simplest and the fastest of the supersampling algorithms but also offers the 
+least quality.  It works by evenly diving a pixel into subsections (like a grid) 
+and then taking the samples from the center of each subsection.  
 However, because of the samples being extremely regular and lying directly on 
-the axis, the quality of this algorithm may suffer in certain cases.  The 
-Rotated Grid algorithm is a similar to the Ordered Grid algorithm in that the pixels are
-evenly divided into regular subsections, but with samples not lying directly on 
-the axis.  This algorithm is similar in performance to the Order Grid 
-algorithm but with significantly improved filter quality.  Supersampling 
-algorithms exist that randomly chose sample locations and can produce better 
-quality images, but they all have a significant trade-off in regards to 
-performance.  There is the purely Random algorithm that chooses all sample 
-locations randomly every time that is capable of very good quality, but there 
-are many instances where pixel locations are not spread out evenly throughout 
-the pixel area which causes inaccurate sampling.  The Poisson and Jitter 
-algorithms try to improve this issue using two different methods.  The Poisson 
-algorithm divides the pixel into subsections, then chooses the samples by 
-randomly selecting a point inside each subsection.  The Jitter algorithm tries 
-to find samples to use by selecting them all randomly, then if any samples are 
-within a a specified distance of each other, one of the samples are thrown out 
-and a new point is randomly selected and re-verified.  These algorithms are 
-depicted below in figure 8.2.
+the axis, the quality of this algorithm will suffer in certain cases.  The 
+Rotated Grid algorithm is a similar algorithm designed to offer higher quality 
+filtering with the same performance of the Ordered Grid algorithm.  In the 
+Rotated Grid algorithm, the pixels are still evenly divided into regular 
+subsections, but with the samples not lying directly on the axis.  This 
+algorithm is similar in performance to the Order Grid 
+algorithm but with significantly improved filter quality.  Other supersampling 
+algorithms exist that randomly chose sample locations with the goal of producing 
+better quality images, but they all have a significant trade-off in regards to 
+performance.  There is the purely Random algorithm that chooses every sample 
+location randomly and is capable of very good quality, but there is the possible 
+of having pixel locations not being uniformly distributed throughout the pixel 
+area which wil cause inaccurate sampling.  The Poisson and Jitter are algorithms 
+that also use random placement while focussing on having uniform sample 
+distribution.  The Poisson algorithm divides the pixel into subsections, 
+similarly to how the Ordered Grid algorithm creates subsections, then chooses 
+the samples by randomly selecting a point inside each subsection instead of 
+always sampling at the center.  The Jitter algorithm determines sample locations 
+by choosing all samples purely by random, then looks for and throws out samples 
+that are too close together, and then randomly chooses more samples until all 
+samples are far enough away from each other [@Beets2000].  See Figure 
+\ref{SuperSampling} for visual depictions of these algorithms.
 
-![From left to right: Ordered Grid algorithm, Rotated Grid algorithm, Jitter algorithm, Poisson algorithm, Random algorithm](filtering/SuperSamplingSmall.png)
+\begin{figure}[h!]
+	\centering
+	\includegraphics{./filtering/SuperSamplingSmall.png}
+	\caption{From left to right: Ordered Grid algorithm, Rotated Grid algorithm, Jitter algorithm, Poisson algorithm, Random algorithm}
+	\label{SuperSampling}
+\end{figure}
 
-**Multisample antialiasing**, also known as full scene antialiasing, is a special 
-case of supersampling where not all of the components of a pixel are 
+**Multisample antialiasing**, also known as full scene antialiasing, is a 
+special case of supersampling where not all of the components of a pixel are 
 supersampled.  This algorithm can achieve near supersampling quality at a much 
 higher performance.  Pixels are generated using a collection of data called a 
 fragments and may include raster position, depth, interpolated attributes, 
 stencil, and alpha.  Multisampling algorithms select only a few components of a 
 fragment to "supersample" so that some of that computational cost can be shared 
 between samples.  Commonly, z-buffer, stencil, and/or color data is chosen to be
-the fully supersampled components.
+the fully supersampled components [@Segal2003].
 
-Coverage antialiasing is a special case of multisample aliasing, and therefore 
+**Coverage antialiasing* is a special case of multisample aliasing, and therefore 
 also a special case of supersample aliasing.  The algorithm has been designed 
 to further improve the performance of multisample antialiasing while keeping 
 quality as high as possible.  Multisample antialiasing will usually store only 
@@ -146,7 +166,7 @@ number of stored color and Z data samples.  Coverage antialiasing can store
 more than a single value for the color and Z data, the point is to just hold 
 less than multisampling.  Usually, 4 or 8 color and Z data samples are used as 
 opposed to 8 and 16, respectively.  Holding more data constant allows for an 
-even smaller memory footprint and less bandwidth.
+even smaller memory footprint and less bandwidth [@Young2002].
 
 Coverage sample points are boolean values that indicate whether or not a 
 sample is covered by a triangle in the pixel.  These samples are stored 
@@ -154,9 +174,9 @@ usually stored as 4 bit data structures with 1 bit representing the boolean
 value and with the other 3 bits used to index up to 8 color/Z values.  The 8 
 bytes required for 16 samples will be much less then the memory needed for the 
 color data so the extra overhead should be insignificant compared to the 
-bandwidth reduction.
+bandwidth reduction [@Young2002].
 
-Morphological antialiasing is a significantly different antialiasing approach.  
+**Morphological antialiasing** is a significantly different antialiasing approach.  
 It does not rely on supersampling and is a completely post-process algorithm.  
 It works by blending colors after looking for and recognizing special pixel 
 patterns in an image.  The algorithm can be explained using the following 
@@ -177,7 +197,7 @@ antialiasing.  The computational resources required to do the above steps are
 far less than the resources needed to render 4x, 8x, or 16x as many pixels.  
 Supersampling will generally produce slightly higher quality results but will 
 not be worth the performance trade-off, especially if real-time rendering is 
-needed.
+needed. [@Reshetov2009]
 
 A **window function** is a mathematical function that is zero-valued outside of 
 some chosen interval while manipulating the values inside that interval.  The 
