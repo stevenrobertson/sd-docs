@@ -9,7 +9,7 @@ Experience [^expr] suggests that this lack is not simple carelessness on the par
  [^expr]: One team member created the first implementation of the flame algorithm for GPUs in 2008.
 ##Challenges:
 There are three main challenges in this project are adapting the flam3 such that it successfully runs on a GPU, maximize performance of the algorithm in order to have more quality over a smaller amount of time compared to other implementations, and to increase the quality overall of the fractals that are outputted, whether if it is on the resolution of the images or in other optical properties of the images as to make them more pleasing to the user.
-##Objectives:
+## Objectives:
 The main objective of this project is to develop a fractal flame renderer that implements the flam3 algorithm, and that is used on GPU. This software should not only work, but it must output fractals with better quality than other GPU implementations. This breaks into different objectives, since the quality, real-time output and implementation itself depend on different aspects such as hardware and software.
 For the hardware, the right GPU is to be obtained as the main tool of work and its architecture must be understood.
 A dialect interface between the creators and the GPU must be created using CUDA.
@@ -18,13 +18,14 @@ Find a pseudo-random number generator that passes randomness tests and can be im
 Find any possible ways to maximize the efficiency of color filtering, log scaling, aliasing and super-sampling fractal images.
 ## Project Requirements
 Because Cuburn is an implementation of the flame fractal for GPU, the main requirements are that it is compatible with the GPU to be selected. Therefore the limitations of such GPU are great part of the requirements. They are the following:
-- 32-wide vector operation ("warp") width
-- 1536 threads per multiprocessor
-- 32768 registers per multiprocessor
-- 48KB shared memory per multiprocessor
-- 16KB L1 cache per multiprocessor
+> 32-wide vector operation ("warp") width
+> 1536 threads per multiprocessor
+> 32768 registers per multiprocessor
+> 48KB shared memory per multiprocessor
+> 16KB L1 cache per multiprocessor
 
 These limitations do more than impose an upper bound on the performance of this device; together, they also set lower bounds for certain parameters. For example: due to deep pipelining, each 32-thread warp may only execute once every 22 cycles. If every warp performs pure computation, a minimum of 704 threads per SM is necessary to fully utilize the device. Accessing memory can stall a warp temporarily, so that minimum figure must be increased by the proportion of time a warp may spend waiting for memory. Main memory accesses take several hundred cycles, so it is advantageous to have as many threads as possible, but then the number of registers per thread is reduced. This multidimensional give-and-take is an integral part of designing high-performance algorithms for GPUs.
+
 Other requirements of the project include a PRNG that works well with GPUs and that has good spectral qualities. Also, the filtering and scaling techniques must offer outputs of greater or equal qualities than those of other implementations of the flame algorithm, especially better than those existing that are to be used with GPU.
 
 References:
