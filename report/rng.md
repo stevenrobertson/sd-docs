@@ -1,6 +1,6 @@
 # Random Numbers and Pseudo-Random Number Generators
 Random numbers are used in this project because of their importance in calculating and rendering fractals using Iterated Function Systems. For example, in order to recreate Sierpinski’s triangle, one defines the three vertex points A, B and C. Starting at point A, one randomly picks the next point (B or C) and draws a point halfway between the points chosen. From there it is all about picking the next point randomly and doing the same thing all over again thousands of times until getting a fractal like that in picture R.1.
-`/ref{sierpinskitriangle}`
+`/ref={bias.png}`
 
 Real random numbers are hard to calculate in a computer; in great part because they depend on time or because there isn’t an infinite number of bit sized chunks for computation. Pseudo-Random Number Generators (PRNGs) are algorithms that simulate randomness in a computer, usually by using prime numbers as seeds because when they are used in a division, the output is an irrational number.The greater the prime number, the better quality numbers are outputted. In order to find the right PRNG for this project we will consider advantages and disadvantages of different well known PRNGs.
 
@@ -15,16 +15,16 @@ If we say `x=rand()%RANGE;` the function returns any number represented by [0, R
 
 Another problem with `rand()` is that it is a Linear Congruential Generator (LCG).
 The way LCGs work is with the following basic formula:
-$X_{n+1} = (a\cdot X_n +c) mod m$
+`$X_{n+1} = (a\cdot X_n +c) mod m$`
 Where '$X_{n+1}$' is the next output and a and m must be picked by the user of the algorithm. Here, the problem is not only that to get decent randomness one needs to pick a and m carefully (with m closest to the computer’s largest representable integer and prime) and a equal to one of the following values[2]:
 
- For $ m = 549755813881 $	$ a = 10014146 $ or $ a = 530508823 $ or `$ a = 25708129 $`
+ For `$m = 549755813881$	`$a = 10014146$` or `$a = 530508823$` or `$a = 25708129$`
 
- For `$ m = 2199023255531 $`	`$ a = 5183781 $` or `$ a = 1070739 $` or `$ a = 6639568$`
+ For `$m = 2199023255531$`	`$a = 5183781$` or `$a = 1070739$` or `$a = 6639568$`
 
- For `$ m = 4398046511093 $`	`$ a = 1781978 $` or `$ a = 2114307 $` or `$ a = 1542852$`
+ For `$m = 4398046511093$`	`$a = 1781978$` or `$a = 2114307$` or `$a = 1542852$`
 
- For `$ m = 8796093022151 $`	`$ a = 2096259 $` or `$ a = 2052163 $` or `$ a = 2006881 $`
+ For `$m = 8796093022151$`	`$a = 2096259$` or `$a = 2052163$` or `$a = 2006881$`
 
 There are other choices for m, with their respective values for a, but those sets also have rules and may not apply to certain computers if they don’t have the required hardware.
 
@@ -47,8 +47,8 @@ This algorithm can be used in the GPU for 4 main reasons; it is very elastic whe
 The spectral distribution test is devised to study the lattice structures of PRNGs and especially that of LCGs. It is also famous in great part because it fails LCGs that that have passed other tests.
 It works by taking the outputs of PRNGs and finding where the numbers lie in s number of dimensions; it then takes that information and displays it as a lattice as seen in Figure R.2. Mathematically, overlapping vectors  `$ Ls := {x_n = (x_n, …, x_{n+s}-1)} $` where `$ n>=0 $` are considered, since they exhibit the lattice structure.
 
-However, without having to draw the dots, a conclusion about a PRNG can be made because of its mathematical properties; the spectral test determines a value yk which determines the minimum distance between points in the s hyper-planes on which it tests.
-The formula is given by yk = min{sqrt(x1^2 + x2^2 + …+ xk^2)} 
+However, without having to draw the dots, a conclusion about a PRNG can be made because of its mathematical properties; the spectral test determines a value `$y_k$` which determines the minimum distance between points in the s hyper-planes on which it tests.
+The formula is given by `$y_k = min{sqrt(x1^2 + x2^2 + …+ xk^2)}$` 
 Ideally, the minimum number from 0 to k will be a high value (in the thousands) and the PRNG will also have a high number of dimensions.
 
 ## Monte Carlo simulations
@@ -57,10 +57,10 @@ The Monte Carlo methods are algorithms that use statistics to determine probabil
 ## Our approaches
 There are several things to be attempted in order to obtain the desired results and the most efficient algorithm that contains most if not all the desired qualities of a necessary PRNG.
 The initial ideas for finding the potential PRNG are the following:
-- start with MWC. Only get more complicated if it looks necessary.
--Use a PRNG that requires less state, like Marsaglia’s MWC, per-thread.
--Pre-compute a large number of random values with ISAAC or similar, per-thread and swap the state out of registers when not using it.
--Set up a warp to write the RNGs to shared memory for consumption by other warps. Use a very complicated manual implementation of semaphores and locks to trigger the generation of more RNGs as required.
+> start with MWC. Only get more complicated if it looks necessary.
+>Use a PRNG that requires less state, like Marsaglia’s MWC, per-thread.
+>Pre-compute a large number of random values with ISAAC or similar, per-thread and swap the state out of registers when not using it.
+>Set up a warp to write the RNGs to shared memory for consumption by other warps. Use a very complicated manual implementation of semaphores and locks to trigger the generation of more RNGs as required.
 
 REFERENCES
 [1] http://www.azillionmonkeys.com/qed/random.html
