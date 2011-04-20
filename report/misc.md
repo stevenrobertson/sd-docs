@@ -1,117 +1,198 @@
-# Other implementation challenges
+# Dynamic kernel generation
 
-This chapter has some miscellaneous stuff which probably needs to make it
-into the report, but may or may not need its own chapter.
+The current version of `flam3` has nearly 100 variations. A transform function
+is composed of an initial affine transform, followed by application of each of
+the variation functions to the result of the initial affine transform. A
+weighted sum is then performed on the results of the variation applications to
+get the transformed point.
 
-## Variations
+In `flam3`, a list of those variations with non-zero weights is generated
+before iteration begins, and only those variations are computed. This is
+implemented in-loop by a very large `if-else` block. Some compilers will
+optimize this `if-else` block by turning it into an indirect branch situation,
+and most modern CPUs will perform branch prediction to accelerate the
+fall-through of this structure.
 
-- More than 100 variations in `flam3`
+The current version of NVIDIA's CUDA platform, however, does not fully
+implement indirect branching, so a switch statement cannot be used. Direct
+branching, even in non-divergent situations, is still expensive; it takes time
+to perform instruction fetches and update the scoreboard for each warp after a
+branch. With the entire set of variations in place, the single most
+computationally expensive component of an iteration for most flames would
+actually be this `if-else` cascade.
 
-- Indirect branching still not implemented in Fermi; enormous and very slow
-  fall-through
+The transforms aren't the only feature guarded by conditionals. In fact, the
+data structure which controls which features are enabled and disabled for a
+particular flame can grow to over 64KB in size. Motion blur in `flam3` is
+handled by interpolating a default of 1000 control points in a tight temporal
+neighborhood around the current frame's timestamp in an animation; these
+control structures can easily occupy 64MB of memory on the GPU. At that size,
+keeping the relevant parts of a control structure in local cache is unlikely.
 
-- Data structure is more than 8K in size... for each xform. With 1000 control
-  poins per frame, this is very hard to keep in cache
+The `flam3` iteration loop just has too many options to operate quickly on GPU.
+Previous efforts to port the flame algorithm to GPU have all encountered this
+problem, although solutions vary: `flam4CUDA` and Fractron 9000 simply omit
+parts of the algorithm which are required for full compatibility, whereas
+`flam4OCL` attempts to construct the source of a kernel which is tuned for the
+flame at hand.
 
-- Can we optimize this?
+This project requires full `flam3` compatibility and high performance; the
+often-disabled parts of the algorithm cannot be omitted, but the performance
+hit from having dead code in a kernel cannot be ignored. Dynamic creation of a
+rendering kernel seems the most promising option.
 
-### Feature detection
+## Just-in-time compilation
 
-- Xforms only use a few variations
+A profusion of rarely-enabled legacy code, experimental hacks, compatibility
+tweaks, and alternate approaches — a result of more than a decade of
+enthusiastic participation by the fractal flame community — complicates and
+slows rendering. Fortunately, between environment configuration and the genomes
+themselves, it is possible to detect these features' presence before rendering
+begins.
 
-- Set of variations in use across a single edge or loop in an animation do not
-  change from one control point to the next
+Animations in `flam3` are composed from sequences of *loops* and *edges*. A
+loop is a frame sequence where a subset of the parameters are rotated over
+time, returning to their original values at the end of the rotation. Edges are
+rendered by interpolating every parameter between two visually distinct flames.
+The desired effect of an edge is a slow morphing from one shape to another.
 
-- Many other parts of the flame algorithm are only used on rare occasions
+The interpolation functions exported by the `flam3` library provide several
+guarantees about which features will be enabled in one of these kinds of
+animations. While some parameters, such as image size and filter support width,
+require special handling, the general rule is that every frame of an animiation
+will use exactly the union of the sets of features used by both end-points. If
+instead of providing a rendering kernel with the host code, a template for
+producing a kernel is provided, an example control point taken from near the
+center of an interpolated sequence can be used to to tune the templated code
+and produce a kernel optimized for every frame in the animation.
 
-- Without branch predictors and large caches, a streamlined implementation of
-  the flame algorihm implementing only the features used in a particular flame
-would have quite an edge over a generic, full-featured version
+The task of compiling such a kernel is not as complex as it may sound. To make
+it possible for new GPU designers to enter a market with devices capable of
+running existing software, and for established manufacturers to produce new
+hardware without needing to support their own legacy instruction set
+architectures, OpenGL requires that shaders be shipped in the same C-like
+syntax in which they are typically written and compiled on the host system.
+OpenCL preserves this requirement for its more general kernels. This has led to
+the inclusion of extremely fast, high-quality compilers within major GPU
+manufacturers' drivers.
 
-### Just-in-time compilation
+CUDA's model is somewhat different. Because CUDA kernels can take advantage of
+certain C++ features, a small and fast compiler is much harder to obtain. As a
+result, CUDA kernels are stored in PTX, a RISC-like intermediate language, and
+assembled for the target architecture on the host. This has the advantages of
+being faster than OpenCL's subset of C to compile, and offering additional
+hardware control; however, because it is very low-level, it is difficult to
+write large amounts of code directly in PTX.
 
-- Do feature detection on example of genome to determine the features required
+In either case, the compiler and assembler is located on the client system with
+a simple, standard API; there is no need to include a development environment
+with the resulting binary or write our own assembler.
 
-- Run the feature set through a process which turns out three things:
+## Dynamic code, static types
 
-    - A pile of code, ready to be compiled for the target
+Both OpenCL and CUDA provide mechanisms for loading dynamically-generated code,
+which is used to exclude unused features from the final kernel. On its own,
+however, this does not exclude unused data from the control point structure;
+this information will still be sparsely distributed throughout the control
+point, spread over many additional cache lines, and is thus more likely both to
+evict needed data and be evicted itself.
 
-    - A definition of the data structure which will be read by the target, that
-      will be used to pack this data
+To use cache lines more efficiently and avoid costly misses, the data may be
+packed according to the pattern of its use. For dynamically generated code, a
+simple means of doing this is to use a stack-like structure, where a pointer
+advances or rewinds in a memory region with code flow, and each block of code
+carries the total size of its data so that it may properly reset the pointer at
+entrance and exit points.
 
-    - Resource allocations and other sizing info required by the code
+This mechanism works well for small dynamically-generated systems, but is
+challenging for larger ones: The host logic which packs the stack must be kept
+precisely in line with the control flow of the device code, and since the
+contents of the stack can affect program flow, any bugs on the device which
+result in mis-positioning of the stack pointer can be exceptionally hard to
+isolate. Therefore, fixed address offsets into the stack are preferred. This
+simplifies debugging on the device and adds reliability, but still requires
+that the front-end follow the flow of device code.
 
-- Easy enough, right?
+Instead of attempting to replicate the control flow of the templated code
+following feature analysis, it would be more efficient to combine both stages;
+have the information needed to perform memory packing on the host in the same
+location within the program source as the description of the device-side
+operations to load it. Shard was written to provide this ability.
 
-### Template OpenCL
+Shard is an embedded domain-specific language for the dynamic creation of GPGPU
+programs, written in Haskell. As an EDSL, Shard uses native language syntax to
+record operations rather than perform them. Consider the statement `y = 4
+* x + 1`. If `x` is a number, this statement  would instruct the Haskell
+compiler to emit code that stores the value of $4\cdot x + 1$ in the memory
+reserved for variable `y`. As a Shard variable, however, this statement
+instructs the compiler to store a data structure representing the calculation
+in `y`, which can itself then be used as another Shard variable. In this way,
+each new expression adds to a tree of operations that can later be evaluated to
+produce device code.
 
-- The only way we've seen this done is to spit out C code that's handled by
-  OpenCL
+Shard includes expressions that assist with dynamic memory management. A
+`loadHost` statement in Shard takes a base pointer and a host-side expression
+which returns a value. When the Shard data structure is evaluated, all such
+statements are analyzed to determine the offsets of each value in the stack, so
+that the actual code emitted on the device contains the appropriate offset. To
+pack the stack for use on the GPU, each host-side expression is applied to the
+corresponding data structure automatically. Because the host and device
+commands are contained in the same expression, Shard eliminates the risk of
+code drift between memory packing and loading.
 
-- This doesn't scale to an implementation as complex and data-dependent as this
-  one
+Haskell's strong static typing provides additional guarantees on the
+correctness of this approach. In many languages, the two arguments of the
+`loadHost` function would be indistinguishable from one another and from any
+invocation. Shard uses phantom types to avoid this; the base pointer, closure,
+and function result must all be consistent. Despite representing a primitive on
+the device, the result of this expression preserves its type from the host
+code, so that a program will refuse to compile even if two values with
+different meanings but the same OpenCL or CUDA type are used together. This
+checking happens entirely at compile-time, and carries no run-time overhead.
 
-    - Can't even verify that different bits of code which are intended to do a
-      particular thing will compile when swapped for another such block of code
+## Testing — or lack thereof
 
-    - Side effects, loops, etc become exceedingly difficult to track
+Haskell's type system is not limited to ensuring variables are not erroneously
+switched; it can provide deeper guarantees of code correctness and
+interchangeability.
 
-    - Easy to fuzz variables (e.g. incorrectly cast void-typed pointers)
+Because the number of independent selectively-enabled code segments required
+for a full implementation of `flam3` is so large, it is effectively impossible
+to test even a fraction of every permutation of features. This enormous
+parameter space compounds the similarly massive parameter space of the genomes
+themselves.
 
-    - Info on how to pack the data for the target kept separate from the code,
-      and many potential screwups there too
+When it is not possible to fully cover code with holistic tests, unit testing
+is often used, wherein each component is exercised separately, and to use
+strict modularity to ensure that side effects from function calls are
+contained. However, this modularity is expensive, particularly on GPUs, and
+would preclude certain optimizations that are not localized to particular
+regions of code. Without guarantees of modularity, unit testing cannot discover
+the insidious bugs arising from interactions between different combinations of
+parameters.
 
-### Haskell EDSL
+For this reason, Shard requires explicit and granular denotation of impure code
+in function type signatures. Certain operations which have side effects — that
+is, have the potential to modify the operating environment of the device — have
+their return types wrapped in such a way that the results can only be accessed
+inside of functions that are themselves similarly wrapped. Because this is
+embedded in the type system, these checks are evaluated at compile-time,
+meaning that it is enforced in all code that has the potential to be enabled on
+the device. This prevents hidden interactions against shared state for all
+permutations of the rendering kernel without having to test them discretely.
 
-- Haskell offers a better way: use an EDSL
+This renderer is designed to hew closely to `flam3`'s visual output. To provide
+a holistic test, a selection of flames are rendered on CPU and GPU and
+compared; if no significant deviations are encountered, the code is working as
+expected. It is reasonable to attain complete code coverage in this way,
+wherein every segment of device code is exercised at least once. Such testing
+cannot provide assurances on hidden interaction errors, however, and is no
+subsitute for strong type safety.
 
-- Code for device is expressed as statements that "feel" native; i.e. 1+1
+[TODO: shore this up, could use a bit stronger of a conclusion]
 
-- Underneath, x+y actually composes a representation of the operation rather
-  than computing the result; the native Haskell value is something like ...
 
-- Side effects such as memory loads and stores must be explicitly demarcated
-  and propagate up, so that they are never hidden
-
-- Newtype wrappers distinguish between values that have the same run-time
-  representation but different meanings, without any run-time overhead
-
-- Dynamic code packer: simply provide the accessor used to read the data value
-  against a suspended representation of the runtime data, and it gets replaced
-on the host with a function to pack the data and on the device with aligned
-load instructions
-
-- All of this is enforced at the type level. The corner cases that could plague
-  an all-ifdef system will be caught by the compiler with an error, not in the
-field with a crash
-
-### Testing and benchmarking
-
-- GPU testing is generally awful. Multithreadedness means that debugging
-  statements will often make problems disappear, getting into or out of a
-particular state is difficult, test harnesses can be as complicated as entire
-programs
-
-- Haskell's type system is so good, "if it compiles, it's almost certainly
-  correct" [CITE]
-
-- Our testing plan is, whenever possible, avoid needing to test. Use the type
-  system to prevent bugs.
-
-- Where that fails, use optimization to test
-
-    - Throughout this document, we offer alternative implementation strategies
-      for performance reasons
-
-    - Many of these should behave identically
-
-    - Simply keep even older, suboptimal code in the system, and compare
-      results when swapping out different segments of code
-
-- More subtle bugs, and those affecting all implementations, can be caught by
-  comparing against `flam3` reference images
-
-## Function selection
+# Function selection
 
 The GPU relies on vectorization to attain high performance. As a result,
 divergent warps carry a heavy performance penalty; even one divergent thread in
@@ -127,7 +208,7 @@ different transforms and therefore become divergent.  With a maximum of
 of an order of magnitude on the most computationally complex component of an
 iteration.
 
-### Divergence is bad, so convergence is... worse?
+## Divergence is bad, so convergence is... worse?
 
 The trivial solution to this problem is to eliminate divergence on a per-warp
 basis. The typical design pattern for accomplishing this is to evaluate the
@@ -203,7 +284,7 @@ subsequences across threads. Fortunately, there's a simple and computationally
 efficient way to do this while retaining non-divergent transform application
 across warps — simply swap points between different warps after each iteration.
 
-### Doing the twist (in hardware)
+## Doing the twist (in hardware)
 
 There is no efficient way to implement a global swap, where any thread on the
 chip can exchange with any other; architectural limits make global
@@ -289,7 +370,7 @@ or over other points in a column.
 
 [FIG: could get some nice diagrams of the shuffle process]
 
-### Shift amounts and sequence lengths
+## Shift amounts and sequence lengths
 
 Under this simplified model for swap, there is one free parameter for each lane
 of a warp, shared across all warps. Methods for choosing these parameters
@@ -425,7 +506,7 @@ allow threads to diverge. This will cause extra computation to be done, but in
 the end may not significantly impact rendering speed; as it turns out, the
 bottleneck on current-generation GPUs is likely to lie in the memory subsystem.
 
-## Accumulating results
+# Accumulating results
 
 The simplest transform functions can be expressed in a handful of instructions;
 with careful design of fixed loop components, many common flames may require an
@@ -457,7 +538,7 @@ optimization efforts. Unfortunately, the iteration rate limit imposed by
 accumulation speed is far more severe than the 3× penalty implied by the raw
 bandwidth.
 
-### Chaos and coalescing
+## Chaos and coalescing
 
 The flame algorithm, and the chaos game in general, estimates the shape of an
 attractor by accumulating point information across many iterations. While
@@ -503,7 +584,7 @@ A 3× penalty may be acceptable, but one of more than 30× cannot be overlooked.
 Meeting this project's performance goals will require finding
 higher-performance alternatives to the traditional accumulation method.
 
-### Taking advantage of L2
+## Taking advantage of L2
 
 In many situations, the level-2 cache on Fermi GPUs is large and fast enough to
 accelerate random access patterns, with no specific development effort required
@@ -518,7 +599,7 @@ below. In general, any algorithm depending on the availability of cached data
 will not scale, even with these tricks; increasing the framebuffer size beyond
 a certain threshold will cause significant loss of performance.
 
-#### Color subsampling
+### Color subsampling
 
 As discussed in previous sections [REF or drop], human vision has considerably
 less sensitivity and spatial resolution for color than for luminance. In
@@ -571,7 +652,7 @@ accumulation.
 
 - We can do better
 
-#### Compact fixed-point representation
+### Compact fixed-point representation
 
 - Limited by what atomics can support
 
@@ -616,7 +697,7 @@ accumulation.
   reductions, and typically won't stall a warp, so no special divergence
   protection needed, but still, savings/bandwidth ratio must be considered.
 
-#### Dithering
+### Dithering
 
 - Most flames use visibility values of 1.0 or 0.0 for all xforms, letting us
   use 0 bits after decimal in density
@@ -629,7 +710,7 @@ accumulation.
 
 - Over many rounds, same result as floating accumulation
 
-#### Combining techniques
+### Combining techniques
 
 Color subsampling reduces the size of the color buffer. Color discard ensures
 that the color buffer doesn't need to be kept in the cache. Fixed-point storage
@@ -693,7 +774,7 @@ visibility value
 - Thus, for most flames, we can fit in 32 bits: a 24-bit accumulator index and
   an 8-bit color value. We assume that this is the case for now.
 
-#### Quick review of radix sorting
+### Quick review of radix sorting
 
 - Brief review of MSB first radix sort:
 
@@ -712,7 +793,7 @@ visibility value
 - Radix sort is not comparison sort; we can beat the number of comparisons
   required.
 
-#### Efficient sort of point log
+### Efficient sort of point log
 
 - To write efficiently, want to avoid read-modify-write and not waste any
   bytes; therefore, work to only write complete cache lines.
@@ -748,7 +829,7 @@ visibility value
 is required to finish sorting; a radix size of 8 uses too much shared memory
 and won't fit on the GPU. For N=7, 16KB are required for the radix sort buffer.
 
-#### Iterating and sorting
+### Iterating and sorting
 
 - This algorithm requires frequent synchronization across all participating
   threads, and storage space in proportion to the number of threads.  It works
@@ -798,7 +879,7 @@ pages to explain the alternatives before we run the benchmarks to determine
 what works best. I'm going to simply avoid mentioning the implementation of
 buckets at all and hope nobody notices.]
 
-#### Accumulating values in shared memory
+### Accumulating values in shared memory
 
 - After accumulations fill a bucket, it is sent back through the sorting thread
   for an additional round of splitting.
