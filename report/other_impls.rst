@@ -14,9 +14,9 @@ below.
 
 flam3
 -----
-
+\label{flam3implementation}
 Considered by most to be the "reference implementation" of the flame
-algorithm, flam3_ was created in 1999 [CHECK] by Scott Draves, the creator
+algorithm, flam3_ was created in 1991 by Scott Draves, the creator
 of the fractal flame algorithm. In TK, Erik Reckase took over development,
 and continues to add features and release updates to this day.
 
