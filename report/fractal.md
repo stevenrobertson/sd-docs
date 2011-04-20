@@ -5,7 +5,7 @@ The fractal flame algorithm draws upon concepts across many fields including: st
 
 The innovation is what the majority of this paper is about and as a guiding rule the words of Sir Francis Bacon are very true to the author's research process: *"When you wish to achieve results that have not been achieved before, it is an unwise fancy to think that they can be achieved by using methods that have been used before."*
 
-As unwise as it would be to assume a solution to the current design challenge has already been solved, it would also be unwise not to draw from previous knowledge from the aforementioned fields. Therefore knowledge from mathematics, statistics, and graphics will be supplemented as needed when design decisions are presented later in the paper. However, before the paper transitions into the innovation aspect of this project, the need to present ample background information on two fields of which warrant attention is felt. These fields are fractal geometry and the aesthetic nature of fractal geometry. 
+As unwise as it would be to assume a solution to the current design challenge has already been solved, it would also be unwise not to draw from previous knowledge from the aforementioned fields. Therefore knowledge from mathematics, statistics, and graphics will be supplemented as needed when design decisions are presented later in the paper. However, before the paper transitions into the innovation aspect of this project, the need to present ample background information on two fields of which warrant attention is felt. These fields are fractal geometry and the aesthetic nature of fractal geometry.
 
 
 The justification of presenting fractal geometry lies in the reasoning that the mathematics and properties behind it is not blatantly intuitive and key concepts cannot be hand waved later in this paper. Had the famous equation $z_{n+1} = z^2_n + C$ been intuitive then humans would be able to visualize it, without the aid of computer graphics, as the Mandelbrot Set (Figure \ref{mandelbrot}) and understand its ability to scale infinitely without degradation.
@@ -29,15 +29,11 @@ Geometry has formalized the way humans talk about and perceive points, shapes of
 
 *Element*'s impact was dramatic. So much so that *Euclid* is often referred to as the "Father of Geometry". By the $20^{th}$ century Euclidean geometry was being taught globally in schools. Shapes such as: circles, triangles, and polygons are taught at an early age.
 
-[TODO Benny Mandelbrot corrections 1]
-
-However as influential as the idea of Euclidean Geometry is its ideal shapes failed to describe the shapes that appear in nature. As stated in the opening paragraph of Benoît Mandelbrot's book, The Fractal Geometry of Nature: *"Clouds are not spheres, mountains are not cones, and lightning does not travel in a straight line. The complexity of nature's shapes differs in kind, not merely degree, from that of the shapes of ordinary geometry."*[1]
+However as influential as the idea of Euclidean Geometry is its ideal shapes failed to describe the shapes that appear in nature. As stated in the opening paragraph of BenoÃ®t Mandelbrot's book, The Fractal Geometry of Nature: *"Clouds are not spheres, mountains are not cones, and lightning does not travel in a straight line. The complexity of nature's shapes differs in kind, not merely degree, from that of the shapes of ordinary geometry."*[1]
 
 ##Fractal Geometry and Its Properties
 
-[TODO Benny Mandelbrot corrections 2]
-
-This new geometry Benoît Mandelbrot writes about in his book, he calls fractals which come from the Latin work fractus meaning *"fractured"*.  These new shapes exhibited different properties than classical Euclidean shapes. These shapes were rough and did not belong to an integer valued dimension. Fractals also exhibited self-similarity in which parts of the figure repeat themselves. Ideal fractals also did not degrade with scale either like other classical shapes or like a photograph. These new shapes had been investigated in the Western World previous to Mandelbrot and were already an accepted part of African art and culture before Mandelbrot had been observed and published his findings which lead to their widespread use and acceptance.
+This new geometry BenoÃ®t Mandelbrot writes about in his book, he calls fractals which come from the Latin work fractus meaning *"fractured"*.  These new shapes exhibited different properties than classical Euclidean shapes. These shapes were rough and did not belong to an integer valued dimension. Fractals also exhibited self-similarity in which parts of the figure repeat themselves. Ideal fractals also did not degrade with scale either like other classical shapes or like a photograph. These new shapes had been investigated in the Western World previous to Mandelbrot and were already an accepted part of African art and culture before Mandelbrot had been observed and published his findings which lead to their widespread use and acceptance.
 
 The properties in which Mandelbrot and his predecessors have found are summarized. They later will be freely referenced from this point forward when they are needed to explain additional concepts.
 
@@ -81,13 +77,15 @@ Classical dimensionality is often expressed in whole number integer values. Line
 	\label{sierpinskitriangle}
 \end{figure}
 
-[TODO Correct Renyi number 1]
+This can be shown using a variety of ways that formally define fractal
+dimensionality including: Hausdorff dimension, RÃ¨nyi dimension, and packing
+dimension. These theoretical definitions differ in their approach however all
+three attempts to explain the same phenomenon: real numbered dimensionality.
 
-This can be shown using a variety of ways that formally define fractal dimensionality including: Hausdorff dimension, Rényi dimension, and packing dimension. These theoretical definitions differ in their approach however all three attempts to explain the same phenomenon: real numbered dimensionality.
-
-[TODO Correct Renyi number 2]
-
-Fractal dimensionality will be explained in this section in an intuitive way rather than providing the reader with a heavy mathematical explanation. This will be done using the concept of a box-counting dimension which lends itself to ideas from the Rényi dimension.
+Fractal dimensionality will be explained in this section in an intuitive way
+rather than providing the reader with a heavy mathematical explanation. This
+will be done using the concept of a box-counting dimension which lends itself
+to ideas from the RÃ¨nyi dimension.
 
 To calculate the dimensionality of an object, an equidistant grid is imposed upon the object and the number of boxes that are necessary to cover the object are counted. The process continues and the equidistant grid is refined by decreasing the size of the grid. Again, the number of boxes that are necessary to cover the object are counted and the process repeats. The formula used is:
 
@@ -130,7 +128,7 @@ The box counting equation can be solved by completing the pattern that shows the
 	\end{tabular}
 	\caption{ Box length ($\varepsilon$) and the number of boxes ($N(\varepsilon)$)  as $\varepsilon$ approaches 0. }
 		\label{bclinetable}
-\end{table}	
+\end{table}
 
 From this table the following formula can be deduced by solving the pattern.
 
@@ -172,7 +170,7 @@ The results are rewritten in the form of powers to expose the pattern.  This is 
 	\end{tabular}
 	\caption{ Box length ($\varepsilon$) and the number of boxes ($N(\varepsilon)$)  as $\varepsilon$ approaches 0. }
 		\label{bcsierpinskitable}
-\end{table}	
+\end{table}
 
 
 From this table the following formula can be deduced by solving the pattern.
@@ -230,7 +228,7 @@ Strange attractors (See Figure \ref{strangeattractor}) are attractors whose fina
 \end{figure}
 
 ###Random Fractals
-Random fractal's iterative process relies on a non-deterministic process for creation (See Figure \ref{randomfractal}). By applying some process the resulting set or image exhibits fractal-like properties. Many landscapes and plants in nature exhibit this property. For example, mountains are not formed by a deterministic process yet exhibit statistical self-similarity. Fractal landscape generation is a stochastic process which tries to mimic this stochastic process in nature. 
+Random fractal's iterative process relies on a non-deterministic process for creation (See Figure \ref{randomfractal}). By applying some process the resulting set or image exhibits fractal-like properties. Many landscapes and plants in nature exhibit this property. For example, mountains are not formed by a deterministic process yet exhibit statistical self-similarity. Fractal landscape generation is a stochastic process which tries to mimic this stochastic process in nature.
 
 \begin{figure}[h]
 	\centering
@@ -262,7 +260,7 @@ First and foremost, nature has is the most apparent in creating fractal-like fea
 - Cloud-spiral Formations
 - Virus and bacterial colonies
 - Coastlines
-- and numerous others [3] 
+- and numerous others [3]
 
 The wonder that nature brings individuals can partly be attributed to the idea of self-similarity and the complex shapes it produces.
 
