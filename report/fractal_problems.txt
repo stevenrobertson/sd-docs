@@ -1,5 +1,0 @@
-These are known problems-
-
-1. é = [e'] need to change
-2. images sometimes are too big and the box-counting dimension analysis is not outputted in the right place.
-3. probably more :P
