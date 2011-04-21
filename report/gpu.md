@@ -518,38 +518,56 @@ Cayman is the latest GPU microarchitecture as implemented in the ATI
 Radeon 69xx graphics cards.  It is the most significant change in AMD's
 GPU architecture since the RV770 architecture.  The most notable change
 being the move from a 5-wide VLIW (Very Large Instruction Width) to a
-4-wide symmetric VLIW.  AMD has stayed focused on graphics performance 
-as opposed to general purpose computing but the Cayman architecture does
-make a modest step forward for AMD in the realm of GPGPU computing and 
+4-wide symmetric VLIW [@Kanter2010].  AMD has stayed focused on graphics 
+performance as opposed to general purpose computing but the Cayman architecture 
+does make a modest step forward for AMD in the realm of GPGPU computing and 
 presents a few evolutionary, not revolutionary, improvements for both 
 general purpose computing and gaming.  
 
 The compute capabilities of Cayman GPU's can be accessed by one of two
-industry standard API's, OpenCL and Direct Compute.  While both of
+industry standard API's, OpenCL and Direct Compute [@Kanter2010].  While both of
 these API's have been embraced by all CPU and GPU vendors, they are
 both relatively young and do not offer the same features and performance
-that Nvidia's proprietary CUDA does.  However, support for these other
+that Nvidia's proprietary language CUDA  does.  However, support for these other
 two standards are increasing rapidly and are they are  posed to dethrown 
-CUDA as the API of choice for general purpose computing.
+CUDA as the API of choice for general purpose computing in the coming years.
 
-### Cayman cores
+### System Architecture
 
-Divided into cores, with 16 lanes of VLIW4 execution units. 64-wide
-effective split. Each lane executes the same operation over 4 cycles;
-VLIW4 handles parallelizable computations, but can be underscheduled in
-case of register dependency (which happens frequently).
-
-Wavefront method of latency hiding. Instead of scoreboard, clauses are
-used, which always execute to completion on a given unit. Considerably
-simpler design allows higher peak theoretical performance but requires a
-much smarter compiler. Combination of explicit and external predication.
+Cayman's system architecture is largely similar to that of the previous 
+generations Cypress.  The architecture is split up into cores, or SIMD's, 
+each having its own 8Kb of L1 texture cache and 512KB of shared cache.  The 
+biggest differences have all been made with respect to the cores.  First of all, 
+Cayman has a total of 24 cores while Cypress has a total of 20 cores with each 
+core being a 16-wide SIMD processor.  Each lane can process a VLIW instruction, 
+which means 4 instructions at time for Cayman or (potentially) 5 instructions at 
+a time for Cypress.  4 instructions x 16 lanes = 64 instructions per core for 
+Cayman and 5 instructions x 16 lanes = 80 instructions per core for Cypress.  64 
+instructions per core x 24 cores = 1536 instructions per chip for Cayman and 
+80 instructions x 20 cores = 1600 instructions per chip for Cypress.  Each lane 
+executes the same operation over 4 cycles.  Additionally, SIMD clock speed was 
+increased to 0.88Ghz in Cayman (up from 0.85GHz in Cypress).
 
 ### Memory architecture
+
+
 
 Incoherent global read and write caches, separate texture caches. Slow
 atomics.
 
 ### Instruction set
+
+VLIW4 handles parallelizable computations, but can be underscheduled in
+case of register dependency (which happens frequently).  This situation was even 
+worse for Cypress since its 5 execution units are not symmetric.  4 of its 
+units are for shading and the remaining is used for branch operations.  It is 
+difficult for the compiler to schedule these instructions together 
+simulatneously and so, branch operations will many times be the only scheduled 
+instruction in an instruction word.  Wavefront method of latency hiding. Instead 
+of scoreboarding, clauses are used, which always execute to completion on a 
+given unit. Considerably simpler design allows higher peak theoretical 
+performance but requires a much smarter compiler. Combination of explicit and 
+external predication.
 
 Because of VLIW, and frequent architecture changes, should definitely use
 OpenCL-level code instead of assembly.
