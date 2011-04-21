@@ -1,6 +1,6 @@
 # Random Numbers and Pseudo-Random Number Generators
 Random numbers are used in this project because of their importance in calculating and rendering fractals using Iterated Function Systems. For example, in order to recreate Sierpinski’s triangle, one defines the three vertex points A, B and C. Starting at point A, one randomly picks the next point (B or C) and draws a point halfway between the points chosen. From there it is all about picking the next point randomly and doing the same thing all over again thousands of times until getting a fractal like that in picture R.1.
-`/ref={bias.png}`
+`\ref={bias.png}`
 
 Real random numbers are hard to calculate in a computer; in great part because they depend on time or because there isn’t an infinite number of bit sized chunks for computation. Pseudo-Random Number Generators (PRNGs) are algorithms that simulate randomness in a computer, usually by using prime numbers as seeds because when they are used in a division, the output is an irrational number.The greater the prime number, the better quality numbers are outputted. In order to find the right PRNG for this project we will consider advantages and disadvantages of different well known PRNGs.
 
