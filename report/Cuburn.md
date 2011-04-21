@@ -40,7 +40,8 @@ These limitations do more than impose an upper bound on the performance of this 
 
 Other requirements of the project include a PRNG that works well with GPUs and that has good spectral qualities. Also, the filtering and scaling techniques must offer outputs of greater or equal qualities than those of other implementations of the flame algorithm, especially better than those existing that are to be used with GPU.
 
-References:
+References
+
 [1] http://www.enchgallery.com
 
 [2]http://www.sciencenews.org/view/generic/id/62006/title/Superconductors_go_fractal
