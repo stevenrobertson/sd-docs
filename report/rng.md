@@ -18,7 +18,7 @@ The way LCGs work is with the following basic formula:
 `$X_{n+1} = (a\cdot X_n +c) mod m$`
 Where '$X_{n+1}$' is the next output and a and m must be picked by the user of the algorithm. Here, the problem is not only that to get decent randomness one needs to pick a and m carefully (with m closest to the computer’s largest representable integer and prime) and a equal to one of the following values[2]:
 
- For `$m = 549755813881$	`$a = 10014146$` or `$a = 530508823$` or `$a = 25708129$`
+ For `$m = 549755813881$`	`$a = 10014146$` or `$a = 530508823$` or `$a = 25708129$`
 
  For `$m = 2199023255531$`	`$a = 5183781$` or `$a = 1070739$` or `$a = 6639568$`
 
