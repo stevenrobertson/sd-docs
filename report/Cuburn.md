@@ -24,10 +24,15 @@ Find any possible ways to maximize the efficiency of color filtering, log scalin
 
 ## Project Requirements
 Because Cuburn is an implementation of the flame fractal for GPU, the main requirements are that it is compatible with the GPU to be selected. Therefore the limitations of such GPU are great part of the requirements. They are the following:
+
  32-wide vector operation ("warp") width
+
  1536 threads per multiprocessor
+
  32768 registers per multiprocessor
+
  48KB shared memory per multiprocessor
+
  16KB L1 cache per multiprocessor
 
 These limitations do more than impose an upper bound on the performance of this device; together, they also set lower bounds for certain parameters. For example: due to deep pipelining, each 32-thread warp may only execute once every 22 cycles. If every warp performs pure computation, a minimum of 704 threads per SM is necessary to fully utilize the device. Accessing memory can stall a warp temporarily, so that minimum figure must be increased by the proportion of time a warp may spend waiting for memory. Main memory accesses take several hundred cycles, so it is advantageous to have as many threads as possible, but then the number of registers per thread is reduced. This multidimensional give-and-take is an integral part of designing high-performance algorithms for GPUs.
@@ -36,4 +41,5 @@ Other requirements of the project include a PRNG that works well with GPUs and t
 
 References:
 [1] http://www.enchgallery.com
+
 [2]http://www.sciencenews.org/view/generic/id/62006/title/Superconductors_go_fractal

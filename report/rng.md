@@ -57,18 +57,29 @@ The Monte Carlo methods are algorithms that use statistics to determine probabil
 ## Our approaches
 There are several things to be attempted in order to obtain the desired results and the most efficient algorithm that contains most if not all the desired qualities of a necessary PRNG.
 The initial ideas for finding the potential PRNG are the following:
- start with MWC. Only get more complicated if it looks necessary.
+
+Start with MWC. Only get more complicated if it looks necessary.
+
 Use a PRNG that requires less state, like Marsaglia’s MWC, per-thread.
+
 Pre-compute a large number of random values with ISAAC or similar, per-thread and swap the state out of registers when not using it.
+
 Set up a warp to write the RNGs to shared memory for consumption by other warps. Use a very complicated manual implementation of semaphores and locks to trigger the generation of more RNGs as required.
 
 REFERENCES
 [1] http://www.azillionmonkeys.com/qed/random.html
+
 [3] Robert J. Jenkins Jr., ISAAC. Fast Software Encryption 1996, pp41–49.
+
 [2] Numerical Recipies,The Art of Scientific Computing, 3rd edition, William H.Press, Saul A. Teukolsky, William T. Vetterling, Brian P. Flannery, Cambridge University Press
+
 [4] http://www.burtleburtle.net/bob/rand/isaacafa.html
+
 [5] http://nvidia.com
+
 [6] http://www.rlmueller.net/MWC32.htm
+
 [7] http://random.mat.sbg.ac.at/tests/theory/spectral/
+
 [9] Michael Barnsley, "Fractals Everywhere", Academic Press, Inc., 1988.
 
