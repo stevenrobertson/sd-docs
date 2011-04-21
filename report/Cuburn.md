@@ -15,12 +15,13 @@ Experience [^expr] suggests that this lack is not simple carelessness on the par
 There are three main challenges in this project are adapting the flam3 such that it successfully runs on a GPU, maximize performance of the algorithm in order to have more quality over a smaller amount of time compared to other implementations, and to increase the quality overall of the fractals that are outputted, whether if it is on the resolution of the images or in other optical properties of the images as to make them more pleasing to the user.
 
 ## Objectives:
-The main objective of this project is to develop a fractal flame renderer that implements the flam3 algorithm, and that is used on GPU. This software should not only work, but it must output fractals with better quality than other GPU implementations. This breaks into different objectives, since the quality, real-time output and implementation itself depend on different aspects such as hardware and software.
-For the hardware, the right GPU is to be obtained as the main tool of work and its architecture must be understood.
-A dialect interface between the creators and the GPU must be created using CUDA.
-Increase the speed of the renderer significantly compared to those already available.
-Find a pseudo-random number generator that passes randomness tests and can be implemented on a GPU
-Find any possible ways to maximize the efficiency of color filtering, log scaling, aliasing and super-sampling fractal images.
+The main objective of this project is to develop a fractal flame renderer that implements the flam3 algorithm, and that is used on GPU. This software should not only work, but it must output fractals with better quality than other GPU implementations. This breaks into different objectives, since the quality, real-time output and implementation itself depend on different aspects such as hardware and software:
+
+* For the hardware, the right GPU is to be obtained as the main tool of work and its architecture must be understood.
+* A dialect interface between the creators and the GPU must be created using CUDA.
+* Increase the speed of the renderer significantly compared to those already available.
+* Find a pseudo-random number generator that passes randomness tests and can be implemented on a GPU
+* Find any possible ways to maximize the efficiency of color filtering, log scaling, aliasing and super-sampling fractal images.
 
 ## Project Requirements
 Because Cuburn is an implementation of the flame fractal for GPU, the main requirements are that it is compatible with the GPU to be selected. Therefore the limitations of such GPU are great part of the requirements. They are the following:
