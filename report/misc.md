@@ -604,16 +604,18 @@ ray-tracing, such as Pixar's RenderMan, handle limited cache sizes by splitting
 the global geometry in a scene along the boundaries of small rectangular
 regions that tile the destination framebuffer; the contents of each tile are
 then drawn separately and discarded, allowing the information in a single image
-area to remain in the cache [@Segal2003]. A similar technique is employed by
+area to remain in the cache [@Cook1987]. A similar technique is employed by
 graphics chips designed for low-power applications, such as those in the
 PowerVR architecture [@PowerVR2009].
 
 As accumulations cannot be bounded *a priori* in the flame algorithm, any
 tile-based approach must be implemented after the iteration step, splitting
 accumulation information across the entire image domain into discrete queues
-for each tile.
+for each tile. The mechanics of the queue system depend on several
+implementation choices; to avoid ambiguity, it will be described after the
+techniques on which it depends.
 
-### Point logging
+### Representing an iteration
 
 An accumulation requires adding a density and three color values to an
 accumulator located on a two-dimensional grid. Representing this information as
@@ -710,127 +712,150 @@ cases in which this technique could result in additional shot noise in dark
 image regions, but this can be solved by simply increasing the number of
 iterations on such images, and is in any case unlikely to appear in practice.
 
-[TODO: much of the content below shall be reorganized; got a new model going.]
+### Reducing accumulator size
 
-## Taking advantage of L2
+Even at a mere 32 bits per sample, queueing every sample of a high resolution
+flame would exhaust a GPU's memory[^queuesize]. Periodically, the queue for
+each tile must be flushed to the accumulators, involving at least one write for
+every sample in the tile. Reducing the size of an accumulator increases the
+number of samples that can fit inside a single tile, thus requiring fewer
+tiles. This leaves more space for each tile queue, allowing more points to be
+processed per flush.
 
-In many situations, the level-2 cache on Fermi GPUs is large and fast enough to
-accelerate random access patterns, with no specific development effort required
-to attain reasonable performance. This is not the case for the flame algorithm;
-the buffers involved are simply too large relative to the cache to make it
-likely that the next accumulator will already be in L2. If accesses to L2 did
-result in a cache hit in the majority of cases, it would improve accumulation
-speed, reducing the bottleneck or eliminating it entirely. This section covers
-several techniques which can do so.
+[^queuesize]: $(1920 \cdot 1080) \, \text{pixels} \cdot 2000 \,
+\text{samples}/\text{pixel} \cdot 4 \, \text{bytes}/\text{sample} = 16588800000
+\, \text{bytes}$
 
-### Color subsampling
+#### Color subsampling
 
-Most rendered flames are compressed with the JPEG image codec or the H.264 or
-MPEG-4 ASP video codecs. These codecs, and many others, reduce the size of
-transmitted frames by sampling image channels containing color information at a
-lower spatial resolution than the luminosity channel, and by quantizing the
-subsampled result more severely. That these codecs do so without objectionable
-degradation of the image is evidence of the human visual system's reduced
-sensitivity to perception of color, as compared to brightness. Since most of
-the color information in the accumulation buffer is discarded before ever
-reaching the user, subsampling color during the accumulation stage reduces the
-size of the accumulator with little or no loss in visual quality.
+Most rendered flames are compressed with the JPEG image codec [@JPEGSpec] or
+the H.264 [@H264Spec] video codec. These codecs, and many others, reduce the
+size of transmitted frames by sampling image channels containing color
+information at a lower spatial resolution than the luminosity channel, and by
+quantizing the subsampled result more severely. That these codecs do so without
+objectionable degradation of the image is evidence of the human visual system's
+reduced sensitivity to perception of color, as compared to brightness. Since
+most of the color information in the accumulation buffer is discarded before
+ever reaching the user, subsampling color during the accumulation stage reduces
+the size of the accumulator with little or no loss in visual quality.
+
+In video and image applications, RGB tristimulus values are first transformed
+to the YUV colorspace[^yuv] via a simple matrix multiplication. The resulting
+value separates luminosity information, in the Y component, from the
+chromaticity information in the other two components. It is the latter two
+components which are subsampled in the resulting image. However, due to
+transform color selection and the behavior of the density-based log scaler, the
+luminance component of the resulting image will display very strong correlation
+with density values. As a result, this implementation will subsample all three
+components in the accumulation process, exploiting redundant information in the
+density buffer to perform accurate reconstruction.
+
+[^yuv]: YUV is more accurately described as a "hodgepodge of ideas" than a
+colorspace. We refer here to linear, invertible, continuous, full-range
+encodings such as $YC_BC_R$.
 
 Sampling image components at different spatial frequencies breaks the
 isomorphism between the image-space coordinate grid and buffer element
-coordinates, requiring more complicated addressing schemes. A simple system for
-resolving this is to move each independently-sampled set of image channels to
-its own buffer. This scheme allows completely arbitrary resampling schemes, and
-finds use in later sections, but on its own will actually *decrease*
-accumulation throughput: while overall buffer size declines with respect to
-an unsubsampled image, accessing those buffers requires extra cache lines to be
-resident. Unless the cache can fit most or all of the resulting image
-simultaneously, each extra cache request increases the chance of a miss.
+coordinates, requiring more complicated addressing schemes. In most systems
+which use channel subsampling, the components are interleaved so that the
+values for any image-space coordinate are contained within the same cache line
+(regardless of system). On the other hand, interleaving complicates addressing,
+requiring rearrangement in two dimensions according to a predetermined pattern.
+This restricts the set of subsampling ratios which are valid, and makes certain
+filtering operations less efficient.
 
-A more commonly used option is to interleave samples so that, for any point in
-the image, all channels corresponding to that point are located in the same
-cache line. This scheme adds considerable complication to address generation,
-requiring many conditions to be evaluated for each address; it also requires
-that the sampling frequencies of all image channels are related via a
-small-valued integer ratio in each dimension, such as $3:2$ or $2:1$.
-Interleaving schemes are almost always designed by hand [FIG provide some
-examples], requiring separate addressing logic for each scheme. Even so, the
-onus of address calculation is insignificant compared to the cost of a cache
-miss, making the extra burden worthwhile.
+Because we are explicitly targeting a system which will keep all data being
+accessed for accumulation in cache, there is no significant benefit to having
+all image components share a cache line, and we are free to choose a simpler
+solution. One such solution is to simply store each image component, or set of
+image components, with a unique sampling rate in a separate plane. Assuming an
+efficient data alignment exists, this scheme uses no more memory than an
+interleaved format, and retains the benefits of linear addressing.
 
-In image or video coding, RGB tristimulus values are typically encoded to a
-YUV-like format via a simple linear transform. YUV stores the intensity of a
-stimulus in the Y channel, and the coordinates within a 2D color plane in the
-remaining channels, and it is the latter two channels which are subsampled.
-Because the YUV transformation is LTI, it is possible to accumulate values
-directly in this form; however, it doesn't provide much benefit to do so.
+#### Efficient representation
 
-Accumulator values include a density component and a tristimulus *sum*.
-Intricacies aside, the log-scaling step essentially uses the RGB sum to
-compute an average tristimulus for an image region, and in the process
-truncates the RGB values to 8 bits per channel. Since atomic transactions
-are required, and neither addition nor division are available in the atomic
-ALUs, these values must be accumulated using full single-precision floats
-(or one of the hacks mentioned below) to accomodate a large dynamic range.
-This limitation places a minimum on the width of the color accumulators
-that cannot be reduced by further quantizing chroma channels, and so the
-RGB colorspace is retained for accumulator use.
+The log-scaling process performed to compress the high-dynamic-range flame into
+the display image's dynamic range is explicitly designed to remove the
+information in the lower bits of each image sample. In nearly every case, the
+final display format of fractal flames is an image format using 8 bits for each
+of its three channels for 24 bits total; in most cases, the intermediate
+subsampled encoding represents flames with 12 bits per pixel before
+compression. At 128 bits per sample, traditional accumulators store more than
+ten times as much information as the final image.
 
-### Compact fixed-point representation
+A problem confounding the selection of intermediate encodings is the need to
+store a large dynamic range. Images with high sample counts, aggressive gamma
+curves, and very small image features can require accumulators to store
+thousands or millions of points, requiring excessively large fixed-point and
+integer representations. The solution to such a problem is often to use
+floating-point numbers, which is what has been done previously.
 
-- Limited by what atomics can support
+Modern GPUs are optimized to work quickly with standard single-precision
+floating-point numbers, and they serve as an excellent compromise between speed
+and precision during calculation. When storing accumulators, however, the
+exceptionally high cost of a cache miss makes footprint reduction worth using
+slower, more complicated instructions. For such purposes, GPUs include support
+for converting to and from IEEE 754 half-precision floating-point formats
+[CITE].  Unfortunately, support for these 16-bit values is missing from the
+atomic instruction set; flushing a tile would require performing
+read-modify-write over the inter-chip bus, which would cause it to flood
+[^icbw].
 
-- Range much smaller than full range given by single-precision floating point.
-  32-bit fixed-point is more than capable of handling it
+[^icbw]: Fermi's L2 provides low-latency acceleration of instructions, but does
+not provide significant bandwidth amplification over global memory;
+microbenchmarks pin it at less than twice the bandwidth of the memory it
+covers. On-core RMW cycles to global memory require an immediate transfer and
+invalidation of lines in L1, making the transactional efficiency even lower
+than for an L2 miss, so we hit the ceiling at about the same rate.
 
-- Most of the 32-bit number is never touched; waste of cache
+Due to extreme cache pressure and a limited number of atomic instructions, the
+most efficient solution which accomodates the large dynamic range of
+intermediate image formats in the minimum number of bits is the implementation
+of a software floating-point format. Density information is used differently
+from color information, and is expected to be sampled differently as well. As a
+result, we use different representations for these two values.
 
-- Two accumulation buffers. One holds full 32-bit values, either float or
-  fixed-point; the other holds small fixed-point values, tightly packed
+The 32-bit datapath of a GPU makes using values which fit evenly into that
+width. Since the density value scales all channels in the output image, at
+least 8 bits of precision are required. Only widths of 10 and 16 bits possess
+enough space for an 8 bit mantissa while dividing evenly into a word. Typical
+flame images will easily exhaust the upper bound of a two-bit mantissa[^man10],
+so we consider a width of 16 bits as the minimum choice for independent storage
+of density information. Within these 16 bits, a five bit mantissa is the
+smallest value providing comfortable headroom.
 
-- Add to a fixed-point value. When it overflows, add its contents to the real
-  accumulation buffer. (Plus a final pass through at the end to collect any
-  remaining values)
+[^man10]: $2^8\cdot2^{2^2}=4096$. Adding another bit to the mantissa provides a
+heartier range of $2^7\cdot2^{2^3}=32768$, but this is not enough to be
+generally applicable.
 
-- Problem: GPU atomics only work on 32-bit integers or floats
+\addfontfeatures{Numbers=Lining}
 
-- Use atomic adds with the addend shifted to the appropriate place within a
-  32-bit field, and test for overflow manually
+\newcommand{\hex}[1]{\text{#1}_{\text{h}}}
 
-- When it happens, issue a sub to clear the current state of that individual
-  slice (and the overflow from the one above), then add to the full buffer
+Apart from the missing sign bit, this floating point format differs from
+standard IEEE 754.2008 half-precision floats in one important respect: the
+exponent bias is set at $\hex{-01}$, rather than $\hex{0F}$. Subnormal numbers
+are therefore represented by the exponent $\hex{1F}$, where the exponent is
+treated as if it is also represented in two's complement. This notational
+difference implies that a string of zero bits does not represent a value of
+zero; however, the simplicity of the resulting algorithm for addition in global
+memory makes this change worthwhile.
 
-- This works even if intermediate instructions write to the same pixel; only
-  one thread will detect the overflow, and the subtract won't affect any data
-  written while preparing to fix overflow
+To add a value to a memory location, first read the exponent value as $E$.
+Multiply the addend by $2^{-(E+1)}$, and round to the nearest integer using
+dithering. Finally, perform an atomic addition to the value in global memory.
+[FIG of the addition algorithm, maybe?]
 
-- Only special case is when a value and the one above it in the same dword
-  are about to overflow, the overflow catches both locations, *and* an
-  instruction writes to the higher value before the lower one can be adjusted
+\addfontfeatures{Numbers=OldStyle}
 
-- Will implement a trap for this in debugging mode to see if it happens often
-  enough to require handling in normal code
+[TODO: show how cool it is that this works, and/or pseudocode]
 
-- What vword size to use? Must fit into 32-bit dword. Useful choices seem to be
-  16-bit x 2, 10 bit x 3 (also useful as it has overflow bits which eliminate
-  the weird special case above), 8 bit x 4, 6 bit x 5, 5 bit x 6, 4 bit x 8
+[TODO: finish the rest of this]
 
-- Asymmetrical packing an option too, although that may be too complex
+<!--
 
-- Tradeoff: more compact code requires more oveflow spills. Overflow spills are
-  reductions, and typically won't stall a warp, so no special divergence
-  protection needed, but still, savings/bandwidth ratio must be considered.
-
-### Acheiving spatial locality
-
-- The only truly scalable techniques can't depend on the cache; must use
-  bandwidth more efficiently
-
-- Can't attain spatial or temporal locality in access pattern to accumulators.
-  There is a way, though: don't write straight to accumulators, sort first.
-
-- Seems unlikely, no? Indeed, a comparison sort would almost certainly be too
-  slow. But we don't need a generalized sort; we can optimize in certain ways.
+Everything below is commented for page count reasons, in case I have
+to drop the rest of this section in the middle to finish the required sections.
 
 ### Quick review of radix sorting
 
@@ -857,7 +882,7 @@ RGB colorspace is retained for accumulator use.
   bytes; therefore, work to only write complete cache lines.
 
 - For each bucket, set up a single cache-line's worth of shared memory, and an
-  index in main memory  [FIG a nice flowchart for this loop]
+  index in main memory
 
   - Each thread loads a sample, pulls the radix, and identifies the
     corresponding bucket index
@@ -899,7 +924,7 @@ best in a single warp.
 - Therefore, we want to attach one warp of this to a work-group of iterating
   threads, and use work-group barriers to ensure things stay synchronized.
 
-- Here's how it goes: [FIG another flowchart]
+- Here's how it goes:
 
   - On start, the sort warp immediately goes to the sort barrier, and the
     iterating threads move through an iteration.
@@ -930,5 +955,7 @@ available, we can fit two radix buffers, but not three - there's overhead, plus
 the swap buffers. Fermi only supports 1536 threads per core; across two, that's
 768 per. Since we want a power-of-two size for the number of iterands, it's
 512. Add in the sort warp and it's 544 threads per work-group.
+
+-->
 
 <!-- vim: syntax=pdcf: -->
