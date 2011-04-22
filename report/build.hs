@@ -139,8 +139,8 @@ main = do
     writeFile tex latex
 
     errCode <- renderPDF tmpdir tex
-    putStrLn "Running xelatex again to update TOC"
-    _ <- renderPDF tmpdir tex
+    --putStrLn "Running xelatex again to update TOC"
+    --_ <- renderPDF tmpdir tex
 
     putStrLn "\n\nDocument annotations:"
     print . vcat $ map pprAnnos annos
