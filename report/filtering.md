@@ -425,4 +425,13 @@ Motion blur is the visual effect that occurs when a moving object is caputered
 as an image over a certain period of time rather than a single point in time.  It 
 appears as smear or blur in the direction of movement.  Motion blurring 
 occurs in all physically captured images to some degree, although it's effect 
-can be significantly diminished with extermely low shutter speeds.  It occurs naturally in human eyesight as well; try waving your finger back in forth in front of your face, does it look blurry?  Yes, it does.  This is the way we percieve the world and it doesn't usually occur to us consciously, our brain takes care of deblurring the image for us.  In fact, it is so much a part of the way we percieve the world such that if we didn't see a motion blur, the moving object would appear jerky in motion.  This is a problem with animated, computer generated sequences.  Each frame is rendered at a single, definite point in time and contains absolutely no blurring due to motion.  Even at relatively high frame rates, this can cause the animation to look jerky.
+can be significantly diminished with extermely low shutter speeds.  It occurs 
+naturally in human eyesight as well; try waving your finger back in forth in 
+front of your face, does it look blurry?  Yes, it does.  This is the way we 
+percieve the world and it doesn't usually occur to us consciously, our brain 
+takes care of deblurring the image for us.  In fact, it is so much a part of the 
+way we percieve the world such that if we didn't see a motion blur, the moving 
+object would appear jerky in motion.  This is a problem with animated, computer 
+generated sequences.  Each frame is rendered at a single, definite point in time 
+and contains absolutely no blurring due to motion.  Even at relatively high 
+frame rates, this can cause the animation to look jerky.
