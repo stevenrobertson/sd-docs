@@ -1,9 +1,9 @@
 #Fractal Flame Algorithm Demystified
 
 ##Section Outline
-This section provides an in-depth description of the flame algorithm along with a primer on the Iterated Function System (IFS) in which the Flame Algorithm is a variant of. We provide this primer to the reader in order to solidify the concept of the chaos game which is essential to understanding the flame algorithm because it builds heavily on upon the concepts used in the classical IFS. 
+This section provides an in-depth description of the fractal flame algorithm along with a primer on the Iterated Function System (IFS) in which the fractal flame algorithm is a variant of. This primer is provided to the reader in order to solidify the concept of the chaos game which is essential to understanding the flame algorithm because it builds heavily on upon the concepts that are used in the classical IFS. 
 
-Also included in this section is a comprehensive history of the Flame algorithm from its birth in 1992 into the present day. This includes any new theoretical as well as empirical research (such as software implementations). Given our goals of implementing a heavily optimized version of the Fractal Flame Algorithm for the GPU we felt it was prudent to dissect a handful of previous implementations to examine design decisions, inner-algorithmic choices (e.g. filtering, tone-mapping, etc.), and possible bottlenecks that occur because of design decisions. These findings are presented below and are pivotal in providing a basis for comparison and understanding of what areas of optimization of the Fractal Flame Algorithm remain unexplored.
+Also included in this section is a brief history of the Flame algorithm from its birth in 1992 [CHECK CONFUSION] to the present day. As the algorithm is presented step-by-step references are also presented in which the topics in question are explained in more detail.
 
 Finally, we end with a concluding section summarizing our current knowledge on the topic and describe how it influenced our proposed implementation for rendering fractal flames using the flame algorithm which is described in the following section.
 
@@ -12,19 +12,21 @@ Finally, we end with a concluding section summarizing our current knowledge on t
 This primer aims to present the fundamental concepts of iterated function systems along with several classic examples that will visually and mathematically convey two important concepts:
 
 1. The importance of random application of defined affine transformations on a random starting point in the plane
-2. How affine transformations are used to transform (rotation, scaling, or shear) and transform points to produce self-similar images such as the Sierpinski Triangle and Baransley Fern.
+2. How affine transformations are used to transform[^transform] points to produce self-similar images such as Sierpinski's Triangle and Baransley's Fern.
 
-These concepts are the building blocks of the flame algorithm. If the reader is already familiar with the concept of iterated function systems feel free to skip over this section and start reading how fractal flames differ from the classical iterated function system that is described below. 
+[^transform]: A transformation being an operator that can rotate, scale, translate, or provide sheer to some vector space.
+
+These concepts are the building blocks of the flame algorithm. If the reader is already familiar with the concept of iterated function systems feel free to skip to Section [TODO LINK] and begin reading about the fractal flame algorithm.
 
 ###Definition
-An **Iterated Function System** is defined as a finite set of **affine contraction transformations** $F_{i}$ where i= 1, 2, ..., N(1, 3) that map a **metric space** onto itself. Mathematically this is [1]:
+An **Iterated Function System** is defined as a finite set of **affine contraction transformations** $F_{i}$ where i= 1, 2, ..., N that map a **metric space** onto itself. Mathematically this is [1]:
 
 $\left \{  f_{i} : X \mapsto X  \right \}, N \text{ } \epsilon \text{ } \mathbb{N}$
 
 
-A **metric space** is any space whose elements are points, and between any two of which a non-negative real number can be defined as the distance between the points - an example is Euclidean space.[2]
+A **metric space** is any space whose elements are points, and between any two of which a non-negative real number can be defined as the distance between the points (e.g. Euclidean Space) [2].
 
-An **affine transformation** from one vector space to another comprises a linear transformed (rotation, scaling, or shear) following by a translation. Mathematically this is [3]:
+An **affine transformation** from one vector space to another is comprised of a linear transform which gives eitherrotation, scaling, or shear following by a translation. Mathematically this is [3]:
 
 $x \mapsto Ax +b$
 
@@ -33,7 +35,7 @@ These transforms can be represented in one of two ways:
 1.	By applying matrix multiplication (which is the linear transform) and then performing vector addition (which represents the translations).
 
 
-2.	By using a transformation matrix. To do this we must use homogeneous coordinates. Homogenous coordinates have the property that preserves the coordinates in which the point refers even if the point is scaled. By using the transformation matrix we can represent the coefficients as matrix elements and combine multiple transformation steps by multiplying the matrices. This has the same effect as multiplying each point by each transform in the sequence. This effectively cuts down the number of multiplications needed- this is worth noting as it will be utilized in our implementation.
+2.	By using a transformation matrix. To do this we must use homogeneous coordinates. Homogenous coordinates have the property that preserves the coordinates in which the point refers even if the point is scaled. By using the transformation matrix we can represent the coefficients as matrix elements and combine multiple transformation steps by multiplying the matrices. This has the same effect as multiplying each point by each transform in the sequence. This effectively cuts down the number of multiplications needed- this is worth noting as it will be utilized in our implementation. Figure \ref{affineoperations} shows the operations in which the transformation can perform.
 
 \begin{figure}[h]
 	\centering
@@ -42,9 +44,10 @@ These transforms can be represented in one of two ways:
 	\label{affineoperations}
 \end{figure}
 
+[TODO Finish up proofing from HERE]
 
 **Rotation Matrix** \newline
-To perform rotation using the transformation matrix the matrix positions $A_{0,0}$, $A_{0,1}$, $A_{1,0}$, and $A_{1,1}$ should be modified (where $A$ is the matrix). By using the transformation matrix below and setting $\theta$ you effectively rotate your points by $\theta$ degrees.
+To perform rotation using the transformation matrix the matrix positions $A_{0,0}$, $A_{0,1}$, $A_{1,0}$, and $A_{1,1}$ should be modified (where $A$ is the matrix). By using the transformation matrix below and setting $\theta$ you effectively rotate your vector space by $\theta$ degrees.
 
 \newline
 
@@ -57,7 +60,7 @@ $\begin{vmatrix}
 $\text{ }$
 
 **Shear Matrix**\newline
-To perform sheer using the transformation matrix the matrix position $A_{0,1}$ should be modified (where $A$ is the matrix). By using the transformation matrix below and setting $Amount$ you effectively perform sheer of value $Amount$ on your points. 
+To perform sheer using the transformation matrix the matrix position $A_{0,1}$ should be modified (where $A$ is the matrix). By using the transformation matrix below and setting $Amount$ you effectively perform sheer of value $Amount$ on your vector space. 
 
 \newline
 
@@ -70,7 +73,7 @@ $\begin{vmatrix}
 $\text{ }$
 
 **Scaling Matrix**\newline
-To perform scaling using the transformation matrix the matrix positions $A_{0,0}$ and $A_{1,1}$ should be modified (where $A$ is the matrix). By using the transformation matrix below and setting $Scale\text{ }Factor_{x}$ to the magnification you would like your x-axis and $Scale\text{ }Factor_{y}$ to the magnification you would like your y-axis you effectively scale your points by that amount.
+To perform scaling using the transformation matrix the matrix positions $A_{0,0}$ and $A_{1,1}$ should be modified (where $A$ is the matrix). By using the transformation matrix below and setting $Scale\text{ }Factor_{x}$ to the magnification you would like your x-axis and $Scale\text{ }Factor_{y}$ to the magnification you would like your y-axis you effectively scale your vector space by that amount.
 
 \newline
 
@@ -83,7 +86,7 @@ Scale\text{ }Factor_{x} & 0                       & 0 \\
 $\text{ }$
 
 **Translation Matrix**
-To perform translation using the transformation matrix the matrix positions $A_{0,2}$ and $A_{1,2}$ should be modified (where $A$ is the matrix). By using the transformation matrix below and  setting $Translation_{x}$ to the offset from your current x-point and $Translation_{y}$ to the offset from your current y-point you effectively translate your points by that amount.
+To perform translation using the transformation matrix the matrix positions $A_{0,2}$ and $A_{1,2}$ should be modified (where $A$ is the matrix). By using the transformation matrix below and  setting $Translation_{x}$ to the offset from your current x-point and $Translation_{y}$ to the offset from your current y-point you effectively translate your vector space by that amount.
 
 \newline
 
@@ -95,10 +98,12 @@ $\begin{vmatrix}
 
 $\text{ }$
 
-3. The term **contraction mapping** in plain English refers to a mapping which maps two points closer together. The distance between these points is uniformly shrunk. This contraction will be seen when performing the classic Sierpinski Triangle problem.[4] The properties above can be proved by the Contraction Mapping Theorem and because of this proves the convergence of the linear iterated function systems we present in this section.
+3. The term **contraction mapping** refers to a mapping which maps two points closer together. The distance between these points is uniformly shrunk. This contraction will be seen when performing the classic Sierpinski Triangle problem.[4] The properties above can be proved by the Contraction Mapping Theorem and because of this proves the convergence of the linear iterated function system presented in this section.
 
 ###Chaos Game
-The most common way of constructing an Iterated Function System is referred to as the *chaos game* as coined by Michael Barnsley. Our initial fractal flame algorithm will also use this approach. In the *chaos game* a random point on the plane (in our case between -1 and 1) is selected. Next, one of the affine transformations to describe the system is then applied to this point and the new resulting point is then plotted and the procedure repeats. Selection of the affine transformation to apply is either random (in the case of Sierpinski's triangle) or probabilistic (in the case of Barnsley's Fern). The procedure is repeated for N iterations where N is left up to the user. The more iterations you allow the chaos game to run for the more closely your resulting image resembles the iterated function system. A flow chart of this procedure is found in Figure \ref{ifs_flowchart}
+The most common way of constructing an Iterated Function System is referred to as the *chaos game* as coined by Michael Barnsley. Our initial fractal flame algorithm will also use this approach. In the *chaos game* a random point on the plane[^plane] is selected. Next, one of the affine transformations to describe the system is then applied to this point and the resulting point is then plotted. The procedure is repeated for N iterations where N is left up to the user. Selection of the affine transformation to apply is either random (in the case of Sierpinski's triangle) or probabilistic (in the case of Barnsley's Fern). The more iterations you allow the chaos game to run for the more closely your resulting image resembles the iterated function system [TODO This is because Mote Carlo Sampling]. A flow chart of this procedure is found in Figure \ref{ifs_flowchart}.
+
+[^plane]: By plane we are refering to a biunit square where x and y values can have a minimum value of -1 and a maximum value of 1.
 
 \begin{figure}[h]
 	\centering
@@ -108,9 +113,9 @@ The most common way of constructing an Iterated Function System is referred to a
 \end{figure}
 
 ###Classical Iterated Function System : Sierpinski's Triangle 
-We will start with the illustrative example of Sierpinski's Triangle. This example is suitable to show how the fractal will begin to show itself with a certain number of iterations. We will also observe the contractive nature of the affine transformations.
+Now that the algorithm has been explained an illustrative example known as Sierpinski's Triangle is presented for the reader This example is suitable to show how the fractal will begin to show itself after a certain number of iterations of the chaos game. This is also a suitable example to observe the contractive nature of the affine transformations.
 
-To construct the Sierpinski Triangle using the Chaos Game we need to describe the affine transformations that will be used. Using the most basic version of an affine transformation described in variation 1, we can describe the system with the following 3 transformations:
+To construct Sierpinski's Triangle using the chaos game we need to describe the affine transformations that will describe the system. Using the most basic version of an affine transformation (which uses vector multiplication and vector addition), we can describe the system with the following 3 transformations:
 
 $A_{0}=
 \begin{vmatrix}
@@ -189,7 +194,7 @@ $F_{2}=
 
 Each of these transformations pulls the current point halfway between one of the vertices of the triangle and the current point. $F_{0}$ performs scaling only. $F_{1}$ and $F_{2}$ perform scaling and translation.
 
-We now begin the *chaos game*. We first select a random point on the biunit square. In this case we have pseudorandomly selected x = 0.40 and y = 0.20. We then pseudorandomly pick transformations. The first four transformations shown are $F_{0}$, $F_{2}$, $F_{1}$, and then $F_{0}$. These are shown in Figure \ref{sierpinski_application}.
+We now begin the *chaos game*. We first select a random point on the biunit square. In this case we have pseudorandomly selected x = 0.40 and y = 0.20. We then pseudorandomly pick transformations. The first four transformations shown are $F_{0}$, $F_{2}$, $F_{1}$, and then $F_{0}$. The application of these are shown in Figure \ref{sierpinski_application}.
 
 \begin{figure}[h]
 	\centering
@@ -201,7 +206,7 @@ We now begin the *chaos game*. We first select a random point on the biunit squa
 
 \definecolor{ForestGreen}{rgb}{0.13,.5,0.13}
 
-Notice how the next point is the midpoint between the Vertex and current point. These mappings guarantee the convergence of the algorithm to the desired IFS. This process continues on with each point being plotted. We have provided coloring for a visual representation of what transformation was responsible for each point. Points transformed by $F_{0}$ are labeled \textcolor{ForestGreen}{Green}, $F_{1}$ are labeled \textcolor{red}{Red}, $F_{2}$ are labeled \textcolor{blue}{Blue}. Iterations 1,000, 7,500, 15,000, and 25,000 are displayed in Figure \ref{sierpinski_iterations}.
+Notice how the next point is the midpoint between the vertex and current point. These mappings guarantee the convergence of the algorithm to the desired IFS. This process continues on with each point being plotted except for the initial 20 points that allow the system to settle. We have provided coloring for a visual representation of what transformation was responsible for each point. Points transformed by $F_{0}$ are labeled \textcolor{ForestGreen}{Green}, $F_{1}$ are labeled \textcolor{red}{Red}, $F_{2}$ are labeled \textcolor{blue}{Blue}. Iterations 1,000, 7,500, 15,000, and 25,000 are displayed in Figure \ref{sierpinski_iterations}.
 
 \begin{figure}[h]
 	\centering
@@ -213,9 +218,9 @@ Notice how the next point is the midpoint between the Vertex and current point. 
 The more one stochastically samples, the closer the output image is to the solution of the Iterated Function System being computed. 
 
 ###Classical Iterated Function System : Barnsley's Fern 
-As a more intricate example we present the classical iterated functioni system called Barnsley's Fern. This system was introduced by the mathematician Michael Barnsley in *Fractals Everywhere* [CITE]. This example is suitable to show all elements of an affine transform : sheer, scale, rotation, and scaling.
+As a more intricate example, the classical iterated function system called Barnsley's Fern is presented. This system was introduced by the mathematician Michael Barnsley in *Fractals Everywhere* [CITE]. This example is suitable to show all of the operations of an affine transform : sheer, scale, rotation, and scaling.
 
-To construct Barnsley's Fern using the Chaos Game we need to describe the affine transformations that will be used. Using the most basic version of an affine transformation described in variation 1, we can describe the system with the following 4 transformations seen below. As a note, these affine transformations are not equally weighted and have their own probabilistic model associated with each one. [CITE]
+To construct Barnsley's Fern using the chaos game we need to describe the affine transformations that will be used. Using the most basic version of an affine transformation (which use vecotr multiplication and vector addition), we can describe the system with the following 4 transformations seen below. As a note, the affine transformations of this system are not equally weighted and have their own probabilistic model associated with each. [CITE]
 
 $A_{0}=
 \begin{vmatrix}
@@ -299,7 +304,7 @@ $F_{3}=
 \end{vmatrix}
 \text{ selected with a probability of 0.07.}$
 
-Figure \ref{barnsleyfern} shows the procedure which results in the final system. This system resembles the Black Spleenwort fern [CITE]. This fern was not shown soley because it resembles a similar shape in nature but because of the explicit way the transforms were used to get the shape desired. Below in Table \ref{barnsleytable} is an explanation of what each transformation conceptually does [6].
+Figure \ref{barnsleyfern} shows the procedure which results in the final system. This system resembles the Black Spleenwort fern [CITE]. This fern was not shown soley because it resembles a similar shape in nature but because of the explicit way the transforms were used to get the shape desired (which is often seen in the flame user community when creating intricate flames). Below in Table \ref{barnsleytable} is an explanation of what each transformation conceptually does to produce the fern [6].
 
 \begin{table}[h]
 	\begin{tabular}{|l|l|}
@@ -330,26 +335,26 @@ Figure \ref{barnsleyfern} shows the procedure which results in the final system.
 
 ###Differences from Classical Iterated Function System (IFS)
 
-Fractal flames are a member of the Iterated Function System however differ from Classical Iterated Function Systems in three major respects[5]:
+Fractal flames are a member of the Iterated Function System however differ from Classical Iterated Function Systems in three major respects [5]:
 
-1.	Instead of affine transformations presented in the previous section nonlinear functions are used.
+1.	Instead of affine transformations presented in the previous section non-linear functions are used.
 2.	Log-density display is used instead of linear or binary. 
 3.	Structural Coloring
 On top of the core differences, additional pyschovisual techniques such as spatial filtering and temporal filtering (motion blur) give rise to more aesthetically pleasing images with the illusion of motion.  
 
 ###History 
 
-The flame algorithm was created in 1991 coinciding with the first implementation caled ``flame3``. The algorithm was created by Scott Draves who is software and visual artist. Drave's algorithm has allowed the process for artist creation by allowing the users to experiment with shapes, colors, and stylistic effects. More historical background can read about in Section \ref{flam3implementation}.
+The flame algorithm was created in 1991 [CHECK]. The algorithm was created by Scott Draves who is software and visual artist. Shortly after the creation of the algorithm the first implementation called ``flame3`` was made openly available in 1992. Drave's fractal flame software has allowed the process for artist creation by allowing the users to experiment with shapes, colors, and stylistic effects. More historical background can read about in Section \ref{flameimplementation}.
 
 ###Algorithm 
 
 ####Outline
-The details of the algorithm as well as procedural psuedocode will be described below but will spare full-scale explanations for a specific reason: these will be saved for their own respective chapter in which we review the existing implementation and then present the improved implementation. We do this merely to partition the large sections of the paper and to bring attention to the relevant new approaches that will be described.
+The details of the algorithm as well as a detailed flow chart of the algorithm will be described in this section but will spare full-scale explanations for a specific reason: these will be saved for their own respective chapter in which we review each different concept of the algorithm and provide the existing implementation and then present the improved implementation. We do this merely to partition the large sections of the paper and to bring attention to the relevant new approaches that will be described.
 
-The following will give a coherent understanding of the algorithm minus the implementation details.
+The following will give a coherent understanding of the algorithm minus some of the implementation details.
 
 ####Transforms
-Unlike the classical IFS examples presented previously which apply one transformation to a set of points, the fractal flame applies multiple transformations. These transformations can be nonlinear unlike their classical IFS counterparts. Additionally not all mappings are contraction mappings[5] however the whole system is contractive on average. There are some fractal flame systems which are degenerate and are not contractive - however these are of no interest to us.
+Unlike the classical IFS examples presented previously which apply one transformation to a set of points, the fractal flame applies multiple transformations [TODO Xform]. These transformations can be non-linear unlike their classical IFS counterparts. Additionally not all mappings are contraction mappings [5] however the whole system is contractive on average. There are some fractal flame systems which are degenerate and are not contractive; however, these are of no interest to us.
 
 The multiple variations as well as their order of application on the initial point choosen at random are described below:
 
@@ -362,27 +367,27 @@ F_{i}(x,y)=(a_{i}x + b_{i}y+c_{i}, d_{i}x+e_{i}y+f_{i})
 \end{displaymath}
 
 
-Again, this transformation makes it possible to provide rotation, scaling, and sheer to the points. The information that is represented in this form is both space (x and y coordinates) as well as color - which will be expanded upon over the next sections.
+Again, this transformation makes it possible to provide rotation, scaling, and sheer to the points. The information that is represented in this form is both space (x and y coordinates) as well as color (explained in Section \ref{coloringflame}).
 
 2.	**Variation**
 
-To provide the complex realm of shapes the algorithm can produce we introduce a non-linear functions called variations.
+To provide the complex realm of shapes the algorithm can produce we introduce a non-linear functions called a variation.
 
-The affine transformed point is further applied to the variation resulting in the transformation being of this form:
+The variation is applied to the affine transformed point resulting in the transformation being of this form:
 
 \begin{displaymath}
 F_{i}(x,y)=V_{j}(a_{i}x + b_{i}y+c_{i}, d_{i}x+e_{i}y+f_{i})
 \end{displaymath}
 
-Furthermore, multiple variations can be applied to an affine transformed point. Each point also is multiplied by a blending coefficient named vij which controls the intensity of the variation being applied. The expanding formula is the following:
+Furthermore, multiple variations can be applied to an affine transformed point. Each point also is multiplied by a blending coefficient named $v_{ij}$ which controls the intensity of the variation being applied. The expanded formula is the following:
 
 \begin{displaymath}
 F_{i}(x,y)=\sum_{j}^{ } v_{ij} V_{j}(a_{i}x + b_{i}y+c_{i}, d_{i}x+e_{i}y+f_{i})
 \end{displaymath}
 
-By applying variations, the resulting solution is changed in a particular way. Fundamentally there are 3 different types of variations in which can be applied. These are either: Simple Remappings, Dependent Variations, or Parametric Variations.
+By applying variations, the resulting plane is changed in a particular way. Fundamentally there are 3 different types of variations in which can be applied. Variations are either simple remappings, dependent variations, or parametric variations.
 
-**Simple Remappings:**  A simple remapping is one such that it simply remaps the plane. This could for example be remapping of the cartesian coordinate system plane to a polar coordinate system plane or a sinusoidal plane.
+**Simple Remappings:**  A simple remapping is one such that it simply remaps the plane. This could for example be remapping of the cartesian coordinate system plane to a polar coordinate system plane or some kind of sinusoidal plane.
 
 **Dependent Variations:** A dependent variation is a remapping of the plane such that the mapping is a simple remapping but additionally controlled by coefficients that are dependent on the affine transformation being applied.
 
@@ -406,37 +411,51 @@ P_{i}(x,y) = (\alpha_{i}x+\beta_{i}y+\gamma_{i}. \delta_{i}x + \epsilon_{i}y + \
 
 4. **Final Transformation**
 
-Finally, because the image is eventually outputted to the user we apply the last transformation in which we applying a non-linear transformation
+Finally, because the image is eventually outputted to the user we apply the last transformation which is a non-linear camera transformation[^camera].
 
-*Note:* isn't applied directly to the computational loop - merely for visual output
-Non-linear camera
+[^camera]: This transformation isn't applied directly to the computational loop and is merely for visual output.
+
 
 ####Log-Density Display of Plotted Points
 \label{logdensitydisplay}
-In the classical Iterated Function System, described previously, points were either members in the set or not. For every subsequent time the chaos game selected a point that was already shown to have membership in the set we actually lost information about the density of the points. To remedy this for the fractal flame algorithm we instead use a histogram for plotting points in the chaos game. Given that points are now plotted onto the histogram we have several different methods we could go about plotting them into a resulting image which include:
+In the classical Iterated Function System, described previously, points were either members in the set or not. For every subsequent time the chaos game selected a point that was already shown to have membership in the set information was lost about the density of the points. To remedy this for the fractal flame algorithm we instead use a histogram for plotting the density of points in the chaos game. Given the density of points are now plotted onto the histogram we have several different methods we could go about plotting them into a resulting image which include:
 
-1. **Binary Mapping:** As described before, this did result in the images we wished to produce but were not smooth and contained no shades of gray- only black and white. 
+1. **Binary Mapping:** As described before, this did result in the images we wished to produce but were not smooth and contained no shades of gray (black and white). 
 
 2. **Linear Mapping:** A linear mapping of the histogram provides an improvement but the range of data is lost in the process. The linear mapping has problems differentiating large scales of range. For example, a point plotted 1 time, 50 times, and 5,000 times would be a great illustrative example. Compared a point of density 5,000 both point densities 1 and 50 appear to be of relatively same magnitude however there is a great different in them.
  
 3. **Logarithmic Mapping:** This mapping proves to be superior to it's counterparts. The logarithmic function allows a great range of densities relationship to oneanother to be persered. This is the type of mapping the flame algorithm employs. 
 
-
-[TODO Reference figure in draves paper for pictorial]
+Visual representations of a flame using a binary, linear, as well as logarithmic mapping for the display can be seen in Figure 3 of Drave's original paper on the flame algorithm. [CITE FLAME PAPER]
 
 As a note to avoid confusion, the logarithmic mapping allows the image to now displayed in shades of grays and not as the vibrant colorful flames readily available to be viewed on flame gallery websites. Structural coloring, color correction and enhancement techniques, and tone mapping take care of these and are all seperate algorithmic processes.
 
-####Coloring (Tone Mapping) and Gamma Correction
+####Coloring (Tone Mapping)
+\label{coloringflame}
+Structural coloring is one of the elements that sets the flame algorithm apart from the classical iterated function system. Instead of mearly mapping grayscale (being the space from [0,1]) to a specific red, green, blue color space another approach is taken. A color mapping (presented in the previous sentence) is used however we further our definition of the affine transformation ($F_{i}$) and additionally include a color related to that transformation. After applying the transformation which looks like the following:
 
-[TODO Copy and paste stuff from the color and log scale section]
+$(x,y) = F_{i}(x,y)$
 
+We apply the color associated with the transformation. To do this we expand this transformation process and include the variable $c$ which stands for the color (R,G,B) of that point. We average the current color with the color related to that transformation like so:
 
-[TODO add references clean up]
-Please refer to Chapter **X** for more detailed explaination covering the following:
+$c = \frac{(c + c_{i})}{2}$
 
--	Original Implementation Details
--	Color Correction Features
--	Improved Implementation Details
+This has a major effect upon the color and allows the last applied transform to have the most significant effect. This application of affine transformation color helps structural coloring emerge in a similar way to how colors were applied to each transform in the Sierpinski's Triangle example. Additionally, a final transform also has a color associated with it. The final transformation (non-linear camera transformation) of the (x,y) point is inn the form of:
+
+$(x_{f},y_{f}) = F_{f}(x,y)$
+
+Afterwards we also average the current color with the color related to that transformation:
+
+$c_{f} = \frac{c + c_{f}}{2}$
+
+Additional information about the specific implementation of color is elaborated upon in Section [TODO LINK].
+
+Furthermore, when peforming log-density display we run into issues if we are only keeping information about the RGB values associated with each point. By logarithmically scaling each color channel we do not get the desired results. For more information on why please see section [TODO LINK] on brightness and that red , green, and blue wavelengths are not treated equal. The fractal flame algorithm remedies this by using RGB and also an additional variable called $\alpha$ which is the transparency value. This value is accumulated and scalled by $\frac{\log \alpha}{\alpha}$ at the end of the chaos game. More implementation details can be found in [TODO LINK]
+
+####Gamma Correction and Company
+Now that our flame is colored the process is complete, right? Wrong. Many complications still are presented. The next being the concept of gamma correction. To correctly display the flame image on a lower dynamic range (such as an LCD or CRT monitor or printer) we need to map our high dynamic range to the lower dynamic range. A full discussion of this topic can be seen in Section \label{gammasection} and Section [TODO]. 
+
+Additional color correction techniques can be applied to the flame. A full survey of what kind of color correction techniques are available and what kind of benefit they provide are mentioned in Section [TODO LINK].
 
 ####Symmetry
 The fractal flame algorithm inherently supports the concept of self-similarity but also supports the concept of *symmetry* of two kinds:
@@ -444,10 +463,9 @@ The fractal flame algorithm inherently supports the concept of self-similarity b
 -	Rotational
 -	Dihedral
 
-[TODO below]
-*TODO* This allow the algorithm to produce symmetrical images which are inherently attractive to the eye. 
+This added symmetry adds a new level of intricacy to the resulting flame. Symmetry is thought to be congenitally attractive to the human eye [CITE 7]. A description of how symmetry is added to the flame algorithm is as follows.
 
-**Rotational Symmetry** is introduced by adding extra rotational transformations. To produce n-way symmetry you are implying that you wish to have $\frac{360^\circ}{n}$ degrees symmetry. The set of transformations transformations necessary to add $\frac{360^\circ}{n}$ symmetry is:
+**Rotational Symmetry** is introduced by adding extra rotational transformations. To produce n-way symmetry you are essentially implying that you wish to have $\frac{360^\circ}{n}$ degrees symmetry. The set of transformations transformations necessary to add $\frac{360^\circ}{n}$ symmetry is:
 
 \begin{displaymath}
 \mbox{Rotational Transforms}_{i}= \left ( \frac{360^\circ}{n}\times i \mbox{  } | i = 1, 2,..,n\right ) \mbox{where n = number of way symmetry}
@@ -463,9 +481,12 @@ For example, To produce six-way symmetry the following *5* transformations would
 
 Each transformation is given an equal weighting, allowing the chaos game to realize the n-way symmetry the more it stochastically samples.
 
-**Dihedral Symmetry** is introduced by adding a function that inverts the x-coordinate. This is a reflection of the axis. An equal weighting is given to this reflection function which allows the chaos game to realize the dihedral symmetry.
+**Dihedral Symmetry** is introduced by adding a function that inverts the x-coordinate or y-coordinate. This is a reflection of the axis. An equal weighting is given to this reflection function which allows the chaos game to realize the dihedral symmetry.
 
 Both rotational and dihedral symmetry are shown in Figure \ref{symmetry}.  
+
+[CHECK THEN MERGE WITH ABOVE PARAGRAPH]
+The **Dihedral Symmetry** and **Rotational Symmetry** are applied at the same step as the affine, variation, post, and final transformations. This is because the implementation of symmetry is defined in the form of a transformation and therefore is the most logical place to apply it.
 
 \begin{figure}[h]
 	\centering
@@ -474,27 +495,24 @@ Both rotational and dihedral symmetry are shown in Figure \ref{symmetry}.
 	\label{symmetry}
 \end{figure}
 
-
-[TODO: Where in the algorithm is this performed, after the transforms]
-
-
 ####Filtering 
-[TODO]
+After performing all aforementioned steps there is still several issues which still afflict our flame. Two of these are both noise and aliasing. 
 
+Aliasing is a common issue and occurs when a high resolution graphic maps to a lower resolution graphic. The result is that smooth edges or gradients are not represented correctly. To combat aliasing flame uses a method called supersampling. More information about aliasing and supersampling can be found in \ref{aliasingsection} and \ref{spatialaliasingsection} respectively.
 
-[TODO]
-Please refer to Chapter **X** for more detailed explaination covering the following:
+Noise in a flame occurs because of the stochastic nature of the iterated function system. While plotting the flame some seemingly random points may occur in our set.
+Supersampling the image takes care of the alias issues but does not take care of our noise issues. In order to correctly "blur" only noisy parts of the image we must blur selective regions of the image. In the case of noise, the flame algorithm performs a form of density estimation to address this image. More information on this can be found in Section \ref{denoisingsection}. 
 
--	Original Implementation Details
--	Filtering background
--	Other Filtering Approaches
--	Improved Approach
+The importance of both steps are paramount to providing an aethestically pleasing image as aliasing and noise are extremely noticable to the eye and can render even the most beautiful flame, atrocious.
 
+A more in depth look at filtering can be found in Section \ref{filteringsection}. This section cover ant-aliasing methods, filtering methods, and more information on the ``flame3`` specific approach.
 
 ####Motion Blur
-[TODO]
-Under Construction
- 
+Finally, we address one of the last issues. We have taken care of spatial aliasing but when the multiple images of flames 'in motion' are outputted we experience a new form of aliasing: temporal aliasing. Temporal aliasing can not be addressed correctly mearly by supersampling and one implementation that the flame algorithm uses is by using an extra buffer. The first buffer accumulates the histogram of points in a linear fashion. The second buffer accumulates logarithmitcally filtered histograms of each temporal sample from buffer one. At the end, the second buffer is filtered and presented. [CHECK]
+
+[TODO More on this extra buffer and the process and provide corrections]
+
+[TODO Directional Motion Blur]
 
 ####Procedure
 [TODO Look at IFS procedure for hints]
@@ -517,3 +535,5 @@ Under Construction
 [5] Draves, Scott; Erik Reckase (July 2007). "The Fractal Flame Algorithm" (pdf). Retrieved 2008-07-17.
 
 [6] http://en.wikipedia.org/wiki/Barnsley_fern
+
+[7] http://www.jyi.org/volumes/volume6/issue6/features/feng.html
