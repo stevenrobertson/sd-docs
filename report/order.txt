@@ -1,7 +1,7 @@
 Cuburn.md
 fractal.md
 flame_algorithm.md
-other_impls.rst
+other_impls.md
 gpu.md
 tools.md
 rng.md
