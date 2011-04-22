@@ -1,5 +1,5 @@
 # Filtering
-
+\label{filteringsection}
 Image filtering is the process of enhancing an image so that inaccuracies in the
 image can be corrected.  Sources of inaccuracies can be from bad sensor
 measurements, extremely low or high data ranges, digital misrepresentations, and
@@ -23,7 +23,7 @@ can be had exploiting the highly parallel architecture of GPU's.  These problems
 and their many solutions are discussed in more detail below.
 
 ## Aliasing
-
+\label{aliasingsection}
 Aliasing is the effect of high frequency signals, in high resolution graphics,
 being mapped and interpolated onto a lower resolution graphic such that the
 smooth edges and gradients in the original image can not be represented
@@ -68,7 +68,7 @@ the continuous domain must be sampled along the 2D grid of pixels used in raster
 graphics.
 
 ### Spatial aliasing
-
+\label{spatialaliasingsection}
 In the flame algorithm, as described, each generated (x, y) point is rounded
 to the nearest pixel, and then the color value is added to that pixel's
 accumulator. Effectively, each pixel represents the average value of the
@@ -259,7 +259,7 @@ outside of the final representable intensity scale. In those images, even
 mid-level tones have relatively few samples, and have visible point noise.
 
 ### Denoising a flame
-
+\label{denoisingsection}
 To combat this, FLAM3 does density estimation filtering. Within dark regions
 of the image, it applies a wider kernel, or a smaller blur. ...
 
