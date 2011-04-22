@@ -14,7 +14,7 @@ This primer aims to present the fundamental concepts of iterated function system
 1. The importance of random application of defined affine transformations on a random starting point in the plane
 2. How affine transformations are used to transform[^transform] points to produce self-similar images such as Sierpinski's Triangle and Baransley's Fern.
 
-[^transform]: A transformation being an operator that can rotate, scale, translate, or provide sheer to some vector space.
+[^transform]: A transformation being an operator that can rotate, scale, translate, or provide shear to some vector space.
 
 These concepts are the building blocks of the flame algorithm. If the reader is already familiar with the concept of iterated function systems feel free to skip to Section [TODO LINK] and begin reading about the fractal flame algorithm.
 
@@ -40,7 +40,7 @@ These transforms can be represented in one of two ways:
 \begin{figure}[h]
 	\centering
 	\includegraphics{./flame/sheer_trans_rot_scale.png}
-	\caption{Visual representation of Sheer, Translation, Rotation, and Scaling.}
+	\caption{Visual representation of Shear, Translation, Rotation, and Scaling.}
 	\label{affineoperations}
 \end{figure}
 
@@ -63,10 +63,10 @@ Rotation Matrix
 
 Shear Matrix
 
-~   To perform sheer using the transformation matrix the matrix position
+~   To perform shear using the transformation matrix the matrix position
     $A_{0,1}$ should be modified (where $A$ is the matrix). By using the
     transformation matrix below and setting $Amount$ you effectively perform
-    sheer of value $Amount$ on your vector space.
+    shear of value $Amount$ on your vector space.
 
     \begin{displaymath}
     \begin{vmatrix}
@@ -231,7 +231,7 @@ Notice how the next point is the midpoint between the vertex and current point. 
 The more one stochastically samples, the closer the output image is to the solution of the Iterated Function System being computed.
 
 ###Classical Iterated Function System : Barnsley's Fern
-As a more intricate example, the classical iterated function system called Barnsley's Fern is presented. This system was introduced by the mathematician Michael Barnsley in *Fractals Everywhere* [CITE]. This example is suitable to show all of the operations of an affine transform : sheer, scale, rotation, and scaling.
+As a more intricate example, the classical iterated function system called Barnsley's Fern is presented. This system was introduced by the mathematician Michael Barnsley in *Fractals Everywhere* [CITE]. This example is suitable to show all of the operations of an affine transform : shear, scale, rotation, and scaling.
 
 To construct Barnsley's Fern using the chaos game we need to describe the affine transformations that will be used. Using the most basic version of an affine transformation (which use vecotr multiplication and vector addition), we can describe the system with the following 4 transformations seen below. As a note, the affine transformations of this system are not equally weighted and have their own probabilistic model associated with each. [CITE]
 
@@ -380,7 +380,7 @@ F_{i}(x,y)=(a_{i}x + b_{i}y+c_{i}, d_{i}x+e_{i}y+f_{i})
 \end{displaymath}
 
 
-Again, this transformation makes it possible to provide rotation, scaling, and sheer to the points. The information that is represented in this form is both space (x and y coordinates) as well as color (explained in Section \ref{coloringflame}).
+Again, this transformation makes it possible to provide rotation, scaling, and shear to the points. The information that is represented in this form is both space (x and y coordinates) as well as color (explained in Section \ref{coloringflame}).
 
 2.	**Variation**
 
