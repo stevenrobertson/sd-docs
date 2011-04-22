@@ -1,7 +1,7 @@
 # Random Numbers and Pseudo-Random Number Generators
 Random numbers are used in this project because of their importance in calculating and rendering fractals using Iterated Function Systems. For example, in order to recreate Sierpinski’s triangle, one defines the three vertex points A, B and C. Starting at point A, one randomly picks the next point (B or C) and draws a point halfway between the points chosen. From there it is all about picking the next point randomly and doing the same thing all over again thousands of times until getting a fractal like that in picture R.1.
 
-`\ref={bias.png}`
+\ref={bias.png}
 
 Real random numbers are hard to calculate in a computer; in great part because they depend on time or because there isn’t an infinite number of bit sized chunks for computation. Pseudo-Random Number Generators (PRNGs) are algorithms that simulate randomness in a computer, usually by using prime numbers as seeds because when they are used in a division, the output is an irrational number.The greater the prime number, the better quality numbers are outputted. In order to find the right PRNG for this project we will consider advantages and disadvantages of different well known PRNGs.
 
@@ -48,7 +48,7 @@ This algorithm can be used in the GPU for 4 main reasons; it is very elastic whe
 The spectral distribution test is devised to study the lattice structures of PRNGs and especially that of LCGs. It is also famous in great part because it fails LCGs that that have passed other tests.
 It works by taking the outputs of PRNGs and finding where the numbers lie in s number of dimensions; it then takes that information and displays it as a lattice as seen in Figure R.2. Mathematically, overlapping vectors  `$Ls := {x_n = (x_n, …, x_{n+s}-1)}$` where `$n>=0$` are considered, since they exhibit the lattice structure.
 
-`\ref={latice.png}` [7]
+\ref={latice.png} [7]
 
 However, without having to draw the dots, a conclusion about a PRNG can be made because of its mathematical properties; the spectral test determines a value `$y_k$` which determines the minimum distance between points in the s hyper-planes on which it tests.
 The formula is given by `$y_k = min{sqrt(x1^2 + x2^2 + …+ xk^2)}$` 
