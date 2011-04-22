@@ -538,7 +538,7 @@ optimization efforts. Unfortunately, the iteration rate limit imposed by
 accumulation speed is far more severe than the 3× penalty implied by the raw
 bandwidth.
 
-## Chaos and coalescing
+## Chaos, coalescing, and cache
 
 The flame algorithm, and the chaos game in general, estimates the shape of an
 attractor by accumulating point information across many iterations. While
@@ -558,11 +558,9 @@ access pattern would challenge even traditional CPU caches, which tend to be
 spacious and include advanced prefetching components; it renders the small,
 simple caches found in GPUs useless.
 
-[^fbsize]: $(1920 \cdot 1080) \text{accumulators} \cdot 2^2
-\text{accumulators}/\text{sample} \cdot 16 \text{bytes}/\text{accumulator} =
-132710400 bytes$
-
-[TODO: verify eqn renders properly]
+[^fbsize]: $(1920 \cdot 1080) \, \text{accumulators} \cdot 2^2 \,
+\text{accumulators}/\text{sample} \cdot 16 \, \text{bytes}/\text{accumulator} =
+132710400 \, \text{bytes}$
 
 With each cache miss, a GPU reads in an entire cache line; each dirty cache
 line is also flushed to RAM as a unit [TODO: verify on Fermi]. In the Fermi
@@ -580,9 +578,139 @@ portion of the time required to complete a small transaction; when applied to
 every transaction, attainable memory throughput drops by more than 20% [CITE
 GDDR5 spec] [CHECK I pulled this number out of thin air].
 
-A 3× penalty may be acceptable, but one of more than 30× cannot be overlooked.
-Meeting this project's performance goals will require finding
-higher-performance alternatives to the traditional accumulation method.
+A 3× performance penalty may be accepted; a 30× penalty *must* be addressed to
+meet this project's stated performance goals. An improvement of more than an
+order of magnitude, however, is rarely trivial, and no single solution will
+remove this bottleneck entirely. Over the course of this chapter, several
+improvements will be introduced, each providing incrementally higher memory
+performance at the cost of increasing complexity. In concert, these techniques
+form an accumulation stage that, while arcane, is fast enough to keep up with
+the iteration loops.
+
+## Tiled accumulation
+
+The most immediate problem in the writeback stage is that of a cache miss,
+which will happen often due to the random distribution of write locations and
+the poor fit of the accumulation buffer into the L2 cache. Little can be done
+about the write patterns without fundamentally restructuring the flame
+algorithm[^newappr], suggesting that it is the cache fit which should be
+optimized.
+
+[^newappr]: The authors intend to explore such a restructuring after the
+initial rendering is built.
+
+This is not a novel problem. Implementations of the Reyes algorithm for
+ray-tracing, such as Pixar's RenderMan, handle limited cache sizes by splitting
+the global geometry in a scene along the boundaries of small rectangular
+regions that tile the destination framebuffer; the contents of each tile are
+then drawn separately and discarded, allowing the information in a single image
+area to remain in the cache [@Segal2003]. A similar technique is employed by
+graphics chips designed for low-power applications, such as those in the
+PowerVR architecture [@PowerVR2009].
+
+As accumulations cannot be bounded *a priori* in the flame algorithm, any
+tile-based approach must be implemented after the iteration step, splitting
+accumulation information across the entire image domain into discrete queues
+for each tile.
+
+### Point logging
+
+An accumulation requires adding a density and three color values to an
+accumulator located on a two-dimensional grid. Representing this information as
+a six-dimensional tuple using floating point values requires 24 bytes. Queueing
+the image information for rendering requires reading and writing it multiple
+times. If each value consumes 24 bytes of memory, the implementation will
+encounter space and bandwidth limitations; encoding this information more
+efficiently is desirable.
+
+The accumulator is identified along a rectangularly-sampled 2D grid. In this
+arrangement, there is an isomorphic map between image regions and accumulator
+indices, so representing the location in intermediate stages by accumulator
+index loses no information as compared to normal accumulation. Use of an
+integer format for representing location is also useful. Typically, flames are
+rendered using resolution and supersampling settings which require a number of
+accumulators less than $2^{24}$, indicating that the index can be fully
+represented as a 24-bit integer.
+
+The color values in an IFS accumulation are calculated from the IFS color
+coordinate by performing a linear blending between the two closest samples of
+the active control point's color palette, followed by a multiplication against
+the transform visibility. Storing this information, rather than the results of
+this calculation, can lead to additional savings. A typical flame uses 1000
+control points to produce motion blur, so a palette index can fit in a 10-bit
+integer. Both the color coordinate and the visibility transform are bounded on
+$[0, 1]$, so a fixed-point representation can achieve a full-precision
+representation with 22 bits per coordinate.
+
+Together, this results in a total of 78 bits of information. On an architecture
+designed entirely around 32-bit word sizes, this size is awkward and
+ineffecient. Fortunately, this algorithm is a Monte Carlo simulation with a
+very high sample count; since all samples in a given image region are averaged,
+sample contributes relatively small amounts of information to the final image.
+Thus, considerably smaller intermediate representations are possible without
+loss of detail — but only if dithering is used to avoid quantization bias.
+
+### Dithering
+
+\newcommand{\flo}[1]{\lfloor #1 \rfloor}
+\newcommand{\ceil}[1]{\lceil #1 \rceil}
+
+Consider a two-entry color palette, where the tristimulus value at index $0$ is
+$C(0) = (0, 0, 0)$, and at index $1$ is $C(1) = (1, 1, 1)$. With linear
+blending, a lookup for an arbitrary value takes the form
+$C_l(i)=P(\flo{i})\cdot (\ceil{i}-i)+C(\ceil{i})\cdot (i-\flo{i})$, such that
+$C_l(0.4)=C(0)\cdot 0.6 + C(1) \cdot 0.4$. The average value of a number of
+linearly-blended lookups with $i=0.4$ would then be $(0.4,0.4,0.4)$.  On the
+other hand, if the index was first truncated to integer coordinates, the
+average value of any number of samples would be $C_l(\flo{0.4})=C_l(0)$, or
+$(0,0,0)$. Many flames use automatically-generated palettes which feature
+violent color changes between coordinates, so such truncation can result in a
+substantial amount of error.
+
+Dithering applies noise to signal components before quantization to distribute
+quantization error across samples, enabling more accurate recovery of average
+values [@Furht2008]. For the fixed quantization of the IFS color coordinate,
+dithering is accomplished by adding a value sampled from a uniform distribution
+covering the range of input values which are quantized to $0$ — for integer
+truncation, this is $[0, 1)$, whereas round-to-nearest-integer would use
+$[-0.5,0.5)$ — to the floating-point color sample before quantization.
+
+To continue the example, dithering the index value $i=0.4$ before integer
+truncation would provide an expected value uniformly distributed in the range
+$[0.4, 1.4)$. Over many samples, this value would be expected to be quantized
+to a value of $0$ as $P(i_q\le 1)=0.6$, and $1$ as $P(i_q>1)=0.4$. Applying
+those values to the palette lookup functions, we have $C(i_q)=C(0)\cdot
+P(i_q\le 1) + C(1)\cdot P(i_q > 1)=C_l(i)$, so that over many samples the added
+noise has actually eliminated the quantization error in the average.
+
+A flame's palette contains 256 color samples. Linear blending occurs between
+palette samples, but no such guarantee exists from sample to sample; as a
+result, subsampling the palette would result in aliasing, even when dithering
+is applied. The minimum size of the color index component, therefore, is 8
+bits. This offers a potent optimization: if the information in the other
+coordinates can be transmitted without adding additional bits to a logged
+point, the log of each point can fit in a single 32-bit word. As it turns out,
+side channels exist for both control point time and visibility.
+
+Each work-group conducts all iterations required to complete a time step before
+moving on to the next in order to keep control point data in cache.  Because
+most work-groups will proceed at approximately the same pace, a single global
+counter indicating the current control point can be shared across all
+work-groups. Across the narrow time range of a single animation frame, the
+variation of a palette is typically imperceptible, so this approximation is
+acceptable.
+
+As for visibility information, there is another channel from which an
+additional bit can be extracted: whether or not the point is written to a
+queue. Discarding half of the points that were computed to provide an accurate
+long-run density intuitively seems much more severe than discarding half of the
+bits to recover an accurate density value, yet the principles are the same;
+dithering works just as well with one bit as with eight. There are pathological
+cases in which this technique could result in additional shot noise in dark
+image regions, but this can be solved by simply increasing the number of
+iterations on such images, and is in any case unlikely to appear in practice.
+
+[TODO: much of the content below shall be reorganized; got a new model going.]
 
 ## Taking advantage of L2
 
@@ -590,67 +718,63 @@ In many situations, the level-2 cache on Fermi GPUs is large and fast enough to
 accelerate random access patterns, with no specific development effort required
 to attain reasonable performance. This is not the case for the flame algorithm;
 the buffers involved are simply too large relative to the cache to make it
-likely that the next accumulator will already be in L2.
-
-If accesses to L2 did result in a cache hit in the majority of cases, it would
-improve accumulation speed, reducing the bottleneck or eliminating it entirely.
-To that end, techniques which can increase the chance of this are presented
-below. In general, any algorithm depending on the availability of cached data
-will not scale, even with these tricks; increasing the framebuffer size beyond
-a certain threshold will cause significant loss of performance.
+likely that the next accumulator will already be in L2. If accesses to L2 did
+result in a cache hit in the majority of cases, it would improve accumulation
+speed, reducing the bottleneck or eliminating it entirely. This section covers
+several techniques which can do so.
 
 ### Color subsampling
 
-As discussed in previous sections [REF or drop], human vision has considerably
-less sensitivity and spatial resolution for color than for luminance. In
-existing implementations of the flame algorithm, however, color is given three
-times the storage space of density information in the accumulator. Since still
-images are typically compressed with JPEG, and animations with H.264 or MPEG-4
-ASP, most of this information never makes it to the viewer; each of these
-codecs downsamples color information before transforming and applies more
-aggressive quantization to increase compression efficiency. Applying similar
-techniques during rendering could reduce the size of the accumulation buffer,
-allowing a larger proportion of it to remain cached.
+Most rendered flames are compressed with the JPEG image codec or the H.264 or
+MPEG-4 ASP video codecs. These codecs, and many others, reduce the size of
+transmitted frames by sampling image channels containing color information at a
+lower spatial resolution than the luminosity channel, and by quantizing the
+subsampled result more severely. That these codecs do so without objectionable
+degradation of the image is evidence of the human visual system's reduced
+sensitivity to perception of color, as compared to brightness. Since most of
+the color information in the accumulation buffer is discarded before ever
+reaching the user, subsampling color during the accumulation stage reduces the
+size of the accumulator with little or no loss in visual quality.
 
-In most video transmission systems, RGB tristimulus values are encoded to
-YUV[^yuv] via an invertible transform. The Y channel encodes the luminance
-value of the image sample, while the remaining two channels store the
-information needed to distinguish between multiple colors. YUV encodings are
-linear and time-invariant, and so behave like RGB under addition;
-pre-converting color values in the palette to YUV and post-converting back to
-RGB would provide the same data (apart from rounding error) as unconverted
-accumulation.
+Sampling image components at different spatial frequencies breaks the
+isomorphism between the image-space coordinate grid and buffer element
+coordinates, requiring more complicated addressing schemes. A simple system for
+resolving this is to move each independently-sampled set of image channels to
+its own buffer. This scheme allows completely arbitrary resampling schemes, and
+finds use in later sections, but on its own will actually *decrease*
+accumulation throughput: while overall buffer size declines with respect to
+an unsubsampled image, accessing those buffers requires extra cache lines to be
+resident. Unless the cache can fit most or all of the resulting image
+simultaneously, each extra cache request increases the chance of a miss.
 
-- In flame algorithm, "density" and "color"; color != chrominance
+A more commonly used option is to interleave samples so that, for any point in
+the image, all channels corresponding to that point are located in the same
+cache line. This scheme adds considerable complication to address generation,
+requiring many conditions to be evaluated for each address; it also requires
+that the sampling frequencies of all image channels are related via a
+small-valued integer ratio in each dimension, such as $3:2$ or $2:1$.
+Interleaving schemes are almost always designed by hand [FIG provide some
+examples], requiring separate addressing logic for each scheme. Even so, the
+onus of address calculation is insignificant compared to the cost of a cache
+miss, making the extra burden worthwhile.
 
-- In YUV, Y contains most visual and nonredundant information
+In image or video coding, RGB tristimulus values are typically encoded to a
+YUV-like format via a simple linear transform. YUV stores the intensity of a
+stimulus in the Y channel, and the coordinates within a 2D color plane in the
+remaining channels, and it is the latter two channels which are subsampled.
+Because the YUV transformation is LTI, it is possible to accumulate values
+directly in this form; however, it doesn't provide much benefit to do so.
 
-- In DYUV, D contains more information than averaged Y, much more than averaged
-  UV in most images
-
-- Schemes that subsample YUV and just UV should be considered
-
-- Place subsampled channels in separate planes. On its own, not a great
-  solution
-
-- Interleave channels in larger units. Pros and cons
-
-#### Color discard
-
-- On principle that color is averaged, and subsequent color samples are less
-  important, make recording the color probabilistic
-
-- Based on color density; points with a lot of color samples don't need more
-
-- Or simply based on an overall scale; will leave some points undercovered but
-  that's what filtering is for
-
-- In this case, makes sense to separate planes into density-only and a second
-  color-only DRGB / DYUV
-
-- Density can fit as 4 bytes per accumulator, to efficiently fill the space
-
-- We can do better
+Accumulator values include a density component and a tristimulus *sum*.
+Intricacies aside, the log-scaling step essentially uses the RGB sum to
+compute an average tristimulus for an image region, and in the process
+truncates the RGB values to 8 bits per channel. Since atomic transactions
+are required, and neither addition nor division are available in the atomic
+ALUs, these values must be accumulated using full single-precision floats
+(or one of the hacks mentioned below) to accomodate a large dynamic range.
+This limitation places a minimum on the width of the color accumulators
+that cannot be reduced by further quantizing chroma channels, and so the
+RGB colorspace is retained for accumulator use.
 
 ### Compact fixed-point representation
 
@@ -697,35 +821,6 @@ accumulation.
   reductions, and typically won't stall a warp, so no special divergence
   protection needed, but still, savings/bandwidth ratio must be considered.
 
-### Dithering
-
-- Most flames use visibility values of 1.0 or 0.0 for all xforms, letting us
-  use 0 bits after decimal in density
-
-- Rounding an intermediate visibility would result in a substantial bias. Just
-  as true for color.
-
-- When quantizing these components, use dithering. At each write, round up if a
-  random number is smaller than the bits being chopped off.
-
-- Over many rounds, same result as floating accumulation
-
-### Combining techniques
-
-Color subsampling reduces the size of the color buffer. Color discard ensures
-that the color buffer doesn't need to be kept in the cache. Fixed-point storage
-shrinks both density and color buffers, and dithering makes sure it doesn't
-trash image quality.
-
-With these combined, the most frequently-accessed information can be stored in
-as little as 4 bits per pixel. At 4BPP, the entire density information of an
-unsupersampled 1280x720 image fits in L2, and a good deal of a 1080P one too.
-
-A lot of parameters in this one; no substitute for experimentation.
-
-Also, it doesn't scale. We'd like an approach that does, for turning on SS and
-rendering very large images. The big images need it most.
-
 ### Acheiving spatial locality
 
 - The only truly scalable techniques can't depend on the cache; must use
@@ -736,43 +831,6 @@ rendering very large images. The big images need it most.
 
 - Seems unlikely, no? Indeed, a comparison sort would almost certainly be too
   slow. But we don't need a generalized sort; we can optimize in certain ways.
-
-#### Logging a point
-
-- What exactly are we sorting?
-
-- Info required: accumulator address and color to log. In floating values,
-  that's 24 bytes; ick.
-
-- How are color values determined? Palette index and temporal position.
-
-    - Palette changes very slowly across time; only need a few bits to fully
-      specify temporal position, and dithering should be fine
-
-    - Palette uses linear blending between elements, but not across whole
-      palette; 8 bits minimum with dithering
-
-    - Visibility also affects palette values when present. Absolute dithering
-      works, but only with very large numbers of samples; better to dither a
-visibility value
-
-- In the best case, where all visibilities are binary and the palette is nearly
-  stationary across time, can represent color with 8-bit dithered address with
-  deferred tex lookup.
-
-- If temporal palette address and/or visibility are required, bump that up to a
-  16-bit color address. (Less is probably OK, but non-power-of-two sizes add
-  too much complexity here)
-
-- Accumulator address. 2D coordinate, but address calculations turn it into a
-  1D index.
-
-- Number of bits required is simply log-2 number of accumulators. Round up to
-  nearest 8-bit number for simplicity. Worth noting that 720P with up to 4X
-  supersampling and 2560P with up to 2X supersampling fit in 24 bits.
-
-- Thus, for most flames, we can fit in 32 bits: a 24-bit accumulator index and
-  an 8-bit color value. We assume that this is the case for now.
 
 ### Quick review of radix sorting
 
@@ -872,37 +930,5 @@ available, we can fit two radix buffers, but not three - there's overhead, plus
 the swap buffers. Fermi only supports 1536 threads per core; across two, that's
 768 per. Since we want a power-of-two size for the number of iterands, it's
 512. Add in the sort warp and it's 544 threads per work-group.
-
-[TODO: the description of the bucket mechanism, and how to move them down each
-level, is so complicated and hardware-dependent that it would take dozens of
-pages to explain the alternatives before we run the benchmarks to determine
-what works best. I'm going to simply avoid mentioning the implementation of
-buckets at all and hope nobody notices.]
-
-### Accumulating values in shared memory
-
-- After accumulations fill a bucket, it is sent back through the sorting thread
-  for an additional round of splitting.
-
-- After the second pass, each point is in a bucket where the upper 14 bits of
-  each index are the same, leaving only the lower 10 bits.
-
-- Each bucket thus spans a range of 1024 index positions.
-
-- Accumulators are 16 bytes wide, and the shared memory sort buffer is 16KB in
-  size.
-
-- The sort buffer is zeroed, then each point in the bucket is read in turn. The
-  index is peeled from the value, the color is used to do a palette lookup, and
-the shared-memory copy of the accumulator is updated just as if it were in main
-memory.
-
-- Once the entire bucket has been read, the shared-memory accumulators are
-  added to their global memory counterparts.
-
-- The whole process is considerably more complex than other writeback
-  mechanisms, and there are in fact hardware-dependent details which have been
-elided in this description. However, it ends up being considerably faster
-overall. [TODO: make this point better.]
 
 <!-- vim: syntax=pdcf: -->

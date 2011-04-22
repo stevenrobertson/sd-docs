@@ -99,7 +99,7 @@ urlize (Str "DOI:":Space:Str u:xs) =
     Link [Str $ "doi:" ++ u] ("", "http://dx.doi.org/" ++ u) : urlize xs
 urlize x = x
 
-biblioAtEnd = False
+biblioAtEnd = True
 
 -- Creates a pretty-print document which covers a single file's annotations
 pprAnnos :: [Annotation] -> Doc
