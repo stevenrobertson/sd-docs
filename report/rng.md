@@ -11,7 +11,7 @@ In selecting the right PRNG, it is common to look at its period (or numbers it o
 There are various properties that a PRNG can have, but for this project, we are looking for maximized speed and spectrum properties, and a PRNG that can be implemented in a GPU.
 
 ## `rand()` and Linear Congruential Generators
-We begin the search for pseudo-random number generators with the most commonly used, win32’s `rand()` function. The problem with this function is that its randomness is biased. 
+The search for pseudo-random number generators begins with the most commonly used, win32’s `rand()` function. The problem with this function is that its randomness is biased. 
 If we say `x=rand()%RANGE;` the function returns any number represented by [0, RANGE) instead of [0,RANGE]. Assuming that `rand()` outputs a number [0, MAX], RANGE should be able to divide by MAX+1 entirely in an ideal PRNG, however it doesn’t in the `rand()` function and therefore the probability of choosing a random number X in [(MAX%RANGE), RANGE] is less than that of choosing it in [0, MAX%RANGE].[1]
 
 Another problem with `rand()` is that it is a Linear Congruential Generator (LCG).
