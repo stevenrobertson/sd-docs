@@ -1,4 +1,4 @@
-#!/usr/bin/runhaskell -Wall
+#!/usr/bin/runhaskell
 {-
 This program assembles the Senior Design report.
 
