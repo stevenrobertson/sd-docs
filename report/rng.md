@@ -1,4 +1,6 @@
 # Random Numbers and Pseudo-Random Number Generators
+\label{ch:rng}
+
 Random numbers are used in this project because of their importance in calculating and rendering fractals using Iterated Function Systems. For example, in order to recreate Sierpinski’s triangle, one defines the three vertex points A, B and C. Starting at point A, one randomly picks the next point (B or C) and draws a point halfway between the points chosen. From there it is all about picking the next point randomly and doing the same thing all over again thousands of times until getting a fractal like that in Figure \ref{mandelbrot}.
 
 Real random numbers are hard to calculate in a computer; in great part because they depend on time or because there isn’t an infinite number of bit sized chunks for computation. Pseudo-Random Number Generators (PRNGs) are algorithms that simulate randomness in a computer, usually by using prime numbers as seeds because when they are used in a division, the output is an irrational number.The greater the prime number, the better quality numbers are outputted. In order to find the right PRNG for this project we will consider advantages and disadvantages of different well known PRNGs.
@@ -70,7 +72,7 @@ An alternative that sounds like a better choice is ISAAC, it stands for Indirect
 
 It is a good choice for this project for several reasons; it is sufficiently fast for this project, it has a period of 2^19937 -1 (meaning the random numbers will not repeat for that many iterations), and it can be implemented on a GPU, however, it requires a large amount of static memory on the GPU, and it operates in batch mode, meaning that when the pool runs out of random bits, the entire pool must be regenerated at once. This can be handled with CUDA (NVIDIA’s parallel computing architecture)[CITE 5], but its not the fastest or simplest solution.
 
-## Multiply With Carry 
+## Multiply With Carry
 This algorithm might seem similar to the typical one for a LCG, but it differs when it comes to how the new iteration values are chosen.
 To start, one chooses a numbers a, c, and m. A number b is also chosen such
 that $b = 2^{\text{half the size of the register}}$. First, $x_1 = (a_0*x_0 +

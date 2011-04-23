@@ -1,4 +1,5 @@
-#Fractal Flame Algorithm Demystified
+# The Fractal Flame Algorithm
+\label{ch:flame}
 
 ##Section Outline
 This section provides an in-depth description of the fractal flame algorithm along with a primer on the Iterated Function System (IFS) in which the fractal flame algorithm is a variant of. This primer is provided to the reader in order to solidify the concept of the chaos game which is essential to understanding the flame algorithm because it builds heavily on upon the concepts that are used in the classical IFS.
@@ -580,11 +581,11 @@ If (i == Q-1) // Final iteration
 	- Perform filtering
 		a. Supersampling to remove alias
 		b. Density Estimation to remove noise
-	
+
 	- Apply final camera Transform (also applies color assocaited to variation, cf = (c+cfinal)/2
 	- To properly display log density color scale each color by log(alpha) / alpha.
 	- Apply all color && image correction techniques (k1 / k2 equations): hue , brightness, gamma, the whole shebang!
-	
+
 End For
 
 - End procedure , phew that was tough.
