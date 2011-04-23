@@ -29,6 +29,11 @@ Accumulated sample
 
 ~   The value of an accumulator after all iterations have been performed.
 
+Animation
+
+~   (flam3) A series of frames, where each frame is generated from a different
+    time step along a particular interpolation between two flames.
+
 Barrier
 
 ~   (CUDA) An instruction which will stall the warp which issues it until a
@@ -63,11 +68,25 @@ Device
     run asynchronously to the CPU. In our case, one of the GPUs available in a
     system.
 
+Edge
+
+~   (flam3) An animation involving interpolation between two visually distinct
+    flames, so named because they are attached to the edges in the graph used
+    to resolve playback order in the Electric Sheep screensaver.
+
 Flame
 
-~	TODO: Talk about when somebody mentions a 'flame' in context to refering to the
-	output of the algorithm
-	
+~   The abstract notion of a particular class of chaotic attractor. Flames are
+    described by their genomes, and visually approximated using the fractal
+    flame algorithm.
+
+Genome
+
+~   (flam3) The set of parameters describing a flame, or the concrete data
+    structure containing this information. May also include information about
+    aspects that affect the rendering only, rather than the underlying
+    attractor.
+
 IFS iteration
 
 ~   An application of one transform function from an iterated function system
@@ -82,6 +101,16 @@ IFS sample
 
 ~   The information about the shape of the attractor gained by performing an
     iteration.
+
+Kernel
+
+~   An entry point for a device thread; the code associated with a single
+    device invocation.
+
+Loop
+
+~   (flam3) An animation of a rotation interpolation, which modifies a single
+    flame in such a way that the final frame is identical to the first.
 
 Stream
 
