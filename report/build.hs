@@ -15,6 +15,7 @@ import Data.Char (toUpper, isSpace)
 import Data.Either
 import System.FilePath
 import System.Directory
+import System.Environment
 import System.Exit
 import System.Process
 import System.IO
@@ -115,6 +116,8 @@ pprAnnos annos = header $$ nest 2 (vcat $ map go annos)
     msg ty m = fsep ((ty <> colon) : map text (words m))
 
 main = do
+    useDraft <- any (== "-d") <$> getArgs
+
     refs <- readBiblioFile "mendeley.bib"
     sourcePaths <- lines <$> readFile "order.txt"
     (sources, annos) <- unzip <$> mapM (parseFile refs) sourcePaths
@@ -127,7 +130,9 @@ main = do
                  then doBib $ joinDocs sources
                  else joinDocs <$> mapM doBib sources
 
-    let vars = [("report", "1"), ("include-before", topmatter)]
+    let vars = [ ("report", "1")
+               , ("include-before", topmatter)
+               , ("draft", if useDraft then "1" else "") ]
         latex = renderLaTeX template vars $ bottomUp urlize joined
 
     tmpdir <- fmap (</> "pandoc_report") getTemporaryDirectory
@@ -139,8 +144,8 @@ main = do
     writeFile tex latex
 
     errCode <- renderPDF tmpdir tex
-    --putStrLn "Running xelatex again to update TOC"
-    --_ <- renderPDF tmpdir tex
+    putStrLn "Running xelatex again to update TOC"
+    _ <- renderPDF tmpdir tex
 
     putStrLn "\n\nDocument annotations:"
     print . vcat $ map pprAnnos annos

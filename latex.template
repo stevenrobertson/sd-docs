@@ -12,6 +12,11 @@ $else$
           marginparsep=7pt, marginparwidth=.6in}
 $endif$
 
+$if(draft)$
+\usepackage[draft]{graphicx}
+$else$
+\usepackage{graphicx}
+$endif$
 \usepackage{amssymb,amsmath}
 \usepackage{wrapfig}
 \usepackage[english]{babel}
@@ -58,8 +63,7 @@ $endif$
 $if(subscript)$
 \newcommand{\textsubscr}[1]{\ensuremath{_{\scriptsize\textrm{#1}}}}
 $endif$
-$if(graphics)$
-\usepackage{graphicx}
+
 % We will generate all images so they have a width \maxwidth. This means
 % that they will get their normal width if they fit onto the page, but
 % are scaled down if they would overflow the margins.
@@ -69,7 +73,6 @@ $if(graphics)$
 \makeatother
 \let\Oldincludegraphics\includegraphics
 \renewcommand{\includegraphics}[1]{\Oldincludegraphics[width=\maxwidth]{#1}}
-$endif$
 
 \usepackage{array}
 % This is needed because raggedright in table elements redefines \\:
