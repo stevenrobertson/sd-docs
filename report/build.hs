@@ -144,8 +144,9 @@ main = do
     writeFile tex latex
 
     errCode <- renderPDF tmpdir tex
-    putStrLn "Running xelatex again to update TOC"
-    _ <- renderPDF tmpdir tex
+    unless useDraft $ do
+        putStrLn "Running xelatex again to update TOC"
+        void $ renderPDF tmpdir tex
 
     putStrLn "\n\nDocument annotations:"
     print . vcat $ map pprAnnos annos
@@ -156,7 +157,7 @@ main = do
             withBinaryFile pdf ReadMode $ \srch ->
                 withBinaryFile "report.pdf" WriteMode $ \dsth ->
                     hPutStr dsth =<< hGetContents srch
-            removeFile pdf  -- don't let old reports confuse us
+            unless useDraft $ removeFile pdf
             putStrLn "\n\nDone. Output file is at report.pdf."
             unless (errCode == ExitSuccess) $
                 putStrLn $ "NOTE: xelatex exited with errors. "
