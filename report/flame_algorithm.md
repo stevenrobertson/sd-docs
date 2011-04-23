@@ -406,7 +406,14 @@ By applying variations, the resulting plane is changed in a particular way. Fund
 
 **Parametric Variations:** A parametric variation is a remapping of the plane such that the mapping is a simple remapping but additionally controlled by coefficients that are independent of the affine transformation applied.
 
-For a visual supplement as well as an extensive collection of many catalogued variations please refer to the Appendix of the original Flame Algorithm Paper. [CITE and provide link]
+A baseline flame with purely an affine transform applied is shown side by side with both a simple remapping, dependent variation, and parametric variation in Figure \ref{variations}. This will give you a good idea on what a single variation can do to shape the system and how intricate some of the variations can be. As an additional visual supplement please refer to the Appendix of the original Flame Algorithm Paper for an extensive collection of many catalogued variations. [CITE and provide link]
+
+\begin{figure}[h]
+	\centering
+	\includegraphics{./flame/variations.png}
+	\caption{4 different variations applied to the same flame depicting the different types of variations and how they change the solutions characteristics.}
+	\label{variations}
+\end{figure}
 
 3. **Post Transformation**
 
@@ -528,14 +535,66 @@ Finally, we address one of the last issues. We have taken care of spatial aliasi
 [TODO Directional Motion Blur]
 
 ####Procedure
-[TODO Look at IFS procedure for hints]
-Under Construction
+Initially presenting the fractal algorithm usually results in a lengthy discussion as seen above but is usually done at the sake of clarity of WHY and HOW each step is being done. Since these have already been explained, we recap the algorithm with a high level summary in the same fashion we had provided the classical iterated function system algorithm.
 
 
-[TODO Describe algorithm]
-[TODO Flowchart of aLGORITHM]
+
+[TODO Finish this in words]
 
 
+\begin{figure}[h]
+	\centering
+	\includegraphics{./flame/flame_flowchart_1.png}
+	\caption{ TODO}
+	\label{flameflowchart1}
+\end{figure}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics{./flame/flame_flowchart_2.png}
+	\caption{ TODO}
+	\label{flameflowchart2}
+\end{figure}
+
+
+\begin{figure}[h]
+	\centering
+	\includegraphics{./flame/flame_flowchart_3.png}
+	\caption{ TODO}
+	\label{flameflowchart3}
+\end{figure}
+
+
+[TODO VERIFY] [MAKE 3 PAGE]
+- Start Procedure
+
+For i=0 .. Q where Q is the quality of the flame
+1. Random point in biunit square is picked
+2. Apply an Xform based on the probabilistic weighting defined
+	a. Apply Affine Transform
+	b. Variation Transform (applies color associated to variation, c = (c + ci)/2)
+	c. Post function Transform
+	d. Apply any symmetry
+3. Accumulate resulting point and color in respective histogram bin (except for the first 20 times!)
+If (i == Q-1) // Final iteration
+	- Perform filtering
+		a. Supersampling to remove alias
+		b. Density Estimation to remove noise
+	
+	- Apply final camera Transform (also applies color assocaited to variation, cf = (c+cfinal)/2
+	- To properly display log density color scale each color by log(alpha) / alpha.
+	- Apply all color && image correction techniques (k1 / k2 equations): hue , brightness, gamma, the whole shebang!
+	
+End For
+
+- End procedure , phew that was tough.
+[END TODO]
+
+
+
+##Bibliography
+
+This shouldn't be here!
 
 [1] http://en.wikipedia.org/wiki/Iterated_function_system
 

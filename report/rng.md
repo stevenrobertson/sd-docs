@@ -5,6 +5,20 @@ Real random numbers are hard to calculate in a computer; in great part because t
 
 In selecting the right PRNG, it is common to look at its period (or numbers it outputs until it starts repeating itself), its speed and its spectral properties, the latter which determine its true randomness. For this project, we are looking for a simple and fast PRNG that meets out minimum needs.
 
+
+## Bias : An Illustrative Example
+
+[TODO Rework table and picture into this section, start rambling and reffing sections]
+
+\begin{figure}[h]
+	\centering
+	\includegraphics{./rng/bias.png}
+	\caption{Sierpinski's Triangle shown with biased values of applying the function which pulls the points towards Vertex A.}
+	\label{bias}
+\end{figure}
+
+
+
 ##  Pseudo Random Number Generators
 There are various properties that a PRNG can have, but for this project, we are looking for maximized speed and spectrum properties, and a PRNG that can be implemented in a GPU.
 
@@ -56,8 +70,8 @@ An alternative that sounds like a better choice is ISAAC, it stands for Indirect
 
 It is a good choice for this project for several reasons; it is sufficiently fast for this project, it has a period of 2^19937 -1 (meaning the random numbers will not repeat for that many iterations), and it can be implemented on a GPU, however, it requires a large amount of static memory on the GPU, and it operates in batch mode, meaning that when the pool runs out of random bits, the entire pool must be regenerated at once. This can be handled with CUDA (NVIDIA’s parallel computing architecture)[CITE 5], but its not the fastest or simplest solution.
 
-## Multiply With Carry This algorithm might seem similar to the typical one for
-a LCG, but it differs when it comes to how the new iteration values are chosen.
+## Multiply With Carry 
+This algorithm might seem similar to the typical one for a LCG, but it differs when it comes to how the new iteration values are chosen.
 To start, one chooses a numbers a, c, and m. A number b is also chosen such
 that $b = 2^{\text{half the size of the register}}$. First, $x_1 = (a_0*x_0 +
 c_0) \mod m$, then, the quotient of the past calculation becomes the quotient
@@ -97,6 +111,7 @@ Ideally, the minimum number from 0 to k will be a high value (in the thousands) 
 The Monte Carlo methods are algorithms that use statistics to determine probabilities in systems and their properties. They are used in finance, physics, communications and even game design. In the context of this project, they are necessary measures of randomness that can be held as a standard that filters out PRNGs that don’t meet the basic requirements. Using these methods, the spectral properties and periods of some PRNGs and their variations will be determined.
 
 ## Our approaches
+[TODO Nick this is sloppy, it looks like a list not a document]
 There are several things to be attempted in order to obtain the desired results and the most efficient algorithm that contains most if not all the desired qualities of a necessary PRNG.
 The initial ideas for finding the potential PRNG are the following:
 
