@@ -33,7 +33,7 @@ Both the file format technologies in which our images or videos and stored in as
 		JPEG Image File			&	256 : 1		&	8		\\
 		\hline
 		RAW Image File 			&	1,024 : 1	& 	10		\\
-		\hline		
+		\hline
 		\bf{HDR Image File}	&	approx. 32,768 : 1 to 1 : 1,048,576	& approx. 15 - 20	\\
 		\hline
 		Standard Video			&	45 : 1		&	5.49	\\
@@ -51,7 +51,7 @@ Both the file format technologies in which our images or videos and stored in as
 		\bf{Sunlit Scene}			& approx. 100,000 : 1	&	16.60	\\
 		\hline
 		\bf{Human Eye}				& approx. 10,000 : 1	&	13.28	\\
-		\hline		
+		\hline
 	\end{tabular}
 	\caption{Typical dynamic ranges of various scenes or typical dynamic ranges that able to be represented. }
 		\label{hdrtable}
@@ -60,9 +60,9 @@ Both the file format technologies in which our images or videos and stored in as
 
 Where $Stop$ is defined as :	$log_{2}(Ratio)/log_{2}(2)$.
 
-Let's take a look at what this table really means in the case of imagery. The table shows that a *HDR Image File* can represent an impressive range of contrast - far higher than the eye can observe. We also note that it could approximately even capture a *Sunlit Scene* which contains extreme contrast between the brightness and darkest intensity values. However, if we look at our viewing technologies we notice their limits of displaying contrast. *LCD Technology* has a Stop value of approx. 8.96, *CRT Technology* has a Stop value of approx. 5.64, and *Glossy Print Paper* has a Stop value of 5.90. Compared to the *Human Eye* whose Stop value is approx. 13.28, these values are incapable of being on par with the level of contrast the human eye can observe and therefore will not accurately represent how the colors ideally should be observed. 
+Let's take a look at what this table really means in the case of imagery. The table shows that a *HDR Image File* can represent an impressive range of contrast - far higher than the eye can observe. We also note that it could approximately even capture a *Sunlit Scene* which contains extreme contrast between the brightness and darkest intensity values. However, if we look at our viewing technologies we notice their limits of displaying contrast. *LCD Technology* has a Stop value of approx. 8.96, *CRT Technology* has a Stop value of approx. 5.64, and *Glossy Print Paper* has a Stop value of 5.90. Compared to the *Human Eye* whose Stop value is approx. 13.28, these values are incapable of being on par with the level of contrast the human eye can observe and therefore will not accurately represent how the colors ideally should be observed.
 
-Luckily, we can work within our imposed limitations and there are many imaging techniques that can be applied to attempt to remedy the situation.  The following techniques described below are not only for aesthetics but also are some of the core techniques for representing HDR images on LDR mediums. This coincides with the goal the entire algorithm wishes to achieve and is paramount to fix our LDR dilemma. 
+Luckily, we can work within our imposed limitations and there are many imaging techniques that can be applied to attempt to remedy the situation.  The following techniques described below are not only for aesthetics but also are some of the core techniques for representing HDR images on LDR mediums. This coincides with the goal the entire algorithm wishes to achieve and is paramount to fix our LDR dilemma.
 
 ###A RGB Color Model: Hue, Saturation, and Brightness Value (HSV)
 To attempt to mathematically define certain color concepts (e.g. brightness, saturation, vibrancy) a color model for how our colors will be represented spatially is chosen so the relationship between colors can be talked about.
@@ -77,7 +77,7 @@ The HSV color model spatially describes the relationship of red, green, and blue
 - Hue
 - Saturation
 - Brightness
- 
+
 It does this by representing these using a cylindrical coordinate system. The axis representations are the following:
 
 - **Rotational Axis:** The rotation axis represents *hue*. Hue refers to pure spectrum of colors - the same prism observed when splitting light. At $0^\circ$ on the axis the primary color red is represented, at $120^\circ$ the primary color green is represented, and at $240^\circ$ the primary color blue is represented. The rest of the degrees are filled in according to the color spectrum.
@@ -118,7 +118,7 @@ Besides being implemented at the hardware level, gamma correction can additional
 
 The formula for *gamma correction* is $b_{corrected} = b^{1/\gamma}$ where $\gamma$ is the correction factor.
 
-To understand the non-linearity of the gamma function 4 gamma correction values are applied to an image for visual depiction of the concept. The results are seen in Figure \ref{gammacomparison}. 
+To understand the non-linearity of the gamma function 4 gamma correction values are applied to an image for visual depiction of the concept. The results are seen in Figure \ref{gammacomparison}.
 
 
 \begin{figure}[h]
@@ -144,9 +144,7 @@ We can attempt to quantatively talk about brightness using the concept of a colo
 1.	Give equal weights of each color component (R, G, and B)
 2.	Give weighted values of each color component (R, G, and B). This is referred to as perceived brightness.
 
-[CHECK Unicode issue AGAIN Arghhhhh! naive]
-
-An example of the first application would be a naïve approach that goes on the notation that if black is $Red = 0$ , $Green = 0$, $Blue = 0$ and white is $Red = 255$ , $Green = 255$, and $Blue = 255$ then the brightness can be simply $Red + Green + Blue$.
+An example of the first application would be a naÃ¯ve approach that goes on the notation that if black is $Red = 0$ , $Green = 0$, $Blue = 0$ and white is $Red = 255$ , $Green = 255$, and $Blue = 255$ then the brightness can be simply $Red + Green + Blue$.
 
 \begin{figure}[h]
 	\centering
@@ -169,7 +167,7 @@ Some examples of weighted models to calculate brightness are below in Table \ref
 		Digital CCIR601 				&	$0.299 \times R + 0.587 \times G + 0.114 \times B$		\\
 		\hline
 		HSP Color Model (Percieved Brightness) &	$\sqrt{0.241 \times  R^2 + 0.691 \times G^2 + 0.068 \times  B^2 }$		\\
-		\hline		
+		\hline
 	\end{tabular}
 	\caption{Weighted Brightness Calculations. }
 	\label{brightnessmodel}
@@ -189,7 +187,7 @@ The concept this section intends of describing is that of *saturation* but as a 
 
 3. **Saturation:** The intensity of the color is a measure of its colorfulness relative to its own brightness rather than gray[11].
 
-The term that is of importance is that of *saturation*. 
+The term that is of importance is that of *saturation*.
 
 [TODO  Expand on a bit on this section. Possible ideas: Describe R, G, and B model as well as the steepness of the bell curve slope described here [9]. Linear]
 
@@ -213,7 +211,7 @@ Saturation is linear in nature whereas vibrancy works in a non-linear fashion. I
 \label{colorclippingsection}
 A problem that plagues images in digital photography and that of the flame algorithm is the concept of *color clipping*. Color clipping happens when color brightness values to be outputted to the image fall either below or above the maximum representable range.
 
-In digital photography *color clipping* can happen from an improper exposure setting on the camera which results in effects, such as the lighting from the sun, overwhelming certain portions of the image. In the case of the flame algorithm, this concept can be viewed in a different context. One problem with flames is that certain areas of density in the histrograms from the *chaos game* can become so dense that their color setting exceed the bounds of representable brightness's. 
+In digital photography *color clipping* can happen from an improper exposure setting on the camera which results in effects, such as the lighting from the sun, overwhelming certain portions of the image. In the case of the flame algorithm, this concept can be viewed in a different context. One problem with flames is that certain areas of density in the histrograms from the *chaos game* can become so dense that their color setting exceed the bounds of representable brightness's.
 
 When data exceeds the upper and lower bounds of representable brightness's a loss of data occurs. As a result, there is an inability to determine the differences between those regions of data as they default to the maximum or minimum brightness and appear uniform. A focus on the approach of the algorithm is to prevent this and preserve and be able to represent all contours of the image and their brightness's.
 
@@ -235,7 +233,7 @@ With a firm idea of High Dynamic Range (HDR) the concept of tone mapping is now 
 1. Bring out all of the details of an image - or more specifically, maximizing image contrast. This approach focuses on producing realism and aims to render an image as accurately as possible.
 2. Create an aesthetically pleasing image, often ignoring the realistic model that the first approach attempts to model but trying to create another desired effect. This effect is up to the person designing the tone operator which is applied to the image.
 
-The method for applying this tone mapping is done via a tone mapping operator. The HDR image is processed by the tone mapping operator which provides one of the two above mentioned effects. There are two major classifications of tone mapping operators[6]: 
+The method for applying this tone mapping is done via a tone mapping operator. The HDR image is processed by the tone mapping operator which provides one of the two above mentioned effects. There are two major classifications of tone mapping operators[6]:
 
 1. **Global Tone Operators:** In a global tone operator the mapping of one color set to another is uniformly applied to the image. This mapping is in the form of a non-linear function that is determined to be the desired mapping [6]. Gamma correction is an example of a simple global tone operator.
 
@@ -304,7 +302,7 @@ For reference to the reader a baseline image of a detailed flame containing seve
 		Early Clipping					&	Off \\
 		\hline
 		Highlight Power					&	0.0 \\
-		\hline		
+		\hline
 	\end{tabular}
 	\caption{ Parameter values of our baseline image which modified versions of this flame will be compared to. }
 		\label{flametable}
@@ -361,7 +359,7 @@ As mentioned in the *Gamma Correction Background* (Section \ref{gammasection}) a
 		11								&	1,000.00		\\
 		\hline
 		12								&	10,000.00		\\
-		\hline		
+		\hline
 	\end{tabular}
 	\caption{ Flame image numbers and their associated $\gamma$ correction values. }
 		\label{gammacorrectiontable}
@@ -409,7 +407,7 @@ As mentioned in the *Gamma Correction Background* (Section \ref{gammasection}) a
 		11								&	0.90			\\
 		\hline
 		12								&	1.00			\\
-		\hline		
+		\hline
 	\end{tabular}
 	\caption{ Flame image numbers and their associated gamma threshold values. }
 		\label{gammathresholdtable}
@@ -456,7 +454,7 @@ As mentioned in the *Gamma Correction Background* (Section \ref{gammasection}) a
 		11								&	0.8330		& 	$\approx 300^\circ$	\\
 		\hline
 		12								&	0.9163		& 	$\approx 330^\circ$	\\
-		\hline		
+		\hline
 	\end{tabular}
 	\caption{ [TODO] }
 		\label{huetable}
@@ -504,7 +502,7 @@ Brightness correction is a function that changes the percieved intensity of ligh
 		11								&	10,000.00		\\
 		\hline
 		12								&	100,000.00		\\
-		\hline		
+		\hline
 	\end{tabular}
 	\caption{ Flame image numbers and their associated brightness correction values. }
 		\label{brightnesscorrectiontable}
@@ -551,7 +549,7 @@ Vibrancy, as stated in the *Vibrancy Background* (Section \ref{vibrancysection})
 		11								&	0.90			\\
 		\hline
 		12								&	1.00			\\
-		\hline		
+		\hline
 	\end{tabular}
 	\caption{ Flame image numbers and their associated vibrancy values. }
 		\label{vibrancytable}
@@ -567,7 +565,7 @@ Vibrancy, as stated in the *Vibrancy Background* (Section \ref{vibrancysection})
 ####Early Clipping
 Earlier it was discussed that the user may experience regions of the flame that become so dense that the colors to fall outside of the representable range of color. These creates regions of uniform density which results in a loss of detail. More background information on this can be found in *Color Clipping Background* (Section \ref{colorclippingsection}).
 
-Early clip takes this idea of color clipping and provides a means to rectify the problem. The problem occurs because in the typical algorithm all of the log scaled histrogram of points is mapped to the RGB color space *after* applying the filter kernel. A potential problem that can happen is that the spatial filter can blur dense regions of the image and then when color correction techniques are applied these blurred regions can become saturated. [17] Visually, this produces regions that look smeared and more dense than it was intended to look. This deviation between the output image and what was intended is a form of detail loss. The rectification of this problem lies in clipping the RGB color material before applying the filter which fixes this issue. This setting can either be turned on or off and can be set by the user. 
+Early clip takes this idea of color clipping and provides a means to rectify the problem. The problem occurs because in the typical algorithm all of the log scaled histrogram of points is mapped to the RGB color space *after* applying the filter kernel. A potential problem that can happen is that the spatial filter can blur dense regions of the image and then when color correction techniques are applied these blurred regions can become saturated. [17] Visually, this produces regions that look smeared and more dense than it was intended to look. This deviation between the output image and what was intended is a form of detail loss. The rectification of this problem lies in clipping the RGB color material before applying the filter which fixes this issue. This setting can either be turned on or off and can be set by the user.
 
 [TODO]
 -	Will we implement it?
@@ -605,7 +603,7 @@ Highlight power is a value (the data type is a *float*) which controls how fast 
 		11								&	10,000.00		\\
 		\hline
 		12								&	100,000.00		\\
-		\hline		
+		\hline
 	\end{tabular}
 	\caption{ Flame image numbers and their associated highlight power values. }
 		\label{highlighttable}
@@ -660,7 +658,7 @@ $k_{2} = \frac{Oversample^{2}\times Number Of Batches }{ Contrast \times Area \t
 ###Tone-Mapping Operator
 
 [TODO]
-- Write about the new tone mapping operator implementation instead of log scaling and then coloring. 
+- Write about the new tone mapping operator implementation instead of log scaling and then coloring.
 - Possible Advantages : Hope to cut down on required points
 
 
