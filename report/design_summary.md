@@ -77,8 +77,6 @@ according to the execution pattern determined during the compilation process.
 
 ## Device software
 
-[REF: the rendering, accumulation, and filtering kernels are really separate]
-
 Code on the device is split into either two or three kernels. Together, these
 kernels form an implementation of the algorithm outlined in Chapter
 \ref{ch:flame}. Each of these kernels is dynamically generated, for reasons
@@ -107,7 +105,7 @@ accumulated color and density information into a final image. When these
 threads exit, the device signals to the host that the image is complete, copies
 the final framebuffer to the device, and begins rendering the next image.
 
-### Rendering kernel
+### Rendering
 
 Upon invocation, a rendering thread uses its global thread ID to load a unique
 random state.  This state is kept resident for the duration of the thread's
@@ -115,8 +113,8 @@ execution, and is updated in global memory by the thread as it exits. This
 action is also performed by the accumulation and filtering kernels upon a
 distinct set of states. Other rendering-specific actions include setting the
 consecutive bad value flag to trigger point regeneration and initial point
-fusing [REF previous discussion of fuse] and clearing the buffers in shared
-memory.
+fusing [REF previous discussion of fuse], acquiring output queues, and clearing
+the buffers in shared memory.
 
 Threads in a work-group operate on a single control point at a time. This
 control point is selected through atomic access to a global counter, which acts
@@ -126,4 +124,68 @@ exits. The control point select index is a fixed multiple of the number of
 control points in an image, allowing multiple work-groups to operate on the
 same control point simultaneously. This increases the efficiency of the global
 cache and balances workload across cores.
+
+The iteration loop begins with a test of the bad value flag to determine
+whether a new random point needs to be generated, and a divergent branch to do
+so if needed. The first thread in a warp then generates the transform select
+value and broadcasts it to the rest of the warp. Threads then apply the
+selected transform function to the current position and color values to obtain
+a new IFS state [REF].
+
+If the bad value flag is not less than zero — indicating that the point is
+currently joining the attractor, and should not be written — and the point is
+within image boundaries, the point is quantized by its thread into the record
+format described in [REF].  The top six bits are used to select an output
+queue, and the record is appended to the corresponding consolidation queue,
+using the resolution algorithm described in [REF] to handle consolidation
+flushes. The bad value flag is reset to zero.
+
+If the point is outside of the image domain or joining the attractor, the bad
+value flag is incremented. If the flag is originally less than zero, this may
+cause it to move to zero, indicating that the point's trajectory has joined the
+attractor and is ready to be written in subsequent threads. If it is larger
+than a determined amount, indicating several consecutive invalid values, it may
+have entered an expansive region of the function system, and will be rest at
+the next iteration.
+
+Once a sufficient number of valid points have been generated, the iteration
+loop exits. The control point select index is tested to see if additional work
+is queued; if more is available, the thread restarts, otherwise it exits.
+
+### Accumulation
+
+The process of moving samples from first-stage output queues to final
+accumulators is handled by accumulation threads. A portion of the first warp in
+an accumulation work-group performs an infrequent poll of a corresponding
+portion of the global queue tree to determine when new work is available; when
+it is, the entire work-unit wakes, takes ownership of the corresponding queue
+buffers, and begins processing the first queue.
+
+The accumulation threads perform two functions, depending on the queue being
+processed. First-stage output queues contain point records over an address
+range of as many as 17 bits. The output stage requires a range no larger than
+10 bits, so there may be as many as 128 second-stage output queues per
+first-stage queue. The accumulation thread is responsible for reading points
+from the first-stage queue and writing them to the second-stage queue. This
+sorting pass is almost identical to that performed by the first-stage output,
+save for using a larger number of consolidation queues and obtaining points by
+reading output queues instead of iterating directly.
+
+Once a first-stage output queue is read, its buffers is returned to the main
+buffer pool. After reading the contents of all first-stage output queues, the
+second-stage queues within an accumulation work-group are examined to determine
+if any are approaching a sufficient length for writeback to begin. If any are,
+the accumulation work-group enters its second mode.
+
+Processing a second-stage queue begins by taking ownership of all flushed
+output buffers in the output queue, and clearing the internal accumulation
+values in shared memory. Each value in the queue is then read and added to the
+appropriate shared accumulator. As each buffer in the queue is read, it is
+freed and returned to the global pool. After a queue has been fully processed,
+the work-group once again waits for data by polling global memory.
+
+[REF in here to writeback sections if/when they're done]
+
+### Filtering
+
 
