@@ -36,7 +36,7 @@ graphic which results in what's commonly known as "jaggies"
 \begin{figure}[h!]
 	\centering
 	\includegraphics{./filtering/Aliasing_aSmall.png}
-	\caption{Left: aliased image, right: antialiased image}
+	\caption{Left: aliased image, right: antialiased image. Reprinted with permission under the GNU Free Documentation License, Version 1.2. Author: Mwyann, Date: 7/29/2009}
 	\label{aliasing}
 \end{figure}
 
@@ -142,7 +142,7 @@ samples are far enough away from each other [@Beets2000].  See Figure
 \begin{figure}[h!]
 	\centering
 	\includegraphics{./filtering/SuperSamplingSmall.png}
-	\caption{From left to right: Ordered Grid algorithm, Rotated Grid algorithm, Jitter algorithm, Poisson algorithm, Random algorithm}
+	\caption{From left to right: Ordered Grid algorithm, Rotated Grid algorithm, Jitter algorithm, Poisson algorithm, Random algorithm.  Reprinted with permission under the GNU Free Documentation License, Version 1.2.  Author: xompanthy, Date: 8/20/2007.}
 	\label{SuperSampling}
 \end{figure}
 
