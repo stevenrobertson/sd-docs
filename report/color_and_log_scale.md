@@ -17,9 +17,9 @@ In the case of the fractal flame algorithm when coloring is referred to what is 
 
 ###High Dynamic Range (HDR)
 \label{hdrsection}
-A fundamental concept which the whole coloring and log scaling approach tries to achieve is a high dynamic range or simply abbreviated as *HDR*. High dynamic range  means that it allows a greater dynamic range of luminance between the lightest and darkest areas of an image.[1] Dynamic range is the ratio between the largest and smallest possible values of changeable quantity (in our case light).[2] Lastly, *luminance* being the intensity of light being emitted from a surface per some unit area[3].
+A fundamental concept which the whole coloring and log scaling approach tries to achieve is a high dynamic range or simply abbreviated as *HDR*. High dynamic range  means that it allows a greater dynamic range of luminance between the lightest and darkest areas of an image [@Reinhard2006]. Dynamic range is the ratio between the largest and smallest possible values of changeable quantity (in our case light). Lastly, *luminance* being the intensity of light being emitted from a surface per some unit area.
 
-The techniques that allow going from a lower dynamic range to a high dynamic range are collectively called high dynamic range imaging (HDRI). The reason HDR and HDRI imaging is mentioned is because the output of the flame attempts to give the appearance of an HDR flame while being constrained to Low Dynamic Range (LDR) viewing mediums such as computer monitors (LCD and CRT) as well as printers.[4]
+The techniques that allow going from a lower dynamic range to a high dynamic range are collectively called high dynamic range imaging (HDRI). The reason HDR and HDRI imaging is mentioned is because the output of the flame attempts to give the appearance of an HDR flame while being restricted to Low Dynamic Range (LDR) viewing mediums such as computer monitors (LCD and CRT) as well as printers.
 
 
 By observing common dynamic ranges of some typical mediums as well as various digital file formats we can begin to see why we are limited.
@@ -365,7 +365,7 @@ As mentioned in the *Gamma Correction Background* (Section \ref{gammasection}) a
 <!-- move pictures to the end -->
 
 ####Gamma Threshold
-*Gamma Threshold* is a parameter setting which controls the threshold for which colors recieve the non-linear gamma correction mentioned above. Colors brighter than the threshold receieve the non-linear correction and colors darker than the threshold receive a linear correction instead [16]. The threshold is a *float* data type value ranging from 0.00 to 1.00 (where 0.00 to 1.00 maps to the entire color space). This parameter can be used to linearly correct certain parts of an image and non-linearly correct others in attempts to produce a greater dynamic range or a stylistic affect. The 12 different gamma threshold values that were applied to the baseline image are show in Table \ref{gammathresholdtable}. The resulting images from the altered gamma threshold values can be seen in Figure \ref{gammathresholdflame}.
+*Gamma Threshold* is a parameter setting which controls the threshold for which colors recieve the non-linear gamma correction mentioned above. Colors brighter than the threshold receieve the non-linear correction and colors darker than the threshold receive a linear correction instead [@DravesReckase2011]. The threshold is a *float* data type value ranging from 0.00 to 1.00 (where 0.00 to 1.00 maps to the entire color space). This parameter can be used to linearly correct certain parts of an image and non-linearly correct others in attempts to produce a greater dynamic range or a stylistic affect. The 12 different gamma threshold values that were applied to the baseline image are show in Table \ref{gammathresholdtable}. The resulting images from the altered gamma threshold values can be seen in Figure \ref{gammathresholdflame}.
 
 
 [TODO Do we want to replicate this?]
@@ -533,13 +533,13 @@ Vibrancy, as stated in the *Vibrancy Background* (Section \ref{vibrancysection})
 \label{earlyclipsection}
 Earlier it was discussed that the user may experience regions of the flame that become so dense that the colors to fall outside of the representable range of color. These creates regions of uniform density which results in a loss of detail. More background information on this can be found in *Color Clipping Background* (Section \ref{colorclippingsection}).
 
-Early clip takes this idea of color clipping and provides a means to rectify the problem. The problem occurs because in the typical algorithm all of the log scaled histrogram of points is mapped to the RGB color space *after* applying the filter kernel. A potential problem that can happen is that the spatial filter can blur dense regions of the image and then when color correction techniques are applied these blurred regions can become saturated. [17] Visually, this produces regions that look smeared and more dense than it was intended to look. This deviation between the output image and what was intended is a form of detail loss. The rectification of this problem lies in clipping the RGB color material before applying the filter which fixes this issue. This setting can either be turned on or off and can be set by the user.
+Early clip takes this idea of color clipping and provides a means to rectify the problem. The problem occurs because in the typical algorithm all of the log scaled histrogram of points is mapped to the RGB color space *after* applying the filter kernel. A potential problem that can happen is that the spatial filter can blur dense regions of the image and then when color correction techniques are applied these blurred regions can become saturated[@DravesReckase2011]. Visually, this produces regions that look smeared and more dense than it was intended to look. This deviation between the output image and what was intended is a form of detail loss. The rectification of this problem lies in clipping the RGB color material before applying the filter which fixes this issue. This setting can either be turned on or off and can be set by the user.
 
 [TODO Will we implement it? How many / what guestimated percentage of flames really undergo this problem? And how dramatic are the results? REMEMBER: We're only approximating the appearance.]
 
 ####Highlight Power
 \label{highlightpowersection}
-Highlight power is a value (the data type is a *float*) which controls how fast the flame's colors converge to white. The visual effect of this is to blend areas that have drastic color differences that were caused by unintended side effects. The implementation works by keeping the color vector (RGB) pointed in the intended direction until it begins to saturation. When this happens the color starts getting pulled towards white as the iterations continue. A highlight power of 0.0 indicates that saturated colors will not converge to white whereas any value higher than 0.00 is the rate at which saturated colors converge to white. [18] The 12 different highlight power values that were applied to the baseline image are show in Table \ref{highlighttable}. The resulting images from the altered highlight power values can be seen in Figure \ref{highlightflame}.
+Highlight power is a value (the data type is a *float*) which controls how fast the flame's colors converge to white. The visual effect of this is to blend areas that have drastic color differences that were caused by unintended side effects. The implementation works by keeping the color vector (RGB) pointed in the intended direction until it begins to saturation. When this happens the color starts getting pulled towards white as the iterations continue. A highlight power of 0.0 indicates that saturated colors will not converge to white whereas any value higher than 0.00 is the rate at which saturated colors converge to white[@DravesReckase2011]. The 12 different highlight power values that were applied to the baseline image are show in Table \ref{highlighttable}. The resulting images from the altered highlight power values can be seen in Figure \ref{highlightflame}.
 
 
 \begin{table}[htp!]
@@ -648,13 +648,6 @@ One of the complications of log-scaling is that an exponentially more amount of 
 
 ## Bibliography
 
-[1] http://en.wikipedia.org/wiki/High-dynamic-range_imaging
-
-[2] http://en.wikipedia.org/wiki/Dynamic_range
-
-[3] http://en.wikipedia.org/wiki/Luminance
-
-[4] http://www.dpreview.com/learn/?/key=tonal+range
 
 [5] http://www.colormatters.com/comput_gamma.html
 
@@ -677,9 +670,3 @@ One of the complications of log-scaling is that an exponentially more amount of 
 [14]  http://stackoverflow.com/questions/596216/formula-to-determine-brightness-of-rgb-color
 
 [15] http://alienryderflex.com/hsp.html
-
-[16] http://code.google.com/p/flam3/wiki/GammaThreshold
-
-[17] http://code.google.com/p/flam3/wiki/NewFeatures
-
-[18] http://code.google.com/p/flam3/wiki/HighlightPower

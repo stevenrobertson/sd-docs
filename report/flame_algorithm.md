@@ -4,7 +4,7 @@
 ##Section Outline
 This section provides an in-depth description of the fractal flame algorithm along with a primer on the Iterated Function System (IFS) in which the fractal flame algorithm is a variant of. This primer is provided to the reader in order to solidify the concept of the chaos game which is essential to understanding the flame algorithm because it builds heavily on upon the concepts that are used in the classical IFS.
 
-Also included in this section is a brief history of the Flame algorithm from its birth in 1992 [CHECK CONFUSION] to the present day. As the algorithm is presented step-by-step references are also presented in which the topics in question are explained in more detail.
+Also included in this section is a brief history of the Flame algorithm from its birth in 1992 to the present day. As the algorithm is presented step-by-step references are also presented in which the topics in question are explained in more detail.
 
 Finally, we end with a concluding section summarizing our current knowledge on the topic and describe how it influenced our proposed implementation for rendering fractal flames using the flame algorithm which is described in the following section.
 
@@ -20,14 +20,14 @@ This primer aims to present the fundamental concepts of iterated function system
 These concepts are the building blocks of the flame algorithm. If the reader is already familiar with the concept of iterated function systems feel free to skip to Section \ref{fractalflamealg} and begin reading about the fractal flame algorithm.
 
 ###Definition
-An **Iterated Function System** is defined as a finite set of **affine contraction transformations** $F_{i}$ where i= 1, 2, ..., N that map a **metric space** onto itself. Mathematically this is [1]:
+An **Iterated Function System** is defined as a finite set of **affine contraction transformations** $F_{i}$ where i= 1, 2, ..., N that map a **metric space** onto itself. Mathematically this is [@Barnsley1988]:
 
 $\left \{  f_{i} : X \mapsto X  \right \}, N \text{ } \epsilon \text{ } \mathbb{N}$
 
 
-A **metric space** is any space whose elements are points, and between any two of which a non-negative real number can be defined as the distance between the points (e.g. Euclidean Space) [2].
+A **metric space** is any space whose elements are points, and between any two of which a non-negative real number can be defined as the distance between the points (e.g. Euclidean Space).
 
-An **affine transformation** from one vector space to another is comprised of a linear transform which gives eitherrotation, scaling, or shear following by a translation. Mathematically this is [3]:
+An **affine transformation** from one vector space to another is comprised of a linear transform which gives eitherrotation, scaling, or shear following by a translation. Mathematically this is [@WeissteinAffine]:
 
 $x \mapsto Ax +b$
 
@@ -110,7 +110,7 @@ Translation Matrix
     \end{vmatrix}
     \end{displaymath}
 
-3. The term **contraction mapping** refers to a mapping which maps two points closer together. The distance between these points is uniformly shrunk. This contraction will be seen when performing the classic Sierpinski Triangle problem.[4] The properties above can be proved by the Contraction Mapping Theorem and because of this proves the convergence of the linear iterated function system presented in this section.
+3. The term **contraction mapping** refers to a mapping which maps two points closer together[@Conrad2010]. The distance between these points is uniformly shrunk. This contraction will be seen when performing the classic Sierpinski Triangle problem . The properties above can be proved by the Contraction Mapping Theorem and because of this proves the convergence of the linear iterated function system presented in this section.
 
 ###Chaos Game
 \label{chaosgamesection}
@@ -222,9 +222,9 @@ The more one stochastically samples, the closer the output image is to the solut
 \label{fernsection}
 
 
-As a more intricate example, the classical iterated function system called Barnsley's Fern is presented. This system was introduced by the mathematician Michael Barnsley in *Fractals Everywhere* [CITE]. This example is suitable to show all of the operations of an affine transform : shear, scale, rotation, and scaling.
+As a more intricate example, the classical iterated function system called Barnsley's Fern is presented. This system was introduced by the mathematician Michael Barnsley in *Fractals Everywhere* [@Barnsley1988]. This example is suitable to show all of the operations of an affine transform : shear, scale, rotation, and scaling.
 
-To construct Barnsley's Fern using the chaos game we need to describe the affine transformations that will be used. Using the most basic version of an affine transformation (which use vecotr multiplication and vector addition), we can describe the system with the following 4 transformations seen below. As a note, the affine transformations of this system are not equally weighted and have their own probabilistic model associated with each. [CITE]
+To construct Barnsley's Fern using the chaos game we need to describe the affine transformations that will be used. Using the most basic version of an affine transformation (which use vecotr multiplication and vector addition), we can describe the system with the following 4 transformations seen below. As a note, the affine transformations of this system are not equally weighted and have their own probabilistic model associated with each[@Barnsley1988]. 
 
 $A_{0}=
 \begin{vmatrix}
@@ -308,7 +308,7 @@ $F_{3}=
 \end{vmatrix}
 \text{ selected with a probability of 0.07.}$
 
-Figure \ref{barnsleyfern} shows the procedure which results in the final system. This system resembles the Black Spleenwort fern [CITE]. This fern was not shown soley because it resembles a similar shape in nature but because of the explicit way the transforms were used to get the shape desired (which is often seen in the flame user community when creating intricate flames). Below in Table \ref{barnsleytable} is an explanation of what each transformation conceptually does to produce the fern [6].
+Figure \ref{barnsleyfern} shows the procedure which results in the final system. This system resembles the Black Spleenwort fern [@WeissteinBarnsley]. This fern was not shown soley because it resembles a similar shape in nature but because of the explicit way the transforms were used to get the shape desired (which is often seen in the flame user community when creating intricate flames). Below in Table \ref{barnsleytable} is an explanation of what each transformation conceptually does to produce the fern [@Barnsley1988][@WeissteinBarnsley].
 
 \afterpage{
 \clearpage
@@ -341,7 +341,7 @@ Figure \ref{barnsleyfern} shows the procedure which results in the final system.
 ##Fractal Flame Algorithm
 ###Differences from Classical Iterated Function System (IFS)
 \label{fractalflamealg}
-Fractal flames are a member of the Iterated Function System however differ from Classical Iterated Function Systems in three major respects [5]:
+Fractal flames are a member of the Iterated Function System however differ from Classical Iterated Function Systems in three major respects [@Draves2003]:
 
 1.	Instead of affine transformations presented in the previous section non-linear functions are used.
 2.	Log-density display is used instead of linear or binary.
@@ -350,7 +350,7 @@ On top of the core differences, additional pyschovisual techniques such as spati
 
 ###History
 
-The flame algorithm was created in 1991 [CHECK]. The algorithm was created by Scott Draves who is software and visual artist. Shortly after the creation of the algorithm the first implementation called ``flame3`` was made openly available in 1992. Drave's fractal flame software has allowed the process for artist creation by allowing the users to experiment with shapes, colors, and stylistic effects. More historical background can read about in Section \ref{flameimplementation}.
+The flame algorithm was created in 1992. The algorithm was created by Scott Draves who is software and visual artist. Shortly after the creation of the algorithm the first implementation called ``flame3`` was made openly available in 1992. Drave's fractal flame software has allowed the process for artist creation by allowing the users to experiment with shapes, colors, and stylistic effects. More historical background can read about in Section \ref{flameimplementation}.
 
 ###Algorithm
 
@@ -399,7 +399,7 @@ By applying variations, the resulting plane is changed in a particular way. Fund
 
 **Parametric Variations:** A parametric variation is a remapping of the plane such that the mapping is a simple remapping but additionally controlled by coefficients that are independent of the affine transformation applied.
 
-A baseline flame with purely an affine transform applied is shown side by side with both a simple remapping, dependent variation, and parametric variation in Figure \ref{variations}. This will give you a good idea on what a single variation can do to shape the system and how intricate some of the variations can be. As an additional visual supplement please refer to the Appendix of the original Flame Algorithm Paper for an extensive collection of many catalogued variations. [CITE and provide link]
+A baseline flame with purely an affine transform applied is shown side by side with both a simple remapping, dependent variation, and parametric variation in Figure \ref{variations}. This will give you a good idea on what a single variation can do to shape the system and how intricate some of the variations can be. As an additional visual supplement please refer to the Appendix of the original Flame Algorithm Paper for an extensive collection of many catalogued variations[@Draves2003]. 
 
 <!-- for correct formatting moved this to log density section -->
 
@@ -446,7 +446,7 @@ In the classical Iterated Function System, described previously, points were eit
 
 3. **Logarithmic Mapping:** This mapping proves to be superior to it's counterparts. The logarithmic function allows a great range of densities relationship to oneanother to be persered. This is the type of mapping the flame algorithm employs.
 
-Visual representations of a flame using a binary, linear, as well as logarithmic mapping for the display can be seen in Figure 3 of Drave's original paper on the flame algorithm. [CITE FLAME PAPER]
+Visual representations of a flame using a binary, linear, as well as logarithmic mapping for the display can be seen in Figure 3 of Drave's original paper on the flame algorithm[@Draves2003].
 
 As a note to avoid confusion, the logarithmic mapping allows the image to now displayed in shades of grays and not as the vibrant colorful flames readily available to be viewed on flame gallery websites. Structural coloring, color correction and enhancement techniques, and tone mapping take care of these and are all seperate algorithmic processes.
 
@@ -481,7 +481,7 @@ The fractal flame algorithm inherently supports the concept of self-similarity b
 -	Rotational
 -	Dihedral
 
-This added symmetry adds a new level of intricacy to the resulting flame. Symmetry is thought to be congenitally attractive to the human eye [CITE 7]. A description of how symmetry is added to the flame algorithm is as follows.
+This added symmetry adds a new level of intricacy to the resulting flame. Symmetry is thought to be congenitally attractive to the human eye [@Charles2002]. A description of how symmetry is added to the flame algorithm is as follows.
 
 **Rotational Symmetry** is introduced by adding extra rotational transformations. To produce n-way symmetry you are essentially implying that you wish to have $\frac{360^\circ}{n}$ degrees symmetry. The set of transformations transformations necessary to add $\frac{360^\circ}{n}$ symmetry is:
 
@@ -540,25 +540,6 @@ Initially presenting the fractal algorithm usually results in a lengthy discussi
 The procedure is as follows: First, a random point is picked on the biunit square. The user picks the quality of the flame they wish to render and the program enters into a loop for Q iterations (where Q is quality). At each iteration a transformation is applied based on a probabilistic weighting (similar to Barnsley's Fern : Section \ref{fernsection}). This transformation will apply an affine transformation (which applies scaling, rotation, sheer, and translation), a variation transformation (to change the characteristics of the point), and a post function (to change the coordinate system). When the variation transform is applied a color associated with it is also applied (See Section \ref{coloringflame}). After the new point and color are selected this vector is accumulated in it's respective histogram bin representing the density of each point. The points are not accumulated in the bins for the first 20 points in order to allow the system to settle.
 
 This process happens until the final iteration. On the final iteration, many final processing steps happen. First, the histogram bins of point densities are log scaled. Next, filtering is performed. Supersampling removes the aliases. Density Estimation allows the reduction of noise. As an added note, motion blur can also occur next and requires a second buffer of points to be filtered down. The final transform is now applied which is a non-linear camera transform. This final transform also applies a color associated with it. Now that the correctly filtered, log scaled and colored image has been produced color correction is now applied. This provides hue, brightness, gamma, and other corrections. The image is then written to a file and the procedure ends.
-
-
-##Bibliography
-
-This shouldn't be here! BUT IT IS. Ha.
-
-[1] http://en.wikipedia.org/wiki/Iterated_function_system
-
-[2] http://en.wiktionary.org/wiki/metric_space
-
-[3] http://en.wikipedia.org/wiki/Affine_transformation
-
-[4] http://www.maplesoft.com/support/help/AddOns/view.aspx?path=Definition/contraction
-
-[5] Draves, Scott; Erik Reckase (July 2007). "The Fractal Flame Algorithm" (pdf). Retrieved 2008-07-17.
-
-[6] http://en.wikipedia.org/wiki/Barnsley_fern
-
-[7] http://www.jyi.org/volumes/volume6/issue6/features/feng.html
 
 
 \afterpage{
