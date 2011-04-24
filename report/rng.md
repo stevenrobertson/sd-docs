@@ -1,24 +1,32 @@
 # Random Numbers and Pseudo-Random Number Generators
 \label{ch:rng}
 
-Random numbers are used in this project because of their importance in calculating and rendering fractals using Iterated Function Systems. For example, in order to recreate Sierpinski’s triangle, one defines the three vertex points A, B and C. Starting at point A, one randomly picks the next point (B or C) and draws a point halfway between the points chosen. From there it is all about picking the next point randomly and doing the same thing all over again thousands of times until getting a fractal like that in Figure \ref{mandelbrot}.
-
-Real random numbers are hard to calculate in a computer; in great part because they depend on time or because there isn’t an infinite number of bit sized chunks for computation. Pseudo-Random Number Generators (PRNGs) are algorithms that simulate randomness in a computer, usually by using prime numbers as seeds because when they are used in a division, the output is an irrational number.The greater the prime number, the better quality numbers are outputted. In order to find the right PRNG for this project we will consider advantages and disadvantages of different well known PRNGs.
+Random numbers are used in this project because of their importance in calculating and rendering fractals using Iterated Function Systems. This is a fundamental concept of an IFS and is known as the *chaos game* (See Section \ref{todo} for more detail). However, real random numbers are hard to calculate in a computer; in great part because they depend on time or because there isn’t an infinite number of bit sized chunks for computation. Pseudo-Random Number Generators (PRNGs) are algorithms that simulate randomness in a computer, usually by using prime numbers as seeds because when they are used in a division, the output is an irrational number.The greater the prime number, the better quality numbers are outputted. In order to find the right PRNG for this project we will consider advantages and disadvantages of different well known PRNGs.
 
 In selecting the right PRNG, it is common to look at its period (or numbers it outputs until it starts repeating itself), its speed and its spectral properties, the latter which determine its true randomness. For this project, we are looking for a simple and fast PRNG that meets out minimum needs.
 
-
 ## Bias : An Illustrative Example
 
-[TODO Rework table and picture into this section, start rambling and reffing sections]
 
-\begin{figure}[h]
+Before preceeding with selecting the proper PRNG for this project an illustrative example is shown. Normally in the Sierpinski's Triangle Iterated Function System each function has an equal probability of $\frac{1}{3}$ of being chosen (See Section \ref{sierpinskiexample} for the fully worked example with matrix transformation equations).
+
+However, if the PRNG began showing bias, the results could be disastrous to our system.
+
+Shown in Figure \ref{bias} are 4 forms of extreme bias shown in an IFS. In **(a)**, if the affine transform related to Vertex A was reduced to a probability of $\frac{1}{10}$ the resulting triangle would show a lack of detail at the green lower left region. This is because it must undergo subsequent transformations of the function relating to Vertex A in order to draw the bottom leftmost region of the image which is highly improbable with it's probability of being selected is $\frac{1}{10}$.
+
+Conversely, if the probability of selecting the affine transform related to Vertex A was higher than the other two transforms (relating to Vertex B and Vertex C) an opposite effect happens (see picture **(b)** , **(c)**, and **(d)**) in which the right region of the triangle is barely visible.
+
+Obviously, this example was meant to show the extremes of PNG bias, however even subtle biases can propagate through the system and cause similar biases. This is why selecting a solid PNG is an important decision.
+
+\afterpage{
+\clearpage
+\begin{figure}[!htp]
 	\centering
 	\includegraphics{./rng/bias.png}
 	\caption{Sierpinski's Triangle shown with biased values of applying the function which pulls the points towards Vertex A.}
 	\label{bias}
 \end{figure}
-
+}
 
 
 ##  Pseudo Random Number Generators

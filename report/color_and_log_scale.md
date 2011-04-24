@@ -250,39 +250,18 @@ The method for applying this tone mapping is done via a tone mapping operator. T
 ##``flam3`` : Original Coloring and Log Scaling Implementation
 ### Log Scaling of the Chaos Game
 \label{flamecoloringimpsection}
-In the classical IFS membership in the system is binary however in the fractal flame algorithm one of the goals is to expose as much detail as possible. As mentioned before, every successive time a point gets plotted in binary representation information is lost about the densities of regions of the output flame. This is remedied with the concept of a *histogram* which plots the distribution of the points.
-
-[TODO wrong wrong wrong!]
- These histogram bins then need to be scaled to *gray scale*.  *Gray scale* is represented as a byte which has values ranging from 0 to 255. A mapping of densities ranging from ``[0, 1, 2, ..., DOUBLE_MAX]`` to ``[0, 1, 2, ..., 255]`` must be performed. If a linearly scaled mapping was applied it would suffer from the problems described in Section \ref{logdensitydisplay} hence the concept of log transformation is applied (Section \ref{logtransformation}). Flam3 implements log scaling of the histogram of point densities.
-
-[TODO Describe how it is done in Flam3. Please articulate on the concepts of]
- In flam3,
-
--	Buckets / Accumulator
--	Batches
--	Aye aye aye!
-
-
-
+In the classical IFS membership in the system is binary however in the fractal flame algorithm one of the goals is to expose as much detail as possible. As mentioned before, every successive time a point gets plotted in binary representation information is lost about the densities of regions of the output flame. This is remedied with the concept of a *histogram*. At each iteration a variation is applied which adjusts the IFS color coordinate which represents the RGB color space and is from ``[0,1]`` as seen in Section \ref{coloringflame}. The density is also increased every time the point is plotted. At the end of each iteration the color coordinate looks up a RGB color from the palette which is the value which is accumulated.  Upon the final iteration the triplet of color values (R, G, and B) become log scaled by the density.
 
 The log scaling performed in ``flam3`` coincides with the overall goal of approximating a high dynamic range flame. The method described above is a straightforward implementation although the naming convention of the ``flam3`` fractal flame algorithm needs articulation. No additional information is needed and the understanding of the benefits of log scaling and why ``flam3`` implements it should be found in the referenced sections above.
 
 ### Ad-Hoc Tone Mapping and The Color Palette
-
 \label{tonemapcolorpalette}
-The flame algorithm's for mapping
 
-- log density describe above along with the color correction techniques i
--
+As seen in the previous section, at the end of each iteration the color coordinate looks up the actual RGB color mapped to it inside the palette and applies that R,G,B triplet to the accumulator. ``flam3`` contains 701 color palettes packaged in the software however the user can define their own mapping. Some of these palettes will be explored later on in this section. In ``flam3`` each color palette is traditionally consists of 255 color entries. The reason behind this is that the mapping to the palette is in the form of a byte which contains 256 different bit choices.
 
-[TODO]
-- Why Ad-Hoc? 
-- Implementation, how to go from gray scale to color?
-- Get detailed, very detailed! This will help when setting up new approach and comparing it
+Along with the application of color correction (gamma, vibrancy, etc.) this combination of mapping grayscale to a set of colors and then correcting them is a form of highly specialized tone mapping. 
 
-[TODO]
-- R,G,B,Alpha
-- Why Alpha? What does it do?
+[TODO R,G,B,Alpha. Why Alpha? What does it do?]
 
 ###Coloring Capabilities
 
@@ -303,9 +282,7 @@ After visually inspecting them as well as describing their purpose and how the o
 #### Visual Inspection of the Baseline Image
 For reference to the reader a baseline image of a detailed flame containing several transforms with a vivid default coloring scheme is provided (See Figure \ref{baselineflame}). In the following sections adjustments are performed to one parameter of the flame while holding the others constant so that the parameter effect in question can be observed. The parameters of the following flame are shown in Figure \ref{flametable}.
 
-[TODO Add Hue, user defined color palette]
-
-\begin{table}[h]
+\begin{table}[htp!]
 	\begin{tabular}{|l|l|}
 		\hline
 		Correction Technique			&	Default Value		\\
@@ -331,27 +308,26 @@ For reference to the reader a baseline image of a detailed flame containing seve
 		\label{flametable}
 \end{table}
 
-\begin{figure}[h]
+
+\begin{figure}[htp!]
 	\centering
 	\includegraphics{./color_and_log_scale/flame_baseline.png}
 	\caption{Baseline image of the flame whose parameters will be altered.}
 	\label{baselineflame}
 \end{figure}
 
+
 #### Color Palette Revisited and Explored
 As mentioned in the *Ad-Hoc Tone Mapping and The Color Palette* (Section \ref{tonemapcolorpalette}) there are 701 standard palettes available. A minute amount of palettes are shown to give the reader an understanding of what a palette may look like. Figure \ref{TODO} shows 4 different palettes applied to the baseline flame. By observing both palette number 1 and 5, you can see that colors become clipped and their is varying degrees of detail loss. There is a careful balance of setting tweaking between brightness, gamma, that must be maintained in order to preserve a higher dynamic range. This is one of the reasons these features exist.
 
-\begin{figure}[h]
-	\centering
-	\includegraphics{./color_and_log_scale/flame_palette.png}
-	\caption{4 different predefine color palettes applied to the baseline flame.}
-	\label{paletteflame}
-\end{figure}
+
+<!-- move pictures to the end -->
+
 
 ####Gamma Correction
 As mentioned in the *Gamma Correction Background* (Section \ref{gammasection}) a non-linear function needs to be applied in order to produce an output flame that approximately replicates the expected image. The gamma correction formula's gamma (Seen in Section \ref{gammasection}) is left to be set by the user and is of the *positive float* data type. The 12 different gamma correction values that were applied to the baseline image are shown in Table \ref{gammacorrectiontable}. The resulting images from the altered gamma corrections can be seen in Figure \ref{gammaflame}. The first several images show the effects of when the gamma is set to values that are too low and show the characteristic signs of low gamma which is that the image looks washed out. The last images in the series show the effects of when the gamma is set to values that are too high and show characteristic signs of high gamma which is that the image looks too dark.
 
-\begin{table}[h]
+\begin{table}[htp!]
 	\begin{tabular}{|l|l|}
 		\hline
 		Flame Number					&	$\gamma$ value	\\
@@ -385,14 +361,8 @@ As mentioned in the *Gamma Correction Background* (Section \ref{gammasection}) a
 		\label{gammacorrectiontable}
 \end{table}
 
-\begin{figure}[h]
-	\centering
-	\includegraphics{./color_and_log_scale/flame_gamma.png}
-	\caption{12 different gamma threshold values are presented one the baseline flame.}
-	\label{gammaflame}
-\end{figure}
 
-
+<!-- move pictures to the end -->
 
 ####Gamma Threshold
 *Gamma Threshold* is a parameter setting which controls the threshold for which colors recieve the non-linear gamma correction mentioned above. Colors brighter than the threshold receieve the non-linear correction and colors darker than the threshold receive a linear correction instead [16]. The threshold is a *float* data type value ranging from 0.00 to 1.00 (where 0.00 to 1.00 maps to the entire color space). This parameter can be used to linearly correct certain parts of an image and non-linearly correct others in attempts to produce a greater dynamic range or a stylistic affect. The 12 different gamma threshold values that were applied to the baseline image are show in Table \ref{gammathresholdtable}. The resulting images from the altered gamma threshold values can be seen in Figure \ref{gammathresholdflame}.
@@ -400,7 +370,7 @@ As mentioned in the *Gamma Correction Background* (Section \ref{gammasection}) a
 
 [TODO Do we want to replicate this?]
 
-\begin{table}[h]
+\begin{table}[htp!]
 	\begin{tabular}{|l|l|}
 		\hline
 		Flame Number					&	Gamma Threshold value	\\
@@ -434,13 +404,7 @@ As mentioned in the *Gamma Correction Background* (Section \ref{gammasection}) a
 		\label{gammathresholdtable}
 \end{table}
 
-\begin{figure}[h]
-	\centering
-	\includegraphics{./color_and_log_scale/flame_gamma_threshold.png}
-	\caption{12 different gamma threshold values are presented on the baseline flame.}
-	\label{gammathresholdflame}
-\end{figure}
-
+<!-- move pictures to the end -->
 
 ####Hue
 Hue is a *float* data type value ranging from 0.00 to 1.00. 0.00 means that the color space is not rotated while 1.00 means there is a $360^\circ$ rotation in the color space (which effectively is the same as 0.00). Any value in between rotates the color space by a certain degree. The 12 different hue values that provide rotation to the color space are shown in Table \ref{huetable}. The resulting images from the altered hue values can be seen in Figure \ref{hueflame}. To properly showcase hue, a light color palette has been applied which will be our new baseline image. This palette can be seen unmodified in Flame Number 1.  
@@ -448,7 +412,7 @@ Hue is a *float* data type value ranging from 0.00 to 1.00. 0.00 means that the 
 [TODO analyze hue]
 
 
-\begin{table}[h]
+\begin{table}[htp!]
 	\begin{tabular}{|l|l|l|}
 		\hline
 		Flame Number					&	Hue			& Rotates Color Space By \\
@@ -478,25 +442,17 @@ Hue is a *float* data type value ranging from 0.00 to 1.00. 0.00 means that the 
 		12								&	0.9163		& 	$\approx 330^\circ$	\\
 		\hline
 	\end{tabular}
-	\caption{ [TODO] }
+	\caption{  Flame image numbers and their associated hue rotation values.  }
 		\label{huetable}
 \end{table}
 
-
-\begin{figure}[h]
-	\centering
-	\includegraphics{./color_and_log_scale/flame_hue.png}
-	\caption{12 different hue values are presented to the baseline flame with a non-vibrant color palette.}
-	\label{hueflame}
-\end{figure}
-
-
+<!-- move pictures to the end -->
 
 ####Brightness
 Brightness correction is a function that changes the percieved intensity of light coming from the image can be enacted upon the image. Additional information is mentioned in the *Brightness Correction Background* (Section \ref{brightnesssection}). This percieved intensity can be set by the user and is a value of data type: *positive float*.  The 12 different brightness correction values that were applied to the baseline image are shown in Table \ref{brightnesscorrectiontable}. The resulting images from the altered brightness corrections can be seen in Figure \ref{brightnessflame}. Observe the first and last several images that color clipping occurs. There is absolute light in the flames with the highest brightness correction values (white) and there is an absense of light in the flames with the lowest correction values (black).
 
 
-\begin{table}[h]
+\begin{table}[htp!]
 	\begin{tabular}{|l|l|}
 		\hline
 		Flame Number					&	Gamma Correction value	\\
@@ -530,20 +486,14 @@ Brightness correction is a function that changes the percieved intensity of ligh
 		\label{brightnesscorrectiontable}
 \end{table}
 
-\begin{figure}[h]
-	\centering
-	\includegraphics{./color_and_log_scale/flame_brightness.png}
-	\caption{12 brightness correction values are presented on the baseline flame.}
-	\label{brightnessflame}
-\end{figure}
-
+<!-- move pictures to the end -->
 
 ####Vibrancy
 Vibrancy, as stated in the *Vibrancy Background* (Section \ref{vibrancysection}), provides saturation in a non-linear fashion. In the case of flam3, the actual implementation details to visually produce vibrancy are not found in the common literature. The concept that flam3 uses to alter vibrancy is by what factor the gamma correction should be applied (independently or simulatenously). Vibrancy is a setting in flam3 which the user defines and is a *float* from 0.0 to 1.0. A value of 0.0 denotes to apply gamma correction to each channel independently whereas a value of 1.0 denotes to apply gamma corrections to color channels simulatenously. Applying gamma correction to each channel independently results in *pastel* or *washed out* images of low saturation. Consequently, applying gamma correction to color channels simulatenously results in colors becomming saturated. The 12 different vibrancy values that were applied to the baseline image are show in Table \ref{vibrancytable}. The resulting images from the altered vibrancy values can be seen in Figure \ref{vibrancyflame}.
 
 [TODO ANALYSIS]
 
-\begin{table}[h]
+\begin{table}[htp!]
 	\begin{tabular}{|l|l|}
 		\hline
 		Flame Number					&	Vibrancy Value	\\
@@ -577,12 +527,7 @@ Vibrancy, as stated in the *Vibrancy Background* (Section \ref{vibrancysection})
 		\label{vibrancytable}
 \end{table}
 
-\begin{figure}[h]
-	\centering
-	\includegraphics{./color_and_log_scale/flame_vibrancy.png}
-	\caption{12 different vibrancy values are presented on the baseline flame.}
-	\label{vibrancyflame}
-\end{figure}
+<!-- move pictures to the end -->
 
 ####Early Clipping
 \label{earlyclipsection}
@@ -590,16 +535,14 @@ Earlier it was discussed that the user may experience regions of the flame that 
 
 Early clip takes this idea of color clipping and provides a means to rectify the problem. The problem occurs because in the typical algorithm all of the log scaled histrogram of points is mapped to the RGB color space *after* applying the filter kernel. A potential problem that can happen is that the spatial filter can blur dense regions of the image and then when color correction techniques are applied these blurred regions can become saturated. [17] Visually, this produces regions that look smeared and more dense than it was intended to look. This deviation between the output image and what was intended is a form of detail loss. The rectification of this problem lies in clipping the RGB color material before applying the filter which fixes this issue. This setting can either be turned on or off and can be set by the user.
 
-[TODO]
--	Will we implement it?
--	How many / what guestimated percentage of flames really undergo this problem? And how dramatic are the results? REMEMBER: We're only approximating the appearance.
+[TODO Will we implement it? How many / what guestimated percentage of flames really undergo this problem? And how dramatic are the results? REMEMBER: We're only approximating the appearance.]
 
 ####Highlight Power
 \label{highlightpowersection}
 Highlight power is a value (the data type is a *float*) which controls how fast the flame's colors converge to white. The visual effect of this is to blend areas that have drastic color differences that were caused by unintended side effects. The implementation works by keeping the color vector (RGB) pointed in the intended direction until it begins to saturation. When this happens the color starts getting pulled towards white as the iterations continue. A highlight power of 0.0 indicates that saturated colors will not converge to white whereas any value higher than 0.00 is the rate at which saturated colors converge to white. [18] The 12 different highlight power values that were applied to the baseline image are show in Table \ref{highlighttable}. The resulting images from the altered highlight power values can be seen in Figure \ref{highlightflame}.
 
 
-\begin{table}[h]
+\begin{table}[htp!]
 	\begin{tabular}{|l|l|}
 		\hline
 		Flame Number					&	Highlight Power Value	\\
@@ -633,6 +576,62 @@ Highlight power is a value (the data type is a *float*) which controls how fast 
 		\label{highlighttable}
 \end{table}
 
+<!-- move pictures to the end -->
+
+[TODO look in stashed color and log scale notes for this info]
+
+##Challenge
+
+The challenge with deviating from the log-scaled and color correction process is that the main criteria of a new approach focuses mainly on approximating a high dynamic range. This is something that log-scaling and color correction has shown to do very well.
+
+One of the complications of log-scaling is that an exponentially more amount of points will be needed in the bright areas than in the darker less dense areas. This results in high quality images needing a whoppingly high number of iterations which increases the run time greatly. This is one of the issues that needs to be addressed in the new implementation.
+
+[TODO New Approach]
+
+
+\begin{figure}[h]
+	\centering
+	\includegraphics{./color_and_log_scale/flame_palette.png}
+	\caption{4 different predefine color palettes applied to the baseline flame.}
+	\label{paletteflame}
+\end{figure}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics{./color_and_log_scale/flame_gamma.png}
+	\caption{12 different gamma threshold values are presented one the baseline flame.}
+	\label{gammaflame}
+\end{figure}
+
+
+\begin{figure}[h]
+	\centering
+	\includegraphics{./color_and_log_scale/flame_gamma_threshold.png}
+	\caption{12 different gamma threshold values are presented on the baseline flame.}
+	\label{gammathresholdflame}
+\end{figure}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics{./color_and_log_scale/flame_hue.png}
+	\caption{12 different hue values are presented to the baseline flame with a non-vibrant color palette.}
+	\label{hueflame}
+\end{figure}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics{./color_and_log_scale/flame_brightness.png}
+	\caption{12 brightness correction values are presented on the baseline flame.}
+	\label{brightnessflame}
+\end{figure}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics{./color_and_log_scale/flame_vibrancy.png}
+	\caption{12 different vibrancy values are presented on the baseline flame.}
+	\label{vibrancyflame}
+\end{figure}
+
 \begin{figure}[h]
 	\centering
 	\includegraphics{./color_and_log_scale/flame_highlight.png}
@@ -640,16 +639,10 @@ Highlight power is a value (the data type is a *float*) which controls how fast 
 	\label{highlightflame}
 \end{figure}
 
-[TODO look in stashed color and log scale notes for this info]
-
-##Challenge
-
-- Decent dynamic range
-- Log-Scaled complications
-	- Because we're using log scaled you will need exponentially more points in bright areas than dark areas which results in high quality images needing a whoppingly high number of iterations.
 
 
-[TODO New Approach]
+
+
 
 
 
