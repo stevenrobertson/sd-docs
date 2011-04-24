@@ -29,7 +29,7 @@ Geometry has formalized the way humans talk about and perceive points, shapes of
 
 *Element*'s impact was dramatic. So much so that *Euclid* is often referred to as the "Father of Geometry". By the $20^{th}$ century Euclidean geometry was being taught globally in schools. Shapes such as: circles, triangles, and polygons are taught at an early age.
 
-However as influential as the idea of Euclidean Geometry is its ideal shapes failed to describe the shapes that appear in nature. As stated in the opening paragraph of Benoît Mandelbrot's book, The Fractal Geometry of Nature: *"Clouds are not spheres, mountains are not cones, and lightning does not travel in a straight line. The complexity of nature's shapes differs in kind, not merely degree, from that of the shapes of ordinary geometry."*[1]
+However as influential as the idea of Euclidean Geometry is its ideal shapes failed to describe the shapes that appear in nature. As stated in the opening paragraph of Benoît Mandelbrot's book, The Fractal Geometry of Nature: *"Clouds are not spheres, mountains are not cones, and lightning does not travel in a straight line. The complexity of nature's shapes differs in kind, not merely degree, from that of the shapes of ordinary geometry."*[@Mandelbrot1983]
 
 ##Fractal Geometry and Its Properties
 
@@ -239,7 +239,7 @@ Random fractal's iterative process relies on a non-deterministic process for cre
 
 
 ###Iterated Function Systems
-This is the fractal system that the project will focus upon. Iterated function systems rely on performing a series of transformations stochastically (which are generally contractive on average[2]) to produce the output image. This stochastic process is called the **chaos game**. The **chaos game** starts with randomly choosing an initial point and then consecutively applying a randomly chosen transformation from the set of transformations that make up the iterated function system.
+This is the fractal system that the project will focus upon. Iterated function systems rely on performing a series of transformations stochastically (which are generally contractive on average[@Draves2003]) to produce the output image. This stochastic process is called the **chaos game**. The **chaos game** starts with randomly choosing an initial point and then consecutively applying a randomly chosen transformation from the set of transformations that make up the iterated function system.
 
 The entire iterated function system process and its intricacies will be articulated upon in Section \ref{ifsprimer}.
 
@@ -260,11 +260,11 @@ First and foremost, nature has is the most apparent in creating fractal-like fea
 - Cloud-spiral Formations
 - Virus and bacterial colonies
 - Coastlines
-- and numerous others [3]
+- and numerous others
 
 The wonder that nature brings individuals can partly be attributed to the idea of self-similarity and the complex shapes it produces.
 
-Fractal Geometry has been a part of the African culture, social hierarchy, and art predating any formal western knowledge on fractals. Village architecture, jewelry, and even religious rituals all exhibit the concepts of self-similarity. [4] Recently with the advancement of computer aided image generation, the appreciation of fractals has spread to a wider community. For example, the application [Electric Sheep](http://electricsheep.org/) uses distributed computing in order to evolve fractal flames which are displayed as screensavers to users. The community has membership of roughly 500,000 unique members [5] who appreciate viewing fractal flame images.
+Fractal Geometry has been a part of the African culture, social hierarchy, and art predating any formal western knowledge on fractals. Village architecture, jewelry, and even religious rituals all exhibit the concepts of self-similarity[@Eglash2007]. Recently with the advancement of computer aided image generation, the appreciation of fractals has spread to a wider community. For example, the application [Electric Sheep](http://electricsheep.org/) uses distributed computing in order to evolve fractal flames which are displayed as screensavers to users. The community has membership of roughly 500,000 unique members [@PhoenixPerry2011] who appreciate viewing fractal flame images.
 
 Hopefully this background information shows the general interest in fractal-like patterns and with that the project focuses on this last group of individuals who appreciate computer generated fractal images. The proposed GPU rendered fractal algorithm hopes to deliver the existing community with the opportunity to continue viewing these fractal flame images without the need for distributed computing to render them in real time- a major improvement.
 
@@ -278,17 +278,3 @@ Escape Time Fractals, Strange Attractors, and Random Fractals all have distinct 
 
 All of these bulletpoints above are accomplished using the fractal flame algorithm, a variant of the Iterated Function System fractal type. These additionally features allow beautiful interpolation between transformations, a heightened focus on color and image correction techniques, as well as more intricate shapes. Because of these additional features the flame algorithm has many advantages over classical fractal flame algorithms which is one of the governing reasons why this system was chosen for the project.
 
-[TODO Revise citations in correct format and put in Acknowledgements section]
-
-
-## References
-
-[1] Brickmann, J. (1985), B. Mandelbrot: The Fractal Geometry of Nature, Freeman and Co., San Francisco 1982. 460 Seiten, Preis
-
-[2] Draves, Scott; Erik Reckase (July 2007). "The Fractal Flame Algorithm" (pdf). Retrieved 2008-07-17.
-
-[3] http://www.miqel.com/fractals_math_patterns/visual-math-natural-fractals.html
-
-[4] http://www.ted.com/talks/ron_eglash_on_african_fractals.html
-
-[5] http://www.triangulationblog.com/2011/01/scott-draves.html
