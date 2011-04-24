@@ -18,7 +18,11 @@ fractal flame image for each input flame. More elaborate applications, such as
 a long-running process with socket communication for use in quasi-real-time
 applications such as the `fr0st` fractal flame editor, are expected to be
 produced, but these applications fall outside the scope of this document. The
-high-level flow of the rendering application is depicted in Figure [FIG].
+high-level flow of the rendering application is depicted in Figure
+\ref{fig:host_design}.
+
+\imfig{design_summary/host.pdf}{The host-side workflow of the example
+application.}{fig:host_design}
 
 The host application parses command-line arguments to determine operating mode,
 and then loads a `flam3`-compatible XML stream, either through a specified
@@ -204,3 +208,4 @@ the work-group once again waits for data by polling global memory.
 ### Filtering
 
 [TODO: filtering subsection]
+
