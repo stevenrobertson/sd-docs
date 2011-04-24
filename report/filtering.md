@@ -449,7 +449,15 @@ simplest window is the rectangular window.  It simply takes a chunk the portion
 of the signal fitting inside in the window leaving discontinuities at the edges
 (unless the signal is entirely within the limits of the window).  Filter shapes
 available in flam3 are the Guassian (default), Bell, Blackman, Box, Bspline,
-Hamming, Hanning, Hermite, Mitchell, Quadratic, and Triangle [@flam3].
+Hamming, Hanning, Hermite, Mitchell, Quadratic, and Triangle [@flam3]. See Figure
+\ref{nofilter} for fractal flame image without filtering and Figure
+\ref{gaussianfilter} for fractal flame image with Gaussian filtering.
+
+\imfig{filtering/nofilter.png}{Electric Sheep 244 36724 fractal flame with no
+    filtering.}{nofilter}
+
+\imfig{filtering/nofilter.png}{Electric Sheep 244 36724 fractal flame Gaussian
+    no filtering.}{nofilter}
 
 ## Motion Blurring
 
