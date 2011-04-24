@@ -52,7 +52,7 @@ specification doesn't tell the whole story.
 
 ### An editorialized history of the standard
 
-TODO: citations all through here
+[TODO: citations all through here]
 
 OpenCL was developed by Apple, Inc. to provide a generic interface to
 high-performance devices like GPUs across their platform. At the time of
@@ -339,7 +339,7 @@ fractal flame algorithm, but remain far smaller than the framebuffer size
 at our target resolution. It is therefore clear that memory access patterns
 will be an important focus of our design efforts.
 
-TODO: citations of course, and also a more ominous ending?
+[TODO: citations of course, and also a more ominous ending?]
 
 ### Latency masking
 
@@ -362,7 +362,7 @@ chipmakers, and is one of the more significant ways these architectures
 differ. Naturally, we'll take a closer look in our analysis throughout the
 rest of the chapter.
 
-TODO: need to expand this section?
+[TODO: need to expand this section?]
 
 ## Closer look: NVIDIA Fermi
 
