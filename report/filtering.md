@@ -176,8 +176,8 @@ bytes required for 16 samples will be much less then the memory needed for the
 color data so the extra overhead should be insignificant compared to the 
 bandwidth reduction [@Young2002].
 
-**Morphological antialiasing** is a significantly different antialiasing approach.  
-It does not rely on supersampling and is a completely post-process algorithm.  
+**Morphological antialiasing** is a significantly different antialiasing 
+approach.  It does not rely on supersampling and it takes place post-processing.  
 It works by blending colors after looking for and recognizing special pixel 
 patterns in an image.  The algorithm can be explained using the following 
 steps:
@@ -191,22 +191,16 @@ steps:
   pattern, U-shaped pattern, L-shaped pattern).  See figures below for 
   depiction.
   3. Blend colors in pattern areas - The pixels that make make up the vertices 
-  of the identified patterns are sampled and blended together.
+  of the identified patterns are sampled and blended together.  [@Reshetov2009]
+  
+[TODO: Create image of pixel patterns]
+
 Notice that more samples do not have to be rendered when using morphological 
 antialiasing.  The computational resources required to do the above steps are 
 far less than the resources needed to render 4x, 8x, or 16x as many pixels.  
 Supersampling will generally produce slightly higher quality results but will 
 not be worth the performance trade-off, especially if real-time rendering is 
 needed. [@Reshetov2009]
-
-A **window function** is a mathematical function that is zero-valued outside of 
-some chosen interval while manipulating the values inside that interval.  The 
-simplest window is the rectangular window.  It simply takes a chunk the 
-portion of the signal fitting inside in the window leaving discontinuities at 
-the edges (unless the signal is entirely within the limits of the window) [6].
-Filter shapes available in flam3 are the Guassian (default), Bell, Blackman, 
-Box, Bspline, Hamming, Hanning, Hermite, Mitchell, Quadratic, and Triangle 
-[8].
 
 ## Denoising
 
@@ -219,7 +213,7 @@ seemingly random, unwanted pixel inaccuracies as collected by an image source
 Most image denoising algorithms deal with this problem by treating noise the 
 same as small details and then by removing all the small details with some form 
 of blurring.  This is done by replacing a pixel with a weighted average of all
-the nearby pixels.
+the nearby pixels.  [@Buades2005].
 
 ### The origins of noise
 
@@ -419,6 +413,17 @@ Problems: difficult to accelerate on GPU; usually requires hand tuning; it's
   the querying portion of the algorithm (where most of the computation time 
   comes from) which searches through the binary tree is highly parallelizable.
   
+## Spatial Filtering
+
+A **window function** is a mathematical function that is zero-valued outside of 
+some chosen interval while manipulating the values inside that interval.  The 
+simplest window is the rectangular window.  It simply takes a chunk the 
+portion of the signal fitting inside in the window leaving discontinuities at 
+the edges (unless the signal is entirely within the limits of the window) [6].
+Filter shapes available in flam3 are the Guassian (default), Bell, Blackman, 
+Box, Bspline, Hamming, Hanning, Hermite, Mitchell, Quadratic, and Triangle 
+[8].
+  
 ## Motion Blurring
 
 Motion blur is the visual effect that occurs when a moving object is caputered 
@@ -434,4 +439,6 @@ way we percieve the world such that if we didn't see a motion blur, the moving
 object would appear jerky in motion.  This is a problem with animated, computer 
 generated sequences.  Each frame is rendered at a single, definite point in time 
 and contains absolutely no blurring due to motion.  Even at relatively high 
-frame rates, this can cause the animation to look jerky.
+frame rates, this can cause the animation to look jerky.  [TODO: FINISH][TODO: CITE]
+
+[TODO: Technical details]

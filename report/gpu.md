@@ -550,7 +550,7 @@ increased to 0.88Ghz in Cayman (up from 0.85GHz in Cypress).
 
 ### Memory architecture
 
-
+[TODO: Finish memory architecture]
 
 Incoherent global read and write caches, separate texture caches. Slow
 atomics.
