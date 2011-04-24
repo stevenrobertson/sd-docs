@@ -24,7 +24,7 @@ The techniques that allow going from a lower dynamic range to a high dynamic ran
 
 By observing common dynamic ranges of some typical mediums as well as various digital file formats we can begin to see why we are limited.
 
-Both the file format technologies in which our images or videos and stored in as well as monitor or paper in which they are viewed on are interrelated limiting factors governing the dynamic range. Various typical contrast values that these scenes can emit or in the case of file formats are capable of representing are seen in Table \ref{hdrtable} [12][13].
+Both the file format technologies in which our images or videos and stored in as well as monitor or paper in which they are viewed on are interrelated limiting factors governing the dynamic range. Various typical contrast values that these scenes can emit or in the case of file formats are capable of representing are seen in Table \ref{hdrtable} [@Kolor].
 
 \begin{table}[h]
 	\begin{tabular}{|l|l|l|}
@@ -104,7 +104,7 @@ The term *hue* refers to the pure spectrum of colors and is one of the fundament
 
 ###Gamma and Gamma Correction
 \label{gammasection}
-The term *gamma* refers to the amount of light that will be emitted from each pixel on the monitor in terms of in a fraction of full power (pixel being shorthand for the red, green, and blue phosphors of a CRT[^LCD])[5].
+The term *gamma* refers to the amount of light that will be emitted from each pixel on the monitor in terms of in a fraction of full power (pixel being shorthand for the red, green, and blue phosphors of a CRT[^LCD]).
 
 [^LCD]: For LCDs the relationship between signal voltage and intensity is very non-linear and a simple gamma value cannot describe it. A correction factor can be applied however and the concepts are similar.
 
@@ -141,7 +141,7 @@ The second image of Figure \ref{gammacomparison} does not undergo any gamma corr
 
 ###Brightness and Brightness Correction
 \label{brightnesssection}
-The term *brightness* is a term that must be defined with great finesse. Unlike *luminance*[^lum] which is empirical, *brightness* is subjective. The subjectiveness comes from that brightness is according to the range of lumens that the eye can perceive. This attribute is often more qualitative than quantitative and can range from very dim (black) to very bright (white) [8].
+The term *brightness* is a term that must be defined with great finesse. Unlike *luminance*[^lum] which is empirical, *brightness* is subjective. The subjectiveness comes from that brightness is according to the range of lumens that the eye can perceive. This attribute is often more qualitative than quantitative and can range from very dim (black) to very bright (white).
 
 [^lum]: Again, *luminance* being the intensity of light being emitted from a surface per some unit area.
 
@@ -159,9 +159,9 @@ An example of the first application would be a naïve approach that goes on the 
 	\label{rgbwavelength}
 \end{figure}
 
-This flaw can be seen in Figure \ref{rgbwavelength}. The red, green, and blue components of a color have different wavelengths and therefore have a different perceived effect on the eye. A good brightness calculation attempts to model how the eye perceives color rather than treating each color component with equal weights. A common flaw of a color model for brightness is the under or over represent one of the color components[9].
+This flaw can be seen in Figure \ref{rgbwavelength}. The red, green, and blue components of a color have different wavelengths and therefore have a different perceived effect on the eye. A good brightness calculation attempts to model how the eye perceives color rather than treating each color component with equal weights. A common flaw of a color model for brightness is the under or over represent one of the color components.
 
-Some examples of weighted models to calculate brightness are below in Table \ref{brightnessmodel}. [14][15]
+Some examples of weighted models to calculate brightness are below in Table \ref{brightnessmodel}.
 
 \begin{table}[h]
 	\begin{tabular}{|l|l|}
@@ -172,7 +172,7 @@ Some examples of weighted models to calculate brightness are below in Table \ref
 		\hline
 		Digital CCIR601 				&	$0.299 \times R + 0.587 \times G + 0.114 \times B$		\\
 		\hline
-		HSP Color Model (Percieved Brightness) &	$\sqrt{0.241 \times  R^2 + 0.691 \times G^2 + 0.068 \times  B^2 }$		\\
+		HSP Color Model (Percieved Brightness)[@Finley] &	$\sqrt{0.241 \times  R^2 + 0.691 \times G^2 + 0.068 \times  B^2 }$		\\
 		\hline
 	\end{tabular}
 	\caption{Weighted Brightness Calculations. }
@@ -187,15 +187,15 @@ With the addition of too much or too little brightness color clipping may occurs
 
 The concept this section intends of describing is that of *saturation* but as a building block concept it is felt necessary to talk first about the more broad concept in *color theory* which is the intensity of the color. There are different variations of measuring the intensity of the color. The three main terms as well as their distinctions between each other are below:
 
-1. **Colorfulness:** The intensity of the color is a measure of the colors relative difference between gray. [11]
+1. **Colorfulness:** The intensity of the color is a measure of the colors relative difference between gray[@Fairchild2008].
 
-2.	**Chroma:** The intensity of the color is a measure of the relative brightness of another color which appears white under similar viewing conditions.[11]
+2.	**Chroma:** The intensity of the color is a measure of the relative brightness of another color which appears white under similar viewing conditions[@Fairchild2008].
 
-3. **Saturation:** The intensity of the color is a measure of its colorfulness relative to its own brightness rather than gray[11].
+3. **Saturation:** The intensity of the color is a measure of its colorfulness relative to its own brightness rather than gray[@Fairchild2008].
 
 The term that is of importance is that of *saturation*.
 
-[TODO  Expand on a bit on this section. Possible ideas: Describe R, G, and B model as well as the steepness of the bell curve slope described here [9]. Linear]
+[TODO  Expand on a bit on this section. Possible ideas: Describe R, G, and B model as well as the steepness of the bell curve slope described here. Linear]
 
 Colors that are highly *saturated* are those closest to pure hues of color. Colors that have little saturation appear *washed out*. Also as a note, the changing of a color's saturation can be observed as linear effect.
 
@@ -223,7 +223,7 @@ When data exceeds the upper and lower bounds of representable brightness's a los
 
 ##Log Transformation of Data
 \label{logtransformation}
-Data transformations in statistics are a common method of transforming data points in order to improve the interpretability of visualization of the output (e.g. graphs)[7]. Some common transformations include:
+Data transformations in statistics are a common method of transforming data points in order to improve the interpretability of visualization of the output (e.g. graphs). Some common transformations include:
 
 - Square Root
 - Logarithm
@@ -239,9 +239,9 @@ With a firm idea of High Dynamic Range (HDR) the concept of tone mapping is now 
 1. Bring out all of the details of an image - or more specifically, maximizing image contrast. This approach focuses on producing realism and aims to render an image as accurately as possible.
 2. Create an aesthetically pleasing image, often ignoring the realistic model that the first approach attempts to model but trying to create another desired effect. This effect is up to the person designing the tone operator which is applied to the image.
 
-The method for applying this tone mapping is done via a tone mapping operator. The HDR image is processed by the tone mapping operator which provides one of the two above mentioned effects. There are two major classifications of tone mapping operators[6]:
+The method for applying this tone mapping is done via a tone mapping operator. The HDR image is processed by the tone mapping operator which provides one of the two above mentioned effects. There are two major classifications of tone mapping operators[@Ledda2005]:
 
-1. **Global Tone Operators:** In a global tone operator the mapping of one color set to another is uniformly applied to the image. This mapping is in the form of a non-linear function that is determined to be the desired mapping [6]. Gamma correction is an example of a simple global tone operator.
+1. **Global Tone Operators:** In a global tone operator the mapping of one color set to another is uniformly applied to the image. This mapping is in the form of a non-linear function that is determined to be the desired mapping[@Ledda2005]. Gamma correction is an example of a simple global tone operator.
 
 2. **Local Tone Operators:** In a local tone operator the mapping of one color set to another varies according to the local features of the image. The tone operator takes into the regions of changing pixels in the image.
 
@@ -638,35 +638,3 @@ One of the complications of log-scaling is that an exponentially more amount of 
 	\caption{12 different highlight power values are presented on the baseline flame.}
 	\label{highlightflame}
 \end{figure}
-
-
-
-
-
-
-
-
-## Bibliography
-
-
-[5] http://www.colormatters.com/comput_gamma.html
-
-[6] http://en.wikipedia.org/wiki/Tone_mapping
-
-[7] http://en.wikipedia.org/wiki/Data_transformation_(statistics)
-
-[8] http://www.crompton.com/wa3dsp/light/lumin.html
-
-[9] http://whatis.techtarget.com/definition/0,,sid9_gci212262,00.html
-
-[10] http://www.nbdtech.com/Blog/archive/2008/04/27/Calculating-the-Perceived-Brightness-of-a-Color.aspx
-
-[11] http://en.wikipedia.org/wiki/Saturation_(color_theory)
-
-[12] http://web.ncf.ca/jim/photography/dynamicRange/index.html
-
-[13] http://www.autopano.net/wiki-en/action/view/Dynamic_Range
-
-[14]  http://stackoverflow.com/questions/596216/formula-to-determine-brightness-of-rgb-color
-
-[15] http://alienryderflex.com/hsp.html
