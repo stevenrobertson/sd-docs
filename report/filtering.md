@@ -456,8 +456,8 @@ Hamming, Hanning, Hermite, Mitchell, Quadratic, and Triangle [@flam3]. See Figur
 \imfig{filtering/nofilter.png}{Electric Sheep 244 36724 fractal flame with no
     filtering.}{nofilter}
 
-\imfig{filtering/nofilter.png}{Electric Sheep 244 36724 fractal flame Gaussian
-    no filtering.}{nofilter}
+\imfig{filtering/original.png}{Electric Sheep 244 36724 fractal flame with
+    Gaussian filtering.}{nofilter}
 
 ## Motion Blurring
 
