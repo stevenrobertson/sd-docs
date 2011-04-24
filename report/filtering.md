@@ -353,7 +353,7 @@ more accurate color selection for the pixel in question. [@Huang2009]
 The permutohedral lattice is a data structured designed to improve the
 performance of high-dimensional Gaussian filters including bilateral filtering
 and nonlocal means filtering. It is a projection of the scaled grid
-$(d+1)\mathbb{Z}^{d+1}$ along the vector $\vec{1}-> = [1,...,1]$ onto the
+$(d+1)\mathbb{Z}^{d+1}$ along the vector $\vec{1} = [1,...,1]$ onto the
 hyperplane $H_d : \vec{x}.\vec{1} = 0$ and is spanned by the projection of the
 standard basis for $(d+1)\mathbb{Z}^{d+1}$ onto $H_d$ [@Adams2010]. Each of the
 columns of $B_d$ are basis vectors whose coordinates sum to zero and have a
