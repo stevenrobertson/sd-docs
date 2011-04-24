@@ -1,4 +1,5 @@
 # Dynamic kernel generation
+\label{ch:dynamic}
 
 The current version of `flam3` has nearly 100 variations. A transform function
 is composed of an initial affine transform, followed by application of each of
@@ -269,14 +270,6 @@ the lower bound is actually determined by the precision of the floating point
 format in use. However, these systems tend to be highly unstable under
 interpolation and are not often found in practice.
 
-[TODO: expand the IFS chapter to include an explanation that the nonlinear
-functions used in flames are often not technically contractive, because they
-can have multiple fixed points, and that for practical purposes we can
-characterize whether or not they are contractive on the bounds of the image by
-computing the first moment of the distance from the center of the camera over
-the domain of the image and call it "contractiveness" or come up with a better
-name for it.]
-
 It is therefore not necessary to ensure that every instance of the system under
 simulation receive an entirely independent sequence of transforms; rather, it
 is sufficient to limit the expected frequency of identical transform
@@ -480,8 +473,6 @@ lengths in Table \ref{probtable}. Fixed values of $N=8$ and $W=32$ are used.
   \label{probtable}
 \end{table}
 
-[TODO: center tabular inside table?]
-
 The results display a strong preference towards higher efficiency at larger
 work-group sizes; this is an important and challenging constraint on launch
 parameters, as more effort is required to avoid stalls and inadequate occupancy
@@ -512,12 +503,10 @@ The simplest transform functions can be expressed in a handful of instructions;
 with careful design of fixed loop components, many common flames may require an
 average considerably less than 50 instructions per iteration. Single-GPU cards
 in the current hardware generation can retire more than $750\cdot 10^{9}$
-instructions per second[^FMA] [CITE] [TODO: I'm thinking about the GTX 560 Ti
-OC'd to 1GHz here; should that be specified here and below?]; it's not
-unreasonable to expect normal consumer hardware to be able to calculate more
-than 15 billion IFS samples in a single second.  Each of these samples needs to
-make it from a core to the accumulation buffer.  Can the memory subsystem keep
-up?
+instructions per second[^FMA] [@Voicu2010]; it's not unreasonable to expect
+normal consumer hardware to be able to calculate more than 15 billion IFS
+samples in a single second.  Each of these samples needs to make it from a core
+to the accumulation buffer.  Can the memory subsystem keep up?
 
 [^FMA]: The FLOPs figures commonly cited by graphics manufacturers are twice
 this value, as they count multiplies and adds as separate operations in an FMA.
@@ -563,20 +552,18 @@ simple caches found in GPUs useless.
 132710400 \, \text{bytes}$
 
 With each cache miss, a GPU reads in an entire cache line; each dirty cache
-line is also flushed to RAM as a unit [TODO: verify on Fermi]. In the Fermi
-[TODO: and Cayman?] architecture, cache lines are 128 bytes. If nearly every
-access to an accumulator results in a miss, then the actual amount of bus
-traffic caused by one accumulation is effectively eight times higher than the
-accumulator size suggests — and consequently, the peak rate of accumulation is
-eight times lower.
+line is also flushed to RAM as a unit. In the Fermi architecture, cache lines
+are 128 bytes. If nearly every access to an accumulator results in a miss, then
+the actual amount of bus traffic caused by one accumulation is effectively
+eight times higher than the accumulator size suggests — and consequently, the
+peak rate of accumulation is eight times lower.
 
 To make matters worse, DRAM modules only perform at rated speeds when reading
 or writing contiguously. There is a latency penalty for switching the active
 row in DRAM, as must be done before most operations in a random access pattern.
 This penalty is negligible for sustained transfers, but is a considerable
 portion of the time required to complete a small transaction; when applied to
-every transaction, attainable memory throughput drops by more than 20% [CITE
-GDDR5 spec] [CHECK I pulled this number out of thin air].
+every transaction, attainable memory throughput drops as much as 50% [@elpida].
 
 A 3× performance penalty may be accepted; a 30× penalty *must* be addressed to
 meet this project's stated performance goals. An improvement of more than an
@@ -585,7 +572,7 @@ remove this bottleneck entirely. Over the course of this chapter, several
 improvements will be introduced, each providing incrementally higher memory
 performance at the cost of increasing complexity. In concert, these techniques
 form an accumulation stage that, while arcane, is fast enough to keep up with
-the iteration loops.
+iteration.
 
 ## Tiled accumulation
 
@@ -728,16 +715,17 @@ processed per flush.
 
 #### Color subsampling
 
-Most rendered flames are compressed with the JPEG image codec [@JPEGSpec] or
-the H.264 [@H264Spec] video codec. These codecs, and many others, reduce the
+Most rendered flames are compressed with the JPEG image codec or
+the H.264 video codec. These codecs, and many others, reduce the
 size of transmitted frames by sampling image channels containing color
 information at a lower spatial resolution than the luminosity channel, and by
-quantizing the subsampled result more severely. That these codecs do so without
-objectionable degradation of the image is evidence of the human visual system's
-reduced sensitivity to perception of color, as compared to brightness. Since
-most of the color information in the accumulation buffer is discarded before
-ever reaching the user, subsampling color during the accumulation stage reduces
-the size of the accumulator with little or no loss in visual quality.
+quantizing the subsampled result more severely [@JPEGSpec]. That these codecs
+do so without objectionable degradation of the image is evidence of the human
+visual system's reduced sensitivity to perception of color, as compared to
+brightness. Since most of the color information in the accumulation buffer is
+discarded before ever reaching the user, subsampling color during the
+accumulation stage reduces the size of the accumulator with little or no loss
+in visual quality.
 
 In video and image applications, RGB tristimulus values are first transformed
 to the YUV colorspace[^yuv] via a simple matrix multiplication. The resulting
@@ -795,11 +783,10 @@ floating-point numbers, and they serve as an excellent compromise between speed
 and precision during calculation. When storing accumulators, however, the
 exceptionally high cost of a cache miss makes footprint reduction worth using
 slower, more complicated instructions. For such purposes, GPUs include support
-for converting to and from IEEE 754 half-precision floating-point formats
-[CITE].  Unfortunately, support for these 16-bit values is missing from the
-atomic instruction set; flushing a tile would require performing
-read-modify-write over the inter-chip bus, which would cause it to flood
-[^icbw].
+for converting to and from IEEE 754 half-precision floating-point formats.
+Unfortunately, support for these 16-bit values is missing from the atomic
+instruction set; flushing a tile would require performing read-modify-write
+over the inter-chip bus, which would cause it to flood [^icbw].
 
 [^icbw]: Fermi's L2 provides low-latency acceleration of instructions, but does
 not provide significant bandwidth amplification over global memory;
@@ -838,8 +825,8 @@ exponent bias is set at $\hex{-01}$, rather than $\hex{0F}$. Subnormal numbers
 are therefore represented by the exponent $\hex{1F}$, where the exponent is
 treated as if it is also represented in two's complement. This notational
 difference implies that a string of zero bits does not represent a value of
-zero; however, the simplicity of the resulting algorithm for addition in global
-memory makes this change worthwhile.
+zero, which is inconvenient. The extra effort is justified by an extremely
+simple addition algorithm.
 
 To add a value to a memory location, first read the exponent value as $E$.
 Multiply the addend by $2^{-(E+1)}$, and round to the nearest integer using
@@ -848,7 +835,11 @@ dithering. Finally, perform an atomic addition to the value in global memory.
 
 \addfontfeatures{Numbers=OldStyle}
 
-[TODO: show how cool it is that this works, and/or pseudocode]
+This algorithm can be implemented in as few as ten operations, including the
+generation of a random number for the purposes of dithering. Two of those
+operations may require access to memory — the initial exponent read,
+followed by the actual addition — and both of these would require access to
+atomic units.
 
 [TODO: finish the rest of this]
 

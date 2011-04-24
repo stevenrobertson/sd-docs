@@ -1,48 +1,48 @@
-# A brief tour of GPU computing
+# A (not-so-)brief tour of GPU computing
 
 Graphics processing units began as simple, fixed-function add-in cards, but
 they didn't stay there. Over many generations, demand for increasingly
-sophisticated computer graphics required hardware that was not just faster,
-but more flexible; device manufacturers responded by spending ever-larger
-portions of the transistor budget on programmable functions. In 2007,
-NVIDIA released the first version of the CUDA toolkit, unlocking GPUs for
-straightforward use outside of the traditional graphics pipeline. Since
-then, "general-purpose GPU computing" has become a viable, if still
-nascent, market, with practical applications spanning the range from
-comsumers to the enterprise.
+sophisticated computer graphics required hardware that was not just faster, but
+more flexible; device manufacturers responded by spending ever-larger portions
+of the transistor budget on programmable functions. In 2007, NVIDIA released
+the first version of the CUDA toolkit, unlocking GPUs for straightforward use
+outside of the traditional graphics pipeline. Since then, "general-purpose GPU
+computing" has become a viable, if still nascent, market, with practical
+applications spanning the range from comsumers to the enterprise.
 
 Don't let the words *general purpose* fool you, however. While the major
 manufacturers have shown interest in this market, it remains at present a
 fraction of the size of these companies' core markets [@Voicu2010]. Every
 transistor spent making GPGPU faster and easier to program may come at the
-expense of doing the same for games, and that market is simply too small to bet
-the farm on at present [CITE?]. This tension between compute and gaming has
-real implications in the design of current hardware, as we'll see in this
-chapter, and will be considered in depth when describing hardware decisions in
-the next chapter.
+expense of doing the same for games. Because the market for high-performance
+computing remains much smaller than for entertainment and professional imaging,
+GPUs remain primarily graphics-oriented.
 
-Despite being "games first", GPUs still provide the highest performance per
-dollar for most math-intensive applications. In general, porting algorithms
-to such devices can be a challenge, but one worth the effort, and we feel
-that the GPU is a good fit for an accelerated implementation of the fractal
-flame algorithm.
+Despite the "games first" approach which informs hardware designers, GPUs still
+provide the highest performance per dollar for most math-intensive
+applications. In general, porting algorithms to such devices can be a
+challenge, but for algorithms that fit naturally (or can be made to fit) into
+the computing paradigms available on current hardware, the performance benefit
+justifies the effort.
 
 This section is intended to give a grounding in the concepts and
-implementations of GPU computing platforms. We start with a summary of the
-OpenCL computing model, which subsets both NVIDIA's and AMD's hardware.
-Then, we consider the implementations of the two manufacturers, covering at
-first common approaches not covered by the OpenCL spec, followed by a deeper
-look at a leading card from each manufacturer [@Overbeck2009].
+implementations of GPU computing platforms. The OpenCL computing model subsets
+both NVIDIA's and AMD's hardware, and therefore forms a convenient location to
+start the discussion. While OpenCL mandates certain hardware features, many
+others appear across several GPUs as a consequence of their shared heritage;
+these features are also addressed. Finally, an in-depth analysis of certain
+unique hardware features on both NVIDIA's and AMD's flagship architectures
+provides background information that is built upon in later chapters.
 
 ## OpenCL
 
 The OpenCL standard for heterogeneous computing is managed by the Khronos
-Group, an industry consortium of media companies that also produces the
-OpenGL specification [CITE]. OpenCL provides a cross-platform approach to
+Group, an industry consortium of media companies that also produces the OpenGL
+specification [@Kanter2010a]. OpenCL provides a cross-platform approach to
 programming; while its execution model requires certain features of the
-hardware it executes on, the language is kept general enough so that almost
-all code can execute with reasonable efficiency on any supported
-architecture (via driver-provided just-in-time compiling).
+hardware it executes on, the language is kept general enough so that almost all
+code can execute with reasonable efficiency on any supported architecture (via
+driver-provided just-in-time compiling).
 
 Because it forms a common, abstract subset of the GPUs under consideration
 as platforms on which to implement this algorithm, OpenCL is a good
@@ -93,9 +93,9 @@ compute features over OpenCL, and those features are again exposed through
 CUDA. We'll take a look at this situation a bit later; for now, let's turn
 to the OpenCL model for computation.
 
-TODO: This section feels a little... off. When I sat down to write it, it
+[TODO: This section feels a little... off. When I sat down to write it, it
 seemed necessary; now I'm not so sure, especially after putting the
-Fermi+Larrabee discussion off for a later chapter.
+Fermi+Larrabee discussion off for a later chapter.]
 
 ### How to do math in OpenCL
 
@@ -397,19 +397,22 @@ largest-volume market segments. NVIDIA's response was to invest in Tegra,
 their mobile platform, and to make Fermi an enterprise-oriented,
 feature-laden, unmanufacturable mess.
 
-Well, Larrabee was all but cancelled, Sandy Bridge graphical performace is
-decidedly lackluster, and TSMC got their 40nm process straightened out,
-leaving NVIDIA room to prepare the GF110 and GF114 architectures powering
-the GTX 500 series. These chips are almost identical to their respective
-first-generation Fermi counterparts at the system design level; tuning at
-the transistor level, however, greatly improved yield and power
-consumption, making these devices graphically competitive at their price
+As it turns out, Larrabee was all but cancelled, Sandy Bridge graphical
+performace is decidedly lackluster, and TSMC got their 40nm process
+straightened out, leaving NVIDIA room to prepare the GF110 and GF114
+architectures powering the GTX 500 series. These chips are almost identical to
+their respective first-generation Fermi counterparts at the system design
+level; tuning at the transistor level, however, greatly improved yield and
+power consumption, making these devices graphically competitive at their price
 level.
 
-The GF104 and GF114 have slightly reworked shader cores as compared to
-their GF1x0 counterparts. We discuss the conceptually simpler GF110 here,
-and cover the superscalar GF114 [TODO: in a sidebar?] after introducing the
-Cayman architecture.
+<!--
+
+The GF104 and GF114 have slightly reworked shader cores as compared to their
+GF1x0 counterparts. We discuss the conceptually simpler GF110 here, and cover
+the superscalar GF114 after introducing the Cayman architecture.
+
+-->
 
 ### Shader multiprocessors
 
@@ -431,17 +434,16 @@ for the rest of the chip.
 Every thread in a warp executes together. At each cold clock, a warp's
 instructions are loaded by the scheduler and issued to the appropriate
 group of units for execution. Normal execution for all 32 of a warp's
-threads takes a single cold clock, followed by result writeback. This
-process is pipelined; it takes 11 cold cycles [TODO: verify this on Fermi]
-for a register written in a previous instruction to become available.
+threads takes a single cold clock, followed by result writeback. This process
+is pipelined; it takes 11 cold cycles for a register written in a previous
+instruction to become available.
 
 As mentioned previously, there is no register forwarding during pipelined
-instructions. In fact, every thread sees this delay between one instruction
-and the next, regardless of data dependencies [TODO: verify on Fermi]. On
-NVIDIA architectures, this is hidden by cycling through all warps which are
-resident on the core and executing one instruction from each before
-returning them to the queue. This is done independently for each warp
-scheduler.
+instructions. In fact, every thread sees this delay between one instruction and
+the next, regardless of data dependencies. On NVIDIA architectures, this is
+hidden by cycling through all warps which are resident on the core and
+executing one instruction from each before returning them to the queue. This is
+done independently for each warp scheduler.
 
 The SFUs, which handle transcendental functions (`sin`, `sqrt`) and
 possibly interpolation, are limited in number. When dispatching an
@@ -487,30 +489,24 @@ global reads must use this cache, although writes are handed straight to
 L2D, invalidating the corresponding cache line in L1D in the process. While
 the L2D is always globally consistent, L1D is only consistent across a
 single core; writes to global memory from one core will *not* invalidate
-the corresponding cache lines in a neighboring core. Volatile loads treat
-all lines in L1D as invalid, but that flag only applies to memory
-instructions, not to addresses.
+the corresponding cache lines in a neighboring core. Volatile loads treat all
+lines in L1D as invalid, but do not actually invalidate those lines after a
+load is complete; inconsistent access with non-volatile loads may return the
+data cached when the volatile load was first issued.
 
 Each work-group is assigned to a single core for the duration of its
 execution. Each thread acquires its registers and local memory as the
-work-group is assigned, and the work-group acquires shared memory; these
-resources are not released until the work-group is complete. This also
-indicates that
-
-Shared memory is allocated to a work-group
+work-group is assigned, and the work-group acquires shared memory in the same
+manner. Resources are not released until the work-group is complete. As a
+result, every thread consumes its worst-case allocation at all times.
 
 Atomic operations in Fermi are available on both global and shared memory.
-Shared-memory atomics are implemented using
-
-A limited number of atomic operations on shared memory are supported. A
-broader set is available
-
-TODO: finish
-
-### Instruction set
-
-Brief description of how RISC-like PTX is very relevant? Or push this until
-later?
+Shared-memory atomics are implemented using on-core ALUs, and operate at native
+speeds unless a bank conflict occurs. Global atomics make use of simple,
+dedicated ALUs in proximity to the L2 cache. In general, global atomics have
+higher latency and lower total throughput than local operations, and have lower
+peak throughput than coalesced read-modify-write cycles, but have higher
+throughput than any uncoalesced operation.
 
 ## Closer look: AMD Cayman
 
@@ -570,7 +566,10 @@ performance but requires a much smarter compiler. Combination of explicit and
 external predication.
 
 Because of VLIW, and frequent architecture changes, should definitely use
-OpenCL-level code instead of assembly.
+OpenCL-level code instead of assembly. [TODO: expand or comment this statement]
+
+
+<!--
 
 ## Vectorization and theoretical performance
 
@@ -603,3 +602,4 @@ OpenCL-level code instead of assembly.
 
 Note: this section might well be axed.
 
+-->

@@ -146,7 +146,8 @@ main = do
     errCode <- renderPDF tmpdir tex
     unless useDraft $ do
         putStrLn "Running xelatex again to update TOC"
-        void $ renderPDF tmpdir tex
+        renderPDF tmpdir tex
+        return ()
 
     putStrLn "\n\nDocument annotations:"
     print . vcat $ map pprAnnos annos
