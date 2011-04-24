@@ -113,17 +113,11 @@ Ideally, the minimum number from 0 to k will be a high value (in the thousands) 
 The Monte Carlo methods are algorithms that use statistics to determine probabilities in systems and their properties. They are used in finance, physics, communications and even game design. In the context of this project, they are necessary measures of randomness that can be held as a standard that filters out PRNGs that don’t meet the basic requirements. Using these methods, the spectral properties and periods of some PRNGs and their variations will be determined.
 
 ## Our approaches
-[TODO Nick this is sloppy, it looks like a list not a document]
-There are several things to be attempted in order to obtain the desired results and the most efficient algorithm that contains most if not all the desired qualities of a necessary PRNG.
-The initial ideas for finding the potential PRNG are the following:
+There are several things to be attempted in order to obtain the desired results and the most efficient algorithm that contains most if not all the desired qualities of a necessary PRNG. The search for the right PRNG will start with MWC; its spectral distribution and its period must be checked at different values. Its compatibility with GPUs will also be tested. Ideally, this PRNG will not require more static memory per thread than the GPU has to offer and.
 
-Start with MWC. Only get more complicated if it looks necessary.
+Another approach would be to pre-compute a large number of random values with ISAAC or a similar good quality PRNG, per-thread and swap the state out of registers when not using it, then set up a warp to write the RNGs to shared memory for consumption by other warps.
 
-Use a PRNG that requires less state, like Marsaglia’s MWC, per-thread.
-
-Pre-compute a large number of random values with ISAAC or similar, per-thread and swap the state out of registers when not using it.
-
-Set up a warp to write the RNGs to shared memory for consumption by other warps. Use a very complicated manual implementation of semaphores and locks to trigger the generation of more RNGs as required.
+If neither of the previous apporaches work, the last is to use a manual implementation of semaphores and locks to trigger the generation of more RNGs as required.
 
 REFERENCES
 
