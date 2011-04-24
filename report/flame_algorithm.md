@@ -115,16 +115,7 @@ Translation Matrix
 ###Chaos Game
 The most common way of constructing an Iterated Function System is referred to as the *chaos game* as coined by Michael Barnsley. Our initial fractal flame algorithm will also use this approach. In the *chaos game* a random point on the plane[^plane] is selected. Next, one of the affine transformations to describe the system is then applied to this point and the resulting point is then plotted. The procedure is repeated for N iterations where N is left up to the user. Selection of the affine transformation to apply is either random (in the case of Sierpinski's triangle) or probabilistic (in the case of Barnsley's Fern). The more iterations you allow the chaos game to run for the more closely your resulting image resembles the iterated function system [TODO This is because Mote Carlo Sampling]. A flow chart of this procedure is found in Figure \ref{ifs_flowchart}.
 
-\afterpage{
-\clearpage
-\begin{figure}[!htp]
-	\centering
-	\includegraphics{./flame/ifs_flowchart.png}
-	\caption{Flow chart of IFS Procedure}
-	\label{ifs_flowchart}
-\end{figure}
-}
-
+\clrimfig{./flame/ifs_flowchart.png}{Flow chart of IFS Procedure}{ifs_flowchart}
 
 [^plane]: By plane we are refering to a biunit square where x and y values can have a minimum value of -1 and a maximum value of 1.
 
@@ -219,15 +210,8 @@ We now begin the *chaos game*. We first select a random point on the biunit squa
 
 Notice how the next point is the midpoint between the vertex and current point. These mappings guarantee the convergence of the algorithm to the desired IFS. This process continues on with each point being plotted except for the initial 20 points that allow the system to settle. We have provided coloring for a visual representation of what transformation was responsible for each point. Points transformed by $F_{0}$ are labeled \textcolor{ForestGreen}{Green}, $F_{1}$ are labeled \textcolor{red}{Red}, $F_{2}$ are labeled \textcolor{blue}{Blue}. Iterations 1,000, 7,500, 15,000, and 25,000 are displayed in Figure \ref{sierpinski_iterations}.
 
-\afterpage{
-\clearpage
-\begin{figure}[!htp]
-	\centering
-	\includegraphics{./flame/sierpinski_iterations.png}
-	\caption{Sierpinski's Triangle after 1,000, 7,500, 15,000, and 25,000 iterations.}
-	\label{sierpinski_iterations}
-\end{figure}
-}
+\clrimfig{./flame/sierpinski_iterations.png}{Sierpinski's Triangle after 1,000,
+    7,500, 15,000, and 25,000 iterations.}{sierpinski_iterations}
 
 The more one stochastically samples, the closer the output image is to the solution of the Iterated Function System being computed.
 
@@ -541,15 +525,8 @@ Finally, we address one of the last issues. We have taken care of spatial aliasi
 
 [TODO Directional Motion Blur]
 
-\afterpage{
-\clearpage
-\begin{figure}[!htp]
-	\centering
-	\includegraphics{./flame/symmetry.png}
-	\caption{A visual depiction of what dihedral and rotational symmetry look like in a flame.}
-	\label{symmetry}
-\end{figure}
-}
+\clrimfig{./flame/symmetry.png}{A visual depiction of what dihedral and
+    rotational symmetry look like in a flame.}{symmetry}
 
 ####Procedure
 Initially presenting the fractal algorithm usually results in a lengthy discussion as seen above but is usually done at the sake of clarity of *why* and *how* each step is being done. Since these have already been explained, we recap the algorithm with a high level summary[^simplicity] in the same fashion we had provided the classical iterated function system algorithm. A flowchart diagram of the procedure can be found in Figures \ref{flameflowchart1} through \ref{flameflowchart3}
@@ -557,7 +534,7 @@ Initially presenting the fractal algorithm usually results in a lengthy discussi
 [^simplicity]:For simplicty's sake we ignore the effects that Early Clip (Section \ref{earlyclipsection}) and Highlight Power (Section \ref{highlightpowersection}) have upon the algorithm and the way they reorder or modifications of core steps.
 
 
-The procedure is as follows: First, a random point is picked on the biunit square. The user picks the quality of the flame they wish to render and the program enters into a loop for Q iterations (where Q is quality). At each iteration a transformation is applied based on a probabilistic weighting (similar to Barnsley's Fern : Section \ref{fernsection}). This transformation will apply an affine transformation (which applies scaling, rotation, sheer, and translation), a variation transformation (to change the characteristics of the point), and a post function (to change the coordinate system). When the variation transform is applied a color associated with it is also applied (See Section \ref{coloringflame}). After the new point and color are selected this vector is accumulated in it's respective histogram bin representing the density of each point. The points are not accumulated in the bins for the first 20 points in order to allow the system to settle. 
+The procedure is as follows: First, a random point is picked on the biunit square. The user picks the quality of the flame they wish to render and the program enters into a loop for Q iterations (where Q is quality). At each iteration a transformation is applied based on a probabilistic weighting (similar to Barnsley's Fern : Section \ref{fernsection}). This transformation will apply an affine transformation (which applies scaling, rotation, sheer, and translation), a variation transformation (to change the characteristics of the point), and a post function (to change the coordinate system). When the variation transform is applied a color associated with it is also applied (See Section \ref{coloringflame}). After the new point and color are selected this vector is accumulated in it's respective histogram bin representing the density of each point. The points are not accumulated in the bins for the first 20 points in order to allow the system to settle.
 
 This process happens until the final iteration. On the final iteration, many final processing steps happen. First, the histogram bins of point densities are log scaled. Next, filtering is performed. Supersampling removes the aliases. Density Estimation allows the reduction of noise. As an added note, motion blur can also occur next and requires a second buffer of points to be filtered down. The final transform is now applied which is a non-linear camera transform. This final transform also applies a color associated with it. Now that the correctly filtered, log scaled and colored image has been produced color correction is now applied. This provides hue, brightness, gamma, and other corrections. The image is then written to a file and the procedure ends.
 

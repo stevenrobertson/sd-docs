@@ -87,6 +87,21 @@ $endif$
 \setcounter{secnumdepth}{1}
 \setcounter{tocdepth}{1}
 
+\newcommand{\imfig}[3]{
+\begin{figure}[htpb]
+	\centering
+	\includegraphics{#1}
+	\caption{#2}
+	\label{#3}
+\end{figure}
+}
+
+\newcommand{\clrimfig}[3]{
+    \afterpage{
+        \clearpage
+        \imfig{#1}{#2}{#3}
+    }
+}
 
 $if(verbatim-in-note)$
 \VerbatimFootnotes % allows verbatim text in footnotes
