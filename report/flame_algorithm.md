@@ -554,31 +554,8 @@ Finally, we address one of the last issues. We have taken care of spatial aliasi
 ####Procedure
 Initially presenting the fractal algorithm usually results in a lengthy discussion as seen above but is usually done at the sake of clarity of *why* and *how* each step is being done. Since these have already been explained, we recap the algorithm with a high level summary[^simplicity] in the same fashion we had provided the classical iterated function system algorithm. A flowchart diagram of the procedure can be found in Figures \ref{flameflowchart1} through \ref{flameflowchart3}
 
-<<<<<<< HEAD
 [^simplicity]:For simplicty's sake we ignore the effects that Early Clip (Section \ref{earlyclipsection}) and Highlight Power (Section \ref{highlightpowersection}) have upon the algorithm and the way they reorder or modifications of core steps.
-=======
-[TODO VERIFY] [MAKE 3 PAGE]
-- Start Procedure
 
-For i=0 .. Q where Q is the quality of the flame
-1. Random point in biunit square is picked
-2. Apply an Xform based on the probabilistic weighting defined
-	a. Apply Affine Transform
-	b. Variation Transform (applies color associated to variation, c = (c + ci)/2)
-	c. Post function Transform
-	d. Apply any symmetry
-3. Accumulate resulting point and color in respective histogram bin (except for the first 20 times!)
-If (i == Q-1) // Final iteration
-	- Perform filtering
-		a. Supersampling to remove alias
-		b. Density Estimation to remove noise
-
-	- Apply final camera Transform (also applies color assocaited to variation, cf = (c+cfinal)/2
-	- To properly display log density color scale each color by log(alpha) / alpha.
-	- Apply all color && image correction techniques (k1 / k2 equations): hue , brightness, gamma, the whole shebang!
-
-End For
->>>>>>> e00b69484dd64caa8c9f36dab7579ddee7715203
 
 The procedure is as follows: First, a random point is picked on the biunit square. The user picks the quality of the flame they wish to render and the program enters into a loop for Q iterations (where Q is quality). At each iteration a transformation is applied based on a probabilistic weighting (similar to Barnsley's Fern : Section \ref{fernsection}). This transformation will apply an affine transformation (which applies scaling, rotation, sheer, and translation), a variation transformation (to change the characteristics of the point), and a post function (to change the coordinate system). When the variation transform is applied a color associated with it is also applied (See Section \ref{coloringflame}). After the new point and color are selected this vector is accumulated in it's respective histogram bin representing the density of each point. The points are not accumulated in the bins for the first 20 points in order to allow the system to settle. 
 

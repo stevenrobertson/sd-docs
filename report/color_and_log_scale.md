@@ -320,15 +320,11 @@ For reference to the reader a baseline image of a detailed flame containing seve
 		\hline
 		Early Clipping					&	Off 				\\
 		\hline
-<<<<<<< HEAD
 		Highlight Power					&	0.0 				\\
 		\hline		
 		Hue								& $0^\circ$ Rotation to the Color Space	\\
 		\hline
 		Color Palette					& User Defined Palette			\\
-=======
-		Highlight Power					&	0.0 \\
->>>>>>> e00b69484dd64caa8c9f36dab7579ddee7715203
 		\hline
 	\end{tabular}
 	\caption{ Parameter values of our baseline image which modified versions of this flame will be compared to. }
@@ -655,22 +651,6 @@ Highlight power is a value (the data type is a *float*) which controls how fast 
 
 [TODO New Approach]
 
-<<<<<<< HEAD
-[TODO Detailed section that explains the gnitty gritty details of everything. provide relevant background information. Why? Why? Why? Provide detailed explanations for every step along the way? What was flam3 doing right? What could have been improved on? What are the pros and cons of the implementation we picked?]
-=======
-[TODO]
-- Write about the new tone mapping operator implementation instead of log scaling and then coloring.
-- Possible Advantages : Hope to cut down on required points
-
-
-###Implementation
-
-[TODO]
-- Detailed section that explains the gnitty gritty details of everything
-- provide relevant background information
-- Why? Why? Why? Provide detailed explanations for every step along the way? What was flam3 doing right? What could have been improved on?
-- What are the pros and cons of the implementation we picked?
->>>>>>> e00b69484dd64caa8c9f36dab7579ddee7715203
 
 
 ## Bibliography
