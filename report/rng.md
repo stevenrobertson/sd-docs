@@ -55,7 +55,7 @@ Where $X_{n+1}$ is the next output and a and m must be picked by the user of
 the algorithm. Here, the problem is not only that to get decent randomness one
 needs to pick $a$ and $m$ carefully (with $m$ closest to the computer’s largest
 representable integer and prime) and $a$ equal to one of the following
-values [CITE 2]:
+values [@Press1986]:
 
 \addfontfeatures{Numbers={Lining,Monospaced}}
 
@@ -73,12 +73,12 @@ Table: Acceptable values for LCG modulus $m$ and multiplier $a$.
 There are other choices for $m$, with their respective values for $a$, but those sets also have rules and may not apply to certain computers if they don’t have the required hardware.
 
 ## ISAAC
-An alternative that sounds like a better choice is ISAAC, it stands for Indirection, Shift, Accumulate, Add, and Count [CITE 3]. The way it works is by using an array of 256 4-byte integers which it transforms by using the instructions that define its name and places the results in another array of the same size. As soon as it finishes the last number, it uses that array to do the same process again. The advantages of this PRNG are that it is fast since it only takes 19 for each 32-bit output word, and that the results are uniformly distributed and unbiased.[CITE 4] The disqualifying disadvantage is that even though the GPUs; which we will use for this project, have enough global memory, they don’t have the memory required to be able to have arrays of size 256.
+An alternative that sounds like a better choice is ISAAC, it stands for Indirection, Shift, Accumulate, Add, and Count [@anderson1996fast]. The way it works is by using an array of 256 4-byte integers which it transforms by using the instructions that define its name and places the results in another array of the same size. As soon as it finishes the last number, it uses that array to do the same process again. The advantages of this PRNG are that it is fast since it only takes 19 for each 32-bit output word, and that the results are uniformly distributed and unbiased[@JenkinsIsaac]. The disqualifying disadvantage is that even though the GPUs; which we will use for this project, have enough global memory, they don’t have the memory required to be able to have arrays of size 256.
 
 ## Mersenne Twister
 “Mersenne” in its name because it uses Mersenne primes as seeds (Mersenne primes are prime numbers that can be represented as $2p -1$ where p is also a prime number). This PRNG uses a twisted linear feedback shift register (LFSR), which uses the XOR instruction to create the output, which then becomes part of the values that are being XORed. The “twist” in its name means that not only do values get XORed and shifted, but they also get tampered and there is state bit reflection.
 
-It is a good choice for this project for several reasons; it is sufficiently fast for this project, it has a period of 2^19937 -1 (meaning the random numbers will not repeat for that many iterations), and it can be implemented on a GPU, however, it requires a large amount of static memory on the GPU, and it operates in batch mode, meaning that when the pool runs out of random bits, the entire pool must be regenerated at once. This can be handled with CUDA (NVIDIA’s parallel computing architecture)[CITE 5], but its not the fastest or simplest solution.
+It is a good choice for this project for several reasons; it is sufficiently fast for this project, it has a period of 2^19937 -1 (meaning the random numbers will not repeat for that many iterations), and it can be implemented on a GPU, however, it requires a large amount of static memory on the GPU, and it operates in batch mode, meaning that when the pool runs out of random bits, the entire pool must be regenerated at once. This can be handled with CUDA (NVIDIA’s parallel computing architecture), but its not the fastest or simplest solution.
 
 ## Multiply With Carry
 This algorithm might seem similar to the typical one for a LCG, but it differs when it comes to how the new iteration values are chosen.
@@ -131,20 +131,11 @@ REFERENCES
 
 [1] http://www.azillionmonkeys.com/qed/random.html
 
-[3] Robert J. Jenkins Jr., ISAAC. Fast Software Encryption 1996, pp41–49.
-
-[2] Numerical Recipies,The Art of Scientific Computing, 3rd edition, William H.Press, Saul A. Teukolsky, William T. Vetterling, Brian P. Flannery, Cambridge University Press
-
-[4] http://www.burtleburtle.net/bob/rand/isaacafa.html
-
-[5] http://nvidia.com
-
 [6] http://www.rlmueller.net/MWC32.htm
 
 [7] Image generated and published within the pLab-random number generators project http://random.mat.sbg.ac.at/
 
 [8] http://random.mat.sbg.ac.at/tests/theory/spectral/
 
-[9] Michael Barnsley, "Fractals Everywhere", Academic Press, Inc., 1988.
 
 
