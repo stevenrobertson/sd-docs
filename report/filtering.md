@@ -263,7 +263,7 @@ techniques for accelerating denoising algorithms on GPU's.
 - Adaptive Density Estimation Filter
   The adaptive density estimation filter used by flam3 is a simplified algorithm
   of the methods presented in Adaptive Filtering for Progressive Monte Carlo 
-  Image Rendering [@Draves2003].  The algorithm creates a 2 dimensional histogram 
+  Image Rendering [@flam3].  The algorithm creates a 2 dimensional histogram 
   with each pixel representing a bin.  For each sample located in the spatial 
   area of a pixel, the value for that bin is incremented.  Kernel estimation is 
   then used to blur the image, with the size of the kernel being related to the 
@@ -417,7 +417,23 @@ portion of the signal fitting inside in the window leaving discontinuities at
 the edges (unless the signal is entirely within the limits of the window).
 Filter shapes available in flam3 are the Guassian (default), Bell, Blackman, 
 Box, Bspline, Hamming, Hanning, Hermite, Mitchell, Quadratic, and Triangle 
-[http://code.google.com/p/flam3/wiki/SpatialFilterExamples].
+[http://code.google.com/p/flam3/wiki/SpatialFilterExamples].  See Figure 
+\ref{nofilter} for fractal flame image without filtering and Figure 
+\ref{gaussianfilter} for fractal flame image with Gaussian filtering.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics{./filtering/nofilter.png}
+	\caption{Electric Sheep 244 36724 fractal flame with no filtering}
+	\label{nofilter}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics{./filtering/original.png}
+	\caption{Electric Sheep 244 36724 fractal flame with Gaussian filtering}
+	\label{gaussianfilter}
+\end{figure}
   
 ## Motion Blurring
 
