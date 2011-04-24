@@ -595,12 +595,15 @@ area to remain in the cache [@Cook1987]. A similar technique is employed by
 graphics chips designed for low-power applications, such as those in the
 PowerVR architecture [@PowerVR2009].
 
-As accumulations cannot be bounded *a priori* in the flame algorithm, any
-tile-based approach must be implemented after the iteration step, splitting
-accumulation information across the entire image domain into discrete queues
-for each tile. The mechanics of the queue system depend on several
-implementation choices; to avoid ambiguity, it will be described after the
-techniques on which it depends.
+As accumulation regions cannot be bounded *a priori* in the flame algorithm,
+dynamic point queues must be maintained throughout the rendering process. The
+feasibility of maintaining these queues depends on many parameters, and exactly
+one combination of parameters has been found which meets all necessary
+criteria. The techniques used to attain this particular configuration are
+presented below, followed by a description of the integrated algorithm. Because
+of the sensitivity of this approach to configuration changes, extreme measures
+are described which provide seemingly insufficient benefit for their cost,
+until they are understood in the context of the entire approach.
 
 ### Representing an iteration
 
@@ -618,8 +621,8 @@ indices, so representing the location in intermediate stages by accumulator
 index loses no information as compared to normal accumulation. Use of an
 integer format for representing location is also useful. Typically, flames are
 rendered using resolution and supersampling settings which require a number of
-accumulators less than $2^{24}$, indicating that the index can be fully
-represented as a 24-bit integer.
+accumulators in the neighborhood of $2^{24}$, indicating that the index can be
+fully represented as a 25-bit integer.
 
 The color values in an IFS accumulation are calculated from the IFS color
 coordinate by performing a linear blending between the two closest samples of
@@ -631,7 +634,7 @@ integer. Both the color coordinate and the visibility transform are bounded on
 $[0, 1]$, so a fixed-point representation can achieve a full-precision
 representation with 22 bits per coordinate.
 
-Together, this results in a total of 78 bits of information. On an architecture
+Together, this results in a total of 79 bits of information. On an architecture
 designed entirely around 32-bit word sizes, this size is awkward and
 ineffecient. Fortunately, this algorithm is a Monte Carlo simulation with a
 very high sample count; since all samples in a given image region are averaged,
@@ -694,26 +697,24 @@ additional bit can be extracted: whether or not the point is written to a
 queue. Discarding half of the points that were computed to provide an accurate
 long-run density intuitively seems much more severe than discarding half of the
 bits to recover an accurate density value, yet the principles are the same;
-dithering works just as well with one bit as with eight. There are pathological
-cases in which this technique could result in additional shot noise in dark
-image regions, but this can be solved by simply increasing the number of
-iterations on such images, and is in any case unlikely to appear in practice.
-
-### Reducing accumulator size
+dithering works just as well with one bit as with eight.  In some
+circumstances, the consolidation queue may remove enough redundancy from the
+address lines to allow more traditional storage of this information in the
+upper bits of the address. Since the framebuffer configuration is available
+during code generation, the appropriate scheme can be selected automatically.
 
 Even at a mere 32 bits per sample, queueing every sample of a high resolution
-flame would exhaust a GPU's memory[^queuesize]. Periodically, the queue for
-each tile must be flushed to the accumulators, involving at least one write for
-every sample in the tile. Reducing the size of an accumulator increases the
-number of samples that can fit inside a single tile, thus requiring fewer
-tiles. This leaves more space for each tile queue, allowing more points to be
-processed per flush.
+flame would exhaust a GPU's memory[^queuesize]. As a result, output queues must
+be managed in real-time by threads running on the device, rather than in an
+offline fashion by the CPU. To remain within the bounds of this algorithm, the
+flushing process must operate over as large a range as possible, a task made
+possible by the techniques of the next two sections.
 
 [^queuesize]: $(1920 \cdot 1080) \, \text{pixels} \cdot 2000 \,
 \text{samples}/\text{pixel} \cdot 4 \, \text{bytes}/\text{sample} = 16588800000
 \, \text{bytes}$
 
-#### Color subsampling
+### Color subsampling
 
 Most rendered flames are compressed with the JPEG image codec or
 the H.264 video codec. These codecs, and many others, reduce the
@@ -760,7 +761,7 @@ image components, with a unique sampling rate in a separate plane. Assuming an
 efficient data alignment exists, this scheme uses no more memory than an
 interleaved format, and retains the benefits of linear addressing.
 
-#### Efficient representation
+### Efficient representation
 
 The log-scaling process performed to compress the high-dynamic-range flame into
 the display image's dynamic range is explicitly designed to remove the
@@ -798,9 +799,7 @@ than for an L2 miss, so we hit the ceiling at about the same rate.
 Due to extreme cache pressure and a limited number of atomic instructions, the
 most efficient solution which accomodates the large dynamic range of
 intermediate image formats in the minimum number of bits is the implementation
-of a software floating-point format. Density information is used differently
-from color information, and is expected to be sampled differently as well. As a
-result, we use different representations for these two values.
+of a software floating-point format.
 
 The 32-bit datapath of a GPU makes using values which fit evenly into that
 width. Since the density value scales all channels in the output image, at
@@ -836,12 +835,48 @@ dithering. Finally, perform an atomic addition to the value in global memory.
 \addfontfeatures{Numbers=OldStyle}
 
 This algorithm can be implemented in as few as ten operations, including the
-generation of a random number for the purposes of dithering. Two of those
-operations may require access to memory — the initial exponent read,
-followed by the actual addition — and both of these would require access to
-atomic units.
+generation of a random number for the purposes of dithering. Fermi devices can
+also read directly from shared memory in certain circumstances, shaving another
+operation off the average time required. Compared to an atomic, 32-bit floating
+point addition, this is still a considerable penalty; however, using 32-bit
+numbers provides insufficient cache coverage, as noted below, so this option is
+not acceptable.
 
-[TODO: finish the rest of this]
+Since a more compact notation is required, the only available options are
+converting to and from half-precision floating point values, which has reduced
+precision, is susceptible to bias as a value grows, and requires at least five
+operations; half-precision with dither, which eliminates the bias but brings
+the total number of operations to twelve; and half-width integer, which
+requires complicated overflow handling. Half-width integer accumulation is a
+reasonable choice for density accumulation, but is a poor choice for color
+values, where a choice must be made between frequent overflow handling and
+significant loss of data in darker image regions.
+
+### Shared memory writeback
+
+The most efficient method for modifying data using a heterogeneous write order
+is manual management in shared memory. While shared memory and L1 share the
+same SRAM and local controllers, accesses to L1 use a different data path than
+accesses to shared memory which incurs a several cycle penalty. Further,
+written values are discarded from L1 immediately, and each L1 miss requires a
+128-byte read from L2, which incurs a delay even when that data is in L2.
+Atomic writes to L2 also have reduced throughput and increased latency compared
+to shared memory.
+
+Shared memory, however, is scarce. To attain reasonable occupancy, at least
+1024 iterating threads must be present on a device; the swap buffers associated
+with these threads occupies at least 4K, and the consolidation queues,
+discussed later in this section, occupy another 16K. With administrative
+overhead, this information consumes no less than half of the 48K maximum
+available shared memory on each core. Accumulations must therefore be conducted
+in under 24K of RAM.
+
+Using the 16-bit software floating-point method, as well as 2× subsampling of
+color information, each accumulator requires an average of 3.5 bytes of
+storage. To enable fast, radix-based binning, the number of bins in the final
+accumulation step must be a power of two. Using these parameters, we find that
+the final bin step requires
+
 
 <!--
 
