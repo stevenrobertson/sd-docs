@@ -1,9 +1,14 @@
 # Design summary
 
-This implementation of the fractal flame library is split into several Haskell
-libraries, with a small front-end application for demonstration purposes.
-Together, these programs build, run, and retrieve the results of a CUDA kernel.
-The actual rendering is done entirely on the CUDA device.
+This implementation of the fractal flame algorithm is split into several
+Haskell libraries, with a small front-end application for demonstration
+purposes. Together, these programs build, run, and retrieve the results of a
+CUDA kernel. The actual rendering is done entirely on the CUDA device.
+
+This chapter provides an overview of the method of operation of the software
+produced as part of this project. It also includes background information and
+rationale on those portions of the project which have not been covered
+elsewhere in the document.
 
 ## Host software
 
@@ -41,39 +46,49 @@ been scheduled. Once any render is complete, its final framebuffer is copied
 from the device, and an output thread is spawned to save the contents of this
 image to disk.
 
-[TODO: go into excruciating detail]
+### `flam3-hs` and `flam3-types`
 
-<!--
-- flam3-types: various interpolation strategies. Somewhat heavyweight library.
-  Eventually, may want to move away from binding flam3 to allow for more
-  flexibility in interpolation, and exploration of genome manipulation without
-  the full set of Haskell dependencies.
+The `flam3` library is written in C, and is designed to be used as a dynamic
+library. It uses POSIX facilities, and some features are only enabled when
+compiling and linking with GCC. Cross-platform support is partially
+implemented, allowing the library to be built on Windows with MSVC++, but the
+process is not trivial. Additions of new features, such as variations,
+filtering modes, and empirical algorithm tunings, require modifications to the
+extremely large data structures used to store genome information. These
+binary-incompatible changes require foreign function interfaces to be tightly
+coupled to particular versions of `flam3`.
 
-- flam3-hs: A standard Haskell FFI binding. Wraps only a small subset of the
-  functions in that library, but that's all we need. To preserve
-  forward-compatibility against data structures that are added to from release
-  to release, the library only allows transforms to be read in binary format,
-  another reason why it's good we split types off.
+To ensure that code produced by this project is cross-platform and not strictly
+dependent on particular `flam3` versions, the bindings to the flame library are
+split across two libraries. `flam3-types` defines Haskell datatypes which are
+capable of expressing a genome, as well as a basic parser for flames. The
+genome datatypes are specifically crafted to allow maximum compatibility
+without breaking type safety, so that later feature additions do not require
+changes to existing code where-ever possible. `flam3-types` does not depend on
+the `flam3` library, so that it is maximally portable.
 
-- While not mentioned above, Shard forms the underpinning of the `cuburn`
-  library; the device code contained in `cuburn` is actually written entirely
-  in the Shard language. Shard is still in the prototype stage.
+For the purposes of interpolation and compatibility, `flam3-hs` provides
+Haskell bindings to `flam3`. This requires linking to the `flam3` library,
+which presents a number of practical problems on Windows; as a result, it is
+possible to use the `cuburn` library without `flam3-hs`, although some features
+will be disabled. This FFI library maintains forward compatibility with data
+structures by preventing them from being serialized from their `flam3-types`
+counterparts; while the raw data can be maintained for fast consecutive
+function calls, the only means of turning a native Haskell genome into one
+compatible with `flam3` is to use XML as an intermediate format.
 
-- cuburn: contains the Shard code. Also contains a number of helper functions.
+### Shard
 
-## Host-device interaction
+Shard is the foundation of the `cuburn` library. Shard is an embedded
+domain-specific language for GPU programming which extends and modifies
+Haskell's syntax without sacrificing the parent language's expressiveness and
+safety.
 
-After the kernel is uploaded to the device, certain execution resources — those
-that will remain resident across the lifetime of the kernel — are prepared by
-the software. These resources include the initial states for the per-thread
-multiply-with-carry random number generators (described further in Chapter
-\ref{ch:rng}), the global accumulation buffers, and the global fast-allocation
-pool.
+[TODO: figure out what to say and what to ignore about shard.]
 
-To begin rendering, the host invokes the rendering kernel across the device
-according to the execution pattern determined during the compilation process.
+### Cuburn
 
--->
+[TODO: write about cuburn]
 
 ## Device software
 
@@ -188,4 +203,4 @@ the work-group once again waits for data by polling global memory.
 
 ### Filtering
 
-
+[TODO: filtering subsection]
