@@ -19,6 +19,7 @@ $else$
 $endif$
 \usepackage{amssymb,amsmath}
 \usepackage{wrapfig}
+\usepackage{afterpage}
 \usepackage[english]{babel}
 
 \usepackage{fontspec,xltxtra,xunicode}
