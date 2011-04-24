@@ -1,4 +1,4 @@
-Cuburn.md
+executive_summary.md
 fractal.md
 flame_algorithm.md
 other_impls.md

@@ -36,7 +36,7 @@ graphic which results in what's commonly known as "jaggies"
 \begin{figure}[h!]
 	\centering
 	\includegraphics{./filtering/Aliasing_aSmall.png}
-	\caption{Left: aliased image, right: antialiased image}
+	\caption{Left: aliased image, right: antialiased image. Reprinted with permission under the GNU Free Documentation License, Version 1.2. Author: Mwyann, Date: 7/29/2009}
 	\label{aliasing}
 \end{figure}
 
@@ -142,7 +142,7 @@ samples are far enough away from each other [@Beets2000].  See Figure
 \begin{figure}[h!]
 	\centering
 	\includegraphics{./filtering/SuperSamplingSmall.png}
-	\caption{From left to right: Ordered Grid algorithm, Rotated Grid algorithm, Jitter algorithm, Poisson algorithm, Random algorithm}
+	\caption{From left to right: Ordered Grid algorithm, Rotated Grid algorithm, Jitter algorithm, Poisson algorithm, Random algorithm.  Reprinted with permission under the GNU Free Documentation License, Version 1.2.  Author: xompanthy, Date: 8/20/2007.}
 	\label{SuperSampling}
 \end{figure}
 
@@ -247,38 +247,31 @@ regions, so that a single sample in the middle of an otherwise-black image
 region causes a jump of, say, 5% of the total luminance scale of the final
 image. This is noticeable.
 
-When we say "dark", we mean pre-log-filtering. Since FLAM3 does color
+When we say "dark", we mean pre-log-filtering. Since flam3 does color
 clamping, it's not uncommon to produce images where most of the energy lies
 outside of the final representable intensity scale. In those images, even
 mid-level tones have relatively few samples, and have visible point noise.
 
 ### Denoising a flame
 \label{denoisingsection}
-To combat this, FLAM3 does density estimation filtering. Within dark regions
-of the image, it applies a wider kernel, or a smaller blur. ...
-
-Problems: difficult to accelerate on GPU; usually requires hand tuning; it's
-"just another blur" which can reduce image details and textures. 
-
-- Kernel Estimator
-  Besides for the histogram, the kernel estimator is probably the most commonly 
-  used and studied density estimator [@Silverman1986].  It is a non-parametric way of 
-  estimating the probability density function of a random variable.  Kernel 
-  density estimation is a fundamental data smoothing problem where inferences 
-  about the population are made, based on a finite data sample [5].
+To remove noise, flam3 does density estimation filtering.  This means that 
+darker regions, or regions with fewer samples, are filtered with a smaller blur.  
+This section covers denoising algorithms, including the Adaptive Density 
+Estimation Filter employed by the standard flam3 implementation as well as new 
+techniques for accelerating denoising algorithms on GPU's.
 
 - Adaptive Density Estimation Filter
-  The adaptive density estimation filter used by FLAM3 is a simplified algorithm
+  The adaptive density estimation filter used by flam3 is a simplified algorithm
   of the methods presented in Adaptive Filtering for Progressive Monte Carlo 
-  Image Rendering [CITE].  The algorithm creates a 2 dimensional histogram with 
-  each pixel representing a bin.  For each sample located in the spatial area 
-  of a pixel, the value for that bin is incremented.  Kernel estimation is then 
-  used to blur the image, with the size of the kernel being related to the 
+  Image Rendering [@Draves2003].  The algorithm creates a 2 dimensional histogram 
+  with each pixel representing a bin.  For each sample located in the spatial 
+  area of a pixel, the value for that bin is incremented.  Kernel estimation is 
+  then used to blur the image, with the size of the kernel being related to the 
   number of iterations in a bin.  Lower number of iterations in a bin (low 
   sample density areas) lead to larger kernel sizes and increased blurring.  
   Higher number of interations in a bin (high sample density areas) lead to 
-  smaller kernel sizes and decreased blurring.  Specifically, the kernel width 
-  can be determined by the following relationship:
+  smaller kernel sizes and decreased blurring [@Suykens2000].  Specifically, the 
+  kernel width can be determined by the following relationship:
     
     ![Kernel Width Equation](filtering/KernelWidthEqn.png)
     
@@ -287,7 +280,8 @@ Problems: difficult to accelerate on GPU; usually requires hand tuning; it's
   width that the kernel can be and the Alpha value determines the estimator 
   curve to use.  The ability to adjust the width of the kernel according to 
   how many samples there are spatially increases the quality of the image by 
-  limiting the blur in the more accurate areas with higher sample density.
+  limiting the blur in the more accurate areas with higher sample density.  
+  [@Suykens2000]
 
 - Gaussian Convolution
   Gaussian convolution filtering is a weighted average of the intensity of the 
@@ -296,7 +290,7 @@ Problems: difficult to accelerate on GPU; usually requires hand tuning; it's
   distance between the pixels and not their values.  For instance, a bright 
   pixel has a strong influence over an adjacent dark pixel although these two 
   pixel values are quite different.  As a result, image edges are blurred 
-  because pixels across discontinuities are averaged together [7].
+  because pixels across discontinuities are averaged together [@Paris2008].
 
 - Bilateral filter
   The bilateral filter is also defined as a weighted average of nearby pixels, 
@@ -304,21 +298,22 @@ Problems: difficult to accelerate on GPU; usually requires hand tuning; it's
   The difference is that the bilateral filter takes into account the difference
   in value with the neighbors to preserve edges while smoothing.  The key idea 
   of the bilateral filter is that for a pixel to influence another pixel, it 
-  should not only occupy a nearby location but also have a similar value.
+  should not only occupy a nearby location but also have a similar value.  
+  [@Paris2008]
 
   The bilateral filter is controlled by two parameters: σs and σr.  Increasing 
   the spatial parameter,  σs, smooths larger features.  Increasing the range 
   parameter,  σr, makes the filter approximate the Gaussian convolution filter 
   more closely.  An important characteristic of this filter is that the 
   parameter weights are multiplied; no smoothing will occur with either of these 
-  parameters being near zero [7].
+  parameters being near zero.  [@Paris2008]
 
   Iterations can be used to generate smoother images similar to increasing the 
   range parameter, except for being able to preserve strong edges.  Iterating 
   tends to remove the weaker details in a signal or image and is desirable for 
   applications such as stylization that seek to abstract away the small details.
   Computational photography techniques tend to use a single iteration to be 
-  closer to the original image content [7].
+  closer to the original image content.  [@Paris2008]
 
 - Nonlocal Means
   The nonlocal means (NL-Means) algorithm is a relatively new solution to the
@@ -326,7 +321,7 @@ Problems: difficult to accelerate on GPU; usually requires hand tuning; it's
   regularity, the nonlocal means filter looks for and exploits spatial geometric
   patterns.  It will only use pixels that match the geometic correlation in the
   local area causing irregular image noise to be canceled out.  This means a
-  more accurate color selection for the pixel in question.
+  more accurate color selection for the pixel in question.  [@Huang2009]
   
 - Permutohedral Lattice
   The permutohedral lattice is a data structured designed to improve the 
@@ -334,15 +329,15 @@ Problems: difficult to accelerate on GPU; usually requires hand tuning; it's
   and nonlocal means filtering.  It is a projection of the scaled grid 
   (d+1)Z^(d+1) along the vector 1-> = [1,...,1] onto the hyperplane
   H_d:x->.1-> = 0 and is spanned by the projection of the standard basis for 
-  (d+1)Z(d+1) onto H_d [Adams et al, 2010].  [TODO: Show permutohedral lattice 
-  matrix].  Each of the columns of B_d are basis vectors whose coordinates sum 
-  to zero and have a consistent remainder modulo d+1 which is how points on the 
-  lattice are determined (the lattice point coordinates have a sum of zero and 
-  remainder modulo d+1).  Lattice points with a remainder of k can be described 
-  as a "remainder-k" point.  The algorithm works by placing pixel values in a 
-  high-dimensional space, performing the blur in that space, then sampling the 
-  values at their original locations.  These three steps are often referred to 
-  as splatting, blurring, and splicing, respectively [Adams, 2010].
+  (d+1)Z(d+1) onto H_d [Adams et al, 2010].  Each of the columns of B_d are 
+  basis vectors whose coordinates sum to zero and have a consistent remainder 
+  modulo d+1 which is how points on the lattice are determined (the lattice 
+  point coordinates have a sum of zero and remainder modulo d+1).  Lattice 
+  points with a remainder of k can be described as a "remainder-k" point.  The 
+  algorithm works by placing pixel values in a high-dimensional space, 
+  performing the blur in that space, then sampling the values at their original 
+  locations.  These three steps are often referred to as splatting, blurring, 
+  and splicing, respectively.  [@Adams2010]
   
   Using a permutohedral lattice for n values in d dimensions results in a space 
   complexity in the order of O(dn) and a time complexity of O(d^2 n).  According 
@@ -358,7 +353,7 @@ Problems: difficult to accelerate on GPU; usually requires hand tuning; it's
   O(d^2 l).  The final step is the slicing stage which is similar to the 
   splatting stage, except done in reverse order; barycentric weights are used to 
   pull pixel values out of the permutohedral lattice.  The entire algorithm has 
-  a time complexity of O(d^2 (n+l)) [Adams, 2010].
+  a time complexity of O(d^2 (n+l)).  [@Adams2010]
 
 - Gaussian KD-Trees
   The Gaussian filter, bilateral filter, and nonlocal means filters are 
@@ -375,14 +370,14 @@ Problems: difficult to accelerate on GPU; usually requires hand tuning; it's
   data structure, the space and time complexity can be decreased significantly.  
   These algorithms typically have a complexy of O(d^n) or O(n^2) whereas the 
   kd-tree algorithm will have a space complexity of O(dn) and a time complexity 
-  of O(dn log n) [Adams et al].
+  of O(dn log n).  [@Adams2009]
   
   A kd-tree is a binary tree data structure used to store a finite number of 
-  points from a k-dimensional space [Moore, 1991].  Each leaf stores one point 
-  and each inner node represents a d-dimensional rectangular cell [Adams et al].  
+  points from a k-dimensional space [@Moore1991].  Each leaf stores one point 
+  and each inner node represents a d-dimensional rectangular cell [@Adams2009].  
   The inner node stores the dimension n_d in which it cuts, value n_cut on the 
   dimension to cut along, the bounds of the dimension n_min and n_max, and 
-  pointers to its children n_left and n_right [Adams et al].  For this 
+  pointers to its children n_left and n_right [@Adams2009].  For this 
   implementation of the kd-tree, n_min and n_max have been added in addition to 
   the standard data structure. 
   
@@ -403,7 +398,7 @@ Problems: difficult to accelerate on GPU; usually requires hand tuning; it's
   the maximum number of samples that should be returned.  The query will then 
   find and return all the values and weights of pixels around that pixel, up to 
   the standard deviation and maximum number of samples.  The complexity of 
-  performing queries is expected to be O(dn log n) [Adams et al].
+  performing queries is expected to be O(dn log n) [@Adams2009].
   
   What's great about using Gaussian kd-trees to improve these algorithms is that 
   not only is it faster serially but can have portions of it parallelized over a 
@@ -419,10 +414,10 @@ A **window function** is a mathematical function that is zero-valued outside of
 some chosen interval while manipulating the values inside that interval.  The 
 simplest window is the rectangular window.  It simply takes a chunk the 
 portion of the signal fitting inside in the window leaving discontinuities at 
-the edges (unless the signal is entirely within the limits of the window) [6].
+the edges (unless the signal is entirely within the limits of the window).
 Filter shapes available in flam3 are the Guassian (default), Bell, Blackman, 
 Box, Bspline, Hamming, Hanning, Hermite, Mitchell, Quadratic, and Triangle 
-[8].
+[http://code.google.com/p/flam3/wiki/SpatialFilterExamples].
   
 ## Motion Blurring
 
