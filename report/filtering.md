@@ -47,7 +47,7 @@ contained in a fragment can include texture, shader, color, Z location, and
 other such data.  Each pixel is made up of one or more fragments, with each 
 fragment representing a triangle.  Problems arise when the pixel is sampled from 
 only one fragment in the pixel.  This causes all the other data from the other 
-fragments to be lossed and will result in an inaccurate image [@Schwarz2009].
+fragments to be lossed and will result in an inaccurate image [@Schwartz2009].
 
 ### Visual image information
 
@@ -370,14 +370,14 @@ techniques for accelerating denoising algorithms on GPU's.
   data structure, the space and time complexity can be decreased significantly.  
   These algorithms typically have a complexy of O(d^n) or O(n^2) whereas the 
   kd-tree algorithm will have a space complexity of O(dn) and a time complexity 
-  of O(dn log n).  [@Adams2009]
+  of O(dn log n).  [@Adams2009a]
   
   A kd-tree is a binary tree data structure used to store a finite number of 
   points from a k-dimensional space [@Moore1991].  Each leaf stores one point 
-  and each inner node represents a d-dimensional rectangular cell [@Adams2009].  
+  and each inner node represents a d-dimensional rectangular cell [@Adams2009a].  
   The inner node stores the dimension n_d in which it cuts, value n_cut on the 
   dimension to cut along, the bounds of the dimension n_min and n_max, and 
-  pointers to its children n_left and n_right [@Adams2009].  For this 
+  pointers to its children n_left and n_right [@Adams2009a].  For this 
   implementation of the kd-tree, n_min and n_max have been added in addition to 
   the standard data structure. 
   
@@ -398,7 +398,7 @@ techniques for accelerating denoising algorithms on GPU's.
   the maximum number of samples that should be returned.  The query will then 
   find and return all the values and weights of pixels around that pixel, up to 
   the standard deviation and maximum number of samples.  The complexity of 
-  performing queries is expected to be O(dn log n) [@Adams2009].
+  performing queries is expected to be O(dn log n) [@Adams2009a].
   
   What's great about using Gaussian kd-trees to improve these algorithms is that 
   not only is it faster serially but can have portions of it parallelized over a 
