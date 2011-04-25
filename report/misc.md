@@ -118,7 +118,8 @@ Instead of attempting to replicate the control flow of the templated code
 following feature analysis, it would be more efficient to combine both stages;
 have the information needed to perform memory packing on the host in the same
 location within the program source as the description of the device-side
-operations to load it. Shard was written to provide this ability.
+operations to load it. Shard was written as part of this project to provide
+this ability.
 
 Shard is an embedded domain-specific language for the dynamic creation of GPGPU
 programs, written in Haskell. As an EDSL, Shard uses native language syntax to
@@ -190,10 +191,15 @@ wherein every segment of device code is exercised at least once. Such testing
 cannot provide assurances on hidden interaction errors, however, and is no
 subsitute for strong type safety.
 
-[TODO: shore this up, could use a bit stronger of a conclusion]
-
+Note that Shard remains under heavy development; as a result, syntax examples
+and implementation details are not yet available. Several fully-working
+prototype implementations, as well as libraries that use similar methods in
+different domains, provide strong evidence that the concept is viable. Further
+revisions are focused on finding the correct balance between strictness of type
+system verification and conciseness of expressed code.
 
 # Function selection
+\label{ch:funsel}
 
 The GPU relies on vectorization to attain high performance. As a result,
 divergent warps carry a heavy performance penalty; even one divergent thread in
@@ -496,8 +502,10 @@ in the unexpected event that it is not, the best solution may simply be to
 allow threads to diverge. This will cause extra computation to be done, but in
 the end may not significantly impact rendering speed; as it turns out, the
 bottleneck on current-generation GPUs is likely to lie in the memory subsystem.
+This issue is discussed further in Chapter \ref{ch:accum}.
 
 # Accumulating results
+\label{ch:accum}
 
 The simplest transform functions can be expressed in a handful of instructions;
 with careful design of fixed loop components, many common flames may require an
@@ -852,7 +860,7 @@ reasonable choice for density accumulation, but is a poor choice for color
 values, where a choice must be made between frequent overflow handling and
 significant loss of data in darker image regions.
 
-### Shared memory writeback
+### Sharing shared memory
 
 The most efficient method for modifying data using a heterogeneous write order
 is manual management in shared memory. While shared memory and L1 share the
@@ -863,20 +871,13 @@ written values are discarded from L1 immediately, and each L1 miss requires a
 Atomic writes to L2 also have reduced throughput and increased latency compared
 to shared memory.
 
-Shared memory, however, is scarce. To attain reasonable occupancy, at least
-1024 iterating threads must be present on a device; the swap buffers associated
-with these threads occupies at least 4K, and the consolidation queues,
-discussed later in this section, occupy another 16K. With administrative
-overhead, this information consumes no less than half of the 48K maximum
-available shared memory on each core. Accumulations must therefore be conducted
-in under 24K of RAM.
-
 Using the 16-bit software floating-point method, as well as 2× subsampling of
 color information, each accumulator requires an average of 3.5 bytes of
 storage. To enable fast, radix-based binning, the number of bins in the final
-accumulation step must be a power of two. Using these parameters, we find that
-the final bin step requires
-
+accumulation step must be a power of two. Less than 24K of shared memory is
+available, as will be discussed later. Under these parameters, we find that a
+suitable size for the shared-memory accumulation buffer is 4,096 entries,
+consuming 14K of shared memory.
 
 <!--
 
