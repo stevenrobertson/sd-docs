@@ -10,7 +10,7 @@ As unwise as it would be to assume a solution to the current design challenge ha
 
 The justification of presenting fractal geometry lies in the reasoning that the mathematics and properties behind it is not blatantly intuitive and key concepts cannot be hand waved later in this paper. Had the famous equation $z_{n+1} = z^2_n + C$ been intuitive then humans would be able to visualize it, without the aid of computer graphics, as the Mandelbrot Set (Figure \ref{mandelbrot}) and understand its ability to scale infinitely without degradation.
 
-\begin{figure}[h!]
+\begin{figure}[htpb]
 	\centering
 	\includegraphics{./fractal/mandelbrot.png}
 	\caption{The Mandelbrot Set}
@@ -45,7 +45,7 @@ Fractals contain the property of self-similarity. This self-similarity is classi
 
 **Exact Self-Similarity:** This type of self-similarity contains, as its name implies, exact copies of itself repeating at infinitely smaller scales. Classical examples include Sierpinski's gasket or the Koch Curve (Figure \ref{kochcurve}).
 
-\begin{figure}[h]
+\begin{figure}[htpb]
 	\centering
 	\includegraphics{./fractal/koch_curve.png}
 	\caption{The Koch Curve}
@@ -58,7 +58,7 @@ Fractals contain the property of self-similarity. This self-similarity is classi
 **Statistical Self-Similarity:** This type of self-similarity is the weakest and is the type often encountered in the real world. Statistical self-similarity refers to the fact that the object has numerical or statistical measurements that are maintained at different scales. When classifying shapes in nature as fractal-like this definition is being implied. For example, the self-similar aspects of how a tree branches (See Figure \ref{treebranching}) are never found to be exact and sometimes deviate from their expected pattern but still exhibit self similarity in a sense. The definition of statistical self-similarity  account for this and is important because the luxury is not always given to observe concepts in their ideal sense.
 Another classical example is measuring a coastline such as Britain. When scaling the coastline it appears similar to at magnified scales. Additionally, what follows from this is the more accurately one measures the coastline (with a smaller base measurement) the more the length increases. This length increases without limit and contrary to intuition shows that the coastline of a country is infinite.
 
-\begin{figure}[h!]
+\begin{figure}[htpb]
 	\centering
 	\includegraphics{./fractal/tree_branching.png}
 	\caption{Statistical self-similarity found in the branching of trees.}
@@ -70,7 +70,7 @@ Another classical example is measuring a coastline such as Britain. When scaling
 
 Classical dimensionality is often expressed in whole number integer values. Lines have a dimensionality of 1, squares have a dimensionality of 2, and cubes have a dimensionality of 3. This however does not explain how completely a fractal fills a space. Does the Sierpinski's Triangle (Figure \ref{sierpinskitriangle}) cover 1 dimension like a line or 2 dimensions like a triangle? The answer is actually that it contains a dimension that is between the two!
 
-\begin{figure}[h!]
+\begin{figure}[htpb]
 	\centering
 	\includegraphics{./fractal/sierpinski.png}
 	\caption{A visual of Sierpinski's Triangle which has a fractal dimensionality.}
@@ -99,7 +99,7 @@ where $N(\varepsilon)$ is the number of boxes needed to cover the set, $\varepsi
 
 For a line with a known dimensionality of 1 the box counting procedure is performed. The procedure will start with a side length of length 1 and continually half the side length until a recognizable pattern emerges (See Figure \ref{bcline}).
 
-\begin{figure}[h]
+\begin{figure}[htpb]
 	\centering
 	\includegraphics{./fractal/bc_line.png}
 	\caption{Box Counting Dimension Process For a Line}
@@ -108,7 +108,7 @@ For a line with a known dimensionality of 1 the box counting procedure is perfor
 
 The box counting equation can be solved by completing the pattern that shows the rate at which the number of boxes in the grid grow compared to the number of boxes needed to cover the shape as the side length approaches 0. This is shown in Table \ref{bclinetable}.
 
-\begin{table}[h]
+\begin{table}[htpb]
 	\begin{tabular}{|l|l|}
 		\hline
 		\ \textbf{Box Length: }	$\varepsilon$	& \textbf{Number of Boxes:} $N(\varepsilon)$  	\\
@@ -140,7 +140,7 @@ From this table the following formula can be deduced by solving the pattern.
 
 Our box counting procedure coincides with the view that a line has a dimensionality of one. We now use this same box counting procedure to calculate a shape of non integer value dimensionality. Sierpinski's gasket will be used as the example. The procedure will again start with side length of 1 and continually half it until a recognizable pattern emerges (See Figure \ref{bcsierpinski}).
 
-\begin{figure}[h]
+\begin{figure}[htpb]
 	\centering
 	\includegraphics{./fractal/bc_sierpinski.png}
 	\caption{Box Counting Dimension Process For Sierpinski's Gasket}
@@ -150,7 +150,7 @@ Our box counting procedure coincides with the view that a line has a dimensional
 The results are rewritten in the form of powers to expose the pattern.  This is shown in Table \ref{bcsierpinskitable}.
 
 
-\begin{table}[h]
+\begin{table}[htpb]
 	\begin{tabular}{|l|l|}
 		\hline
 		\ \textbf{Box Length: }	$\varepsilon$	& \textbf{Number of Boxes:} $N(\varepsilon)$  	\\
@@ -220,7 +220,7 @@ Strange attractors (See Figure \ref{strangeattractor}) are attractors whose fina
 
 [^propchaos]: When the properties of chaos are referred to what is meant by them is the notation that a point which is close to the attractor will become separated at an exponential rate.
 
-\begin{figure}[h]
+\begin{figure}[htpb]
 	\centering
 	\includegraphics{./fractal/strange_attractor.jpg}
 	\caption{Image of a Strange Attractor}
@@ -230,7 +230,7 @@ Strange attractors (See Figure \ref{strangeattractor}) are attractors whose fina
 ###Random Fractals
 Random fractal's iterative process relies on a non-deterministic process for creation (See Figure \ref{randomfractal}). By applying some process the resulting set or image exhibits fractal-like properties. Many landscapes and plants in nature exhibit this property. For example, mountains are not formed by a deterministic process yet exhibit statistical self-similarity. Fractal landscape generation is a stochastic process which tries to mimic this stochastic process in nature.
 
-\begin{figure}[h]
+\begin{figure}[htpb]
 	\centering
 	\includegraphics{./fractal/random_fractal.png}
 	\caption{Image of a computer generated fractal landscape compared with a mountain landscape}

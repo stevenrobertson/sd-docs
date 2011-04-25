@@ -38,7 +38,7 @@ These transforms can be represented in one of two ways:
 
 2.	By using a transformation matrix. To do this we must use homogeneous coordinates. Homogenous coordinates have the property that preserves the coordinates in which the point refers even if the point is scaled. By using the transformation matrix we can represent the coefficients as matrix elements and combine multiple transformation steps by multiplying the matrices. This has the same effect as multiplying each point by each transform in the sequence. This effectively cuts down the number of multiplications needed- this is worth noting as it will be utilized in our implementation. Figure \ref{affineoperations} shows the operations in which the transformation can perform.
 
-\begin{figure}[h]
+\begin{figure}[htpb]
 	\centering
 	\includegraphics{./flame/sheer_trans_rot_scale.png}
 	\caption{Visual representation of Shear, Translation, Rotation, and Scaling.}
