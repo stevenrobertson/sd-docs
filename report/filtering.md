@@ -36,8 +36,7 @@ graphic, resulting in an image artifact colloquially known as *jaggies*
 [@Yang2009]. See Figure \ref{aliasing} for an example.
 
 \imfig{./filtering/Aliasing_aSmall.png}{Left: aliased image, right: antialiased
-    image. Reprinted with permission under the GNU Free Documentation License,
-    Version 1.2. Author: Mwyann, Date: 7/29/2009}{aliasing}
+    image.}{aliasing}
 
 Graphical images are at the simplest level a collection of discrete color dots,
 or pixels, that are displayed on some graphic medium. These pixels are
@@ -148,9 +147,7 @@ for visual depictions of these algorithms.
 
 \imfig{./filtering/SuperSamplingSmall.png}{From left to right: Ordered Grid
     algorithm, Rotated Grid algorithm, Jitter algorithm, Poisson algorithm,
-    Random algorithm.  Reprinted with permission under the GNU Free
-    Documentation License, Version 1.2.  Author: xompanthy, Date:
-    8/20/2007.}{SuperSampling}
+    Random algorithm.}{SuperSampling}
 
 #### Multisample antialiasing
 
