@@ -96,7 +96,11 @@ renderPDF tmpdir inpath =
         , inpath ]
 
 -- Fix links in bibliography. Could be better.
-urlize (Str "Available:":Space:Str u:xs) = Link [Str u] (u, "") : urlize xs
+urlize (Str "Available:":Space:Str u:xs) = Link [Str u'] (u', "") : urlize xs
+  where u' = fixunderscore u
+        fixunderscore ('\\':'_':xs) = '_':fixunderscore xs
+        fixunderscore (x:xs) = x:fixunderscore xs
+        fixunderscore [] = []
 urlize (Str "DOI:":Space:Str u:xs) =
     Link [Str $ "doi:" ++ u] ("http://dx.doi.org/" ++ u, "") : urlize xs
 urlize x = x
