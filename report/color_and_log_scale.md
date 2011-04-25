@@ -320,7 +320,7 @@ For reference to the reader a baseline image of a detailed flame containing seve
 
 
 #### Color Palette Revisited and Explored
-As mentioned in the *Ad-Hoc Tone Mapping and The Color Palette* (Section \ref{tonemapcolorpalette}) there are 701 standard palettes available. A minute amount of palettes are shown to give the reader an understanding of what a palette may look like. Figure \ref{TODO} shows 4 different palettes applied to the baseline flame. By observing both palette number 1 and 5, you can see that colors become clipped and their is varying degrees of detail loss. There is a careful balance of setting tweaking between brightness, gamma, that must be maintained in order to preserve a higher dynamic range. This is one of the reasons these features exist.
+As mentioned in the *Ad-Hoc Tone Mapping and The Color Palette* (Section \ref{tonemapcolorpalette}) there are 701 standard palettes available. A minute amount of palettes are shown to give the reader an understanding of what a palette may look like. Figure \ref{paletteflame} shows 4 different palettes applied to the baseline flame. By observing both palette number 1 and 5, you can see that colors become clipped and their is varying degrees of detail loss. There is a careful balance of setting tweaking between brightness, gamma, that must be maintained in order to preserve a higher dynamic range. This is one of the reasons these features exist.
 
 
 <!-- move pictures to the end -->
