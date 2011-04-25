@@ -594,14 +594,14 @@ One of the complications of log-scaling is that an exponentially more amount of 
 
 \begin{figure}[htpb]
 	\centering
-	\includegraphics{./color_and_log_scale/flame_palette.png}
+	\includegraphics{./color_and_log_scale/flame_palette.jpg}
 	\caption{4 different predefine color palettes applied to the baseline flame.}
 	\label{paletteflame}
 \end{figure}
 
 \begin{figure}[htpb]
 	\centering
-	\includegraphics{./color_and_log_scale/flame_gamma.png}
+	\includegraphics{./color_and_log_scale/flame_gamma.jpg}
 	\caption{12 different gamma threshold values are presented one the baseline flame.}
 	\label{gammaflame}
 \end{figure}
@@ -609,35 +609,35 @@ One of the complications of log-scaling is that an exponentially more amount of 
 
 \begin{figure}[htpb]
 	\centering
-	\includegraphics{./color_and_log_scale/flame_gamma_threshold.png}
+	\includegraphics{./color_and_log_scale/flame_gamma_threshold.jpg}
 	\caption{12 different gamma threshold values are presented on the baseline flame.}
 	\label{gammathresholdflame}
 \end{figure}
 
 \begin{figure}[htpb]
 	\centering
-	\includegraphics{./color_and_log_scale/flame_hue.png}
+	\includegraphics{./color_and_log_scale/flame_hue.jpg}
 	\caption{12 different hue values are presented to the baseline flame with a non-vibrant color palette.}
 	\label{hueflame}
 \end{figure}
 
 \begin{figure}[htpb]
 	\centering
-	\includegraphics{./color_and_log_scale/flame_brightness.png}
+	\includegraphics{./color_and_log_scale/flame_brightness.jpg}
 	\caption{12 brightness correction values are presented on the baseline flame.}
 	\label{brightnessflame}
 \end{figure}
 
 \begin{figure}[htpb]
 	\centering
-	\includegraphics{./color_and_log_scale/flame_vibrancy.png}
+	\includegraphics{./color_and_log_scale/flame_vibrancy.jpg}
 	\caption{12 different vibrancy values are presented on the baseline flame.}
 	\label{vibrancyflame}
 \end{figure}
 
 \begin{figure}[htpb]
 	\centering
-	\includegraphics{./color_and_log_scale/flame_highlight.png}
+	\includegraphics{./color_and_log_scale/flame_highlight.jpg}
 	\caption{12 different highlight power values are presented on the baseline flame.}
 	\label{highlightflame}
 \end{figure}
