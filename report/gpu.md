@@ -408,12 +408,6 @@ the superscalar GF114 after introducing the Cayman architecture.
 
 ### Shader multiprocessors
 
-NVIDIA refers to the smallest unit of independent execution as a *shader
-multiprocessor*, or SM. This is
-
-
-absolute marketing bollocks. We call it a core.
-
 Each core[^bollocks] in GF110 contains a 128KB register file, two sets of 16
 ALUs, one set of 16 load/store units, and a single set of 4 special function
 units.  It also contains two warp schedulers, assigned to handle even- and
@@ -423,7 +417,9 @@ and other frontend components. We refer to the clock driving the ALUs as the
 "hot clock", and likewise the "cold clock" for the rest of the chip.
 
 [^bollocks]: NVIDIA actually refers to the smallest unit of independent
-execution as a *shader processor*, or SM. This is
+execution as a shader multiprocessor. This is an example of what industry
+observers refer to as *absolute bollocks*. As with most GPGPU developers, we
+use traditional terminology.
 
 Every thread in a warp executes together. At each cold clock, a warp's
 instructions are loaded by the scheduler and issued to the appropriate
