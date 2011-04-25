@@ -26,7 +26,12 @@ The techniques that allow going from a lower dynamic range to a high dynamic ran
 
 By observing common dynamic ranges of some typical mediums as well as various digital file formats we can begin to see why we are limited.
 
-Both the file format technologies in which our images or videos and stored in as well as monitor or paper in which they are viewed on are interrelated limiting factors governing the dynamic range. Various typical contrast values that these scenes can emit or in the case of file formats are capable of representing are seen in Table \ref{hdrtable} [@Kolor].
+Both the file format technologies in which our images or videos and stored in
+as well as monitor or paper in which they are viewed on are interrelated
+limiting factors governing the dynamic range. Various typical contrast values
+that these scenes can emit or in the case of file formats are capable of
+representing are seen in Table \ref{hdrtable}
+[@Kolor].
 
 \begin{table}[h]
 	\begin{tabular}{|l|l|l|}
@@ -165,21 +170,13 @@ This flaw can be seen in Figure \ref{rgbwavelength}. The red, green, and blue co
 
 Some examples of weighted models to calculate brightness are below in Table \ref{brightnessmodel}.
 
-\begin{table}[h]
-	\begin{tabular}{|l|l|}
-		\hline
-		Model					&	Formula	\\
-		\hline
-		Photometric/digital ITU-R		&	$0.2126 \times R + 0.7152 \times G + 0.0722 \times B$		\\
-		\hline
-		Digital CCIR601 				&	$0.299 \times R + 0.587 \times G + 0.114 \times B$		\\
-		\hline
-		HSP Color Model (Percieved Brightness)[@Finley] &	$\sqrt{0.241 \times  R^2 + 0.691 \times G^2 + 0.068 \times  B^2 }$		\\
-		\hline
-	\end{tabular}
-	\caption{Weighted Brightness Calculations. }
-	\label{brightnessmodel}
-\end{table}
+Model                       Formula
+-------------------         ------------------------------
+Photometric/digital ITU-R   $0.2126 \times R + 0.7152 \times G + 0.0722 \times B$
+Digital CCIR601             $0.299 \times R + 0.587 \times G + 0.114 \times B$
+HSP Color Model [@Finley]   $\sqrt{0.241 \times  R^2 + 0.691 \times G^2 + 0.068 \times  B^2 }$
+
+Table: Weighted brightness calculations.
 
 Later, the topic of *brightness correction* is of interest- the act of adjusting the brightness. Flame's brightness can be adjusted however care must be taken so that the minimum and maximum bounds are not exceeded.
 

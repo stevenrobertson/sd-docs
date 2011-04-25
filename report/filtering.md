@@ -348,19 +348,21 @@ more accurate color selection for the pixel in question. [@Huang2009]
 #### Permutohedral Lattice
 
 The permutohedral lattice is a data structured designed to improve the
-performance of high-dimensional Gaussian filters including bilateral filtering
-and nonlocal means filtering. It is a projection of the scaled grid
+performance of high-dim\-ensional Gaussian filters including bilateral
+filtering and nonlocal means filtering. It is a projection of the scaled grid
 $(d+1)\mathbb{Z}^{d+1}$ along the vector $\vec{1} = [1,...,1]$ onto the
 hyperplane $H_d : \vec{x}.\vec{1} = 0$ and is spanned by the projection of the
 standard basis for $(d+1)\mathbb{Z}^{d+1}$ onto $H_d$ [@Adams2010]. Each of the
 columns of $B_d$ are basis vectors whose coordinates sum to zero and have a
 consistent remainder modulo $d+1$, which is how points on the lattice are
 determined; the lattice point coordinates have a sum of zero and remainder
-modulo $d+1$. Lattice points with a remainder of $k$ can be described as a
-"remainder-$k$" point. The algorithm works by placing pixel values in a
-high-dimensional space, performing the blur in that space, then sampling the
-values at their original locations. These three steps are often referred to as
-splatting, blurring, and splicing, respectively [@Adams2010].
+modulo $d+1$.
+
+Lattice points with a remainder of $k$ can be described as a "remainder-$k$"
+point. The algorithm works by placing pixel values in a high-dimensional space,
+performing the blur in that space, then sampling the values at their original
+locations. These three steps are often referred to as splatting, blurring, and
+splicing, respectively [@Adams2010].
 
 Using a permutohedral lattice for $n$ values in $d$ dimensions results in a
 space complexity in the order of $O(dn)$ and a time complexity of $O(d^2 n)$.

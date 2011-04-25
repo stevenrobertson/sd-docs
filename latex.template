@@ -93,6 +93,7 @@ $endif$
 \usepackage[xetex,breaklinks]{hyperref}
 $if(print)$
 \hypersetup{colorlinks=false}
+\usepackage{color}
 $else$
 \hypersetup{linkcolor=blue,citecolor=blue,filecolor=black,urlcolor=blue,colorlinks=true}
 $endif$
