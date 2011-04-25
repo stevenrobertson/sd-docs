@@ -27,7 +27,7 @@ $\left \{  f_{i} : X \mapsto X  \right \}, N \text{ } \epsilon \text{ } \mathbb{
 
 A **metric space** is any space whose elements are points, and between any two of which a non-negative real number can be defined as the distance between the points (e.g. Euclidean Space).
 
-An **affine transformation** from one vector space to another is comprised of a linear transform which gives eitherrotation, scaling, or shear following by a translation. Mathematically this is [@WeissteinAffine]:
+An **affine transformation** from one vector space to another is comprised of a linear transform which gives eitherrotation, scaling, or shear following by a translation. Mathematically this is [@Weissteinaffine]:
 
 $x \mapsto Ax +b$
 
@@ -111,6 +111,8 @@ Translation Matrix
     \end{displaymath}
 
 3. The term **contraction mapping** refers to a mapping which maps two points closer together[@Conrad2010]. The distance between these points is uniformly shrunk. This contraction will be seen when performing the classic Sierpinski Triangle problem . The properties above can be proved by the Contraction Mapping Theorem and because of this proves the convergence of the linear iterated function system presented in this section.
+
+
 
 ###Chaos Game
 \label{chaosgamesection}
@@ -216,6 +218,9 @@ Notice how the next point is the midpoint between the vertex and current point. 
 \clrimfig{./flame/sierpinski_iterations.png}{Sierpinski's Triangle after 1,000,
     7,500, 15,000, and 25,000 iterations.}{sierpinski_iterations}
 
+\clrimfig{./flame/sierpinski_vertex_pull.png}{Illustrative process of the chaos game.}{sierpinski_application}
+	
+	
 The more one stochastically samples, the closer the output image is to the solution of the Iterated Function System being computed.
 
 ###Classical Iterated Function System : Barnsley's Fern
@@ -471,7 +476,7 @@ $c_{f} = \frac{c + c_{f}}{2}$
 Furthermore, when peforming log-density display we run into issues if we are only keeping information about the RGB values associated with each point. By logarithmically scaling each color channel we do not get the desired results. For more information on why please see Section \ref{brightnesssection} on brightness and that red , green, and blue wavelengths are not treated equal. The fractal flame algorithm remedies this by using RGB and also an additional variable called $\alpha$ which is the transparency value. This value is accumulated and scalled by $\frac{\log \alpha}{\alpha}$ at the end of the chaos game.
 
 ####Gamma Correction and Company
-Now that our flame is colored the process is complete, right? Wrong. Many complications still are presented. The next being the concept of gamma correction. To correctly display the flame image on a lower dynamic range (such as an LCD or CRT monitor or printer) we need to map our high dynamic range to the lower dynamic range. A full discussion of this topic can be seen in Section \label{gammasection} and Section \ref{hdrsection}.
+Now that our flame is colored the process is complete, right? Wrong. Many complications still are presented. The next being the concept of gamma correction. To correctly display the flame image on a lower dynamic range (such as an LCD or CRT monitor or printer) we need to map our high dynamic range to the lower dynamic range. A full discussion of this topic can be seen in Section \ref{gammasection} and Section \ref{hdrsection}.
 
 Additional color correction techniques can be applied to the flame. A full survey of what kind of color correction techniques are available and what kind of benefit they provide are mentioned in Section \ref{flamecoloringimpsection}.
 
@@ -569,3 +574,5 @@ This process happens until the final iteration. On the final iteration, many fin
 	\label{flameflowchart3}
 \end{figure}
 }
+
+
