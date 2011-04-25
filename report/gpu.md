@@ -160,7 +160,7 @@ possible to use global memory to do a limited amount of manual
 synchronization, but this is impractical, as global memory accesses
 typically carry high latencies, suffer from bandwidth constraints, have an
 undefined ordering, and heavily penalize multiple writes to the same
-location [CITE myself].
+location [@ThatAsshole].
 
 To facilitate inter-thread cooperation without mandating
 globally-consistent local caches, threads are collected into *work-groups*.
@@ -215,40 +215,37 @@ performance-critical part of a competent implementation.
 
 Across the semiconductor industry, it has become clear that scaling clock
 speed alone is not a realistic way to acheive generational performance
-gains. To deliver the speed needed by graphics applications, both NVIDIA
-and AMD simply pack hundreds of ALUs into each chip. If each ALU required
-an x86-size front-end, the GPU would dim lights for a city block and cook
-the gamer alive [CITE? oh, i hope so]. To avoid such an unpleasant
-situation, the two hardware companies employ three important tricks.
+gains. To deliver the speed needed by graphics applications, both NVIDIA and
+AMD simply pack hundreds of ALUs into each chip. To avoid the gargantuan power
+draws associated with including a full x86-style front-end, the two hardware
+companies employ three important tricks.
 
-The first of these tricks is runtime compilation. In OpenCL, device kernels
-are stored in the C-like language which executes on the device, and are
-only compiled to machine code via an API call made while the program is
-running on the host; CUDA stores programs in an intermediate language, but
-the principle is similar. In both cases, this pushes the responsibility for
-retaining backward compatibility from the ALU frontend (where it would be
-an issue billions of times per second) to the driver (where it matters only
-once per program). Without needing to handle compatibility in hardware,
-the actual instructions sent to the device can be tuned for each hardware
-generation, reducing instruction decode from millions of gates to
-thousands.
+The first of these is runtime compilation. In OpenCL, device kernels are stored
+in the C-like language which executes on the device, and are only compiled to
+machine code via an API call made while the program is running on the host;
+CUDA stores programs in an intermediate language, but the principle is similar.
+In both cases, this pushes the responsibility for retaining backward
+compatibility from the ALU frontend (where it would be an issue billions of
+times per second) to the driver (where it matters only once per program).
+Without needing to handle compatibility in hardware, the actual instructions
+sent to the device can be tuned for each hardware generation, reducing
+instruction decode from millions of gates to thousands.
 
 Another considerable saving comes from dropping the branch predictor. On an
-x86 CPU, the branch predictor enables pipelining and prefetch, and a
-mispredict is costly [CITE]. To axe the branch predictor without murdering
-performance, GPU architectures include features which allow the compiler to
-avoid branches. Chief among these is predication: nearly every operation
-can be selectively enabled or disabled according to the results of a
-per-thread status register, typically set using a prior comparison
-instruction. For many expressions, using the results of a predicate to
-disable writeback can be less costly than forcing a pipeline flush,
-especially when hardware and power savings are taken into account. Drivers
-also generally inline every function call; with thousands of active threads
-and hundreds of ALUs all running the same code, a single large instruction
-cache becomes less expensive than the hardware needed to make function
-calls fast. Perhaps most intuitively, both companies go out of their way to
-inform developers that branches are costly and should be avoided whenever
-possible.
+x86 CPU, the branch predictor enables pipelining and prefetch, and a mispredict
+is costly. To axe the branch predictor without murdering performance, GPU
+architectures include features which allow the compiler to avoid branches.
+Chief among these is predication: nearly every operation can be selectively
+enabled or disabled according to the results of a per-thread status register,
+typically set using a prior comparison instruction. For many expressions, using
+the results of a predicate to disable writeback can be less costly than forcing
+a pipeline flush, especially when hardware and power savings are taken into
+account. Drivers also generally inline every function call; with thousands of
+active threads and hundreds of ALUs all running the same code, a single large
+instruction cache becomes less expensive than the hardware needed to make
+function calls fast. Perhaps most intuitively, both companies go out of their
+way to inform developers that branches are costly and should be avoided
+whenever possible.
 
 The final technique used to save resources on the front-ends is simply to
 share them. A single GPU front-end will dispatch the same instruction to
@@ -354,15 +351,10 @@ The strategy employed by both AMD and NVIDIA is to interleave instructions
 from different threads to each ALU. In doing so, nearly every other
 resource can be pipelined or partitioned as needed to meet the chip's
 desired clockspeed. This technique increases the runtime of a single thread
-in proportion to the number of active threads, but results in a higher
-overall throughput.
-
-The mechanism for performing this interleaving differs between the two
-chipmakers, and is one of the more significant ways these architectures
-differ. Naturally, we'll take a closer look in our analysis throughout the
-rest of the chapter.
-
-[TODO: need to expand this section?]
+in proportion to the number of active threads, but results in a higher overall
+throughput. The mechanism for performing this interleaving differs between the
+two chipmakers, and is one of the more significant ways these architectures
+differ.
 
 ## Closer look: NVIDIA Fermi
 
@@ -388,14 +380,14 @@ In a word, Intel. Larrabee, the larger company's skunkworks project to
 develop stripped-down x86 CPUs with GPU-like vector extensions had the
 potential to grind away NVIDIA's enterprise compute abilities, not because
 of Larrabee's raw performance but because of its partial compatibility with
-legacy x86 code. These chips would be far more power-hungry than any GPU,
-but NVIDIA felt backward compatibility and a simplified learning curve
+legacy x86 code [@Kanter2009a]. These chips would be far more power-hungry than
+any GPU, but NVIDIA felt backward compatibility and a simplified learning curve
 would woo developers away from CUDA, leaving them a niche vendor in the
-enterprise compute market. Worse, Sandy Bridge, the new CPU architecture,
-was to include a GPU on-die, potentially cutting out NVIDIA's
-largest-volume market segments. NVIDIA's response was to invest in Tegra,
-their mobile platform, and to make Fermi an enterprise-oriented,
-feature-laden, unmanufacturable mess.
+enterprise compute market. Worse, Sandy Bridge, the new CPU architecture, was
+to include a GPU on-die, potentially cutting out NVIDIA's largest-volume market
+segments.  NVIDIA's response was to invest in Tegra, their mobile platform, and
+to make the first Fermi devices in the GTX 400 series an enterprise-oriented,
+feature-laden, unmanufacturable mess [@Voicu2010].
 
 As it turns out, Larrabee was all but cancelled, Sandy Bridge graphical
 performace is decidedly lackluster, and TSMC got their 40nm process
@@ -404,7 +396,7 @@ architectures powering the GTX 500 series. These chips are almost identical to
 their respective first-generation Fermi counterparts at the system design
 level; tuning at the transistor level, however, greatly improved yield and
 power consumption, making these devices graphically competitive at their price
-level.
+level [@gtx590].
 
 <!--
 
@@ -417,19 +409,21 @@ the superscalar GF114 after introducing the Cayman architecture.
 ### Shader multiprocessors
 
 NVIDIA refers to the smallest unit of independent execution as a *shader
-multiprocessor*, or SM. This is absolute marketing bollocks. We call it a
-core.
+multiprocessor*, or SM. This is
 
-[FERMI DIAGRAM] (either RWT, B3D, or home-grown)
 
-Each core in GF110 contains a 128KB register file, two sets of 16 ALUs, one
-set of 16 load/store units, and a single set of 4 special function units.
-It also contains two warp schedulers, assigned to handle even- and
-odd-numbered warps, respectively. This area is partitioned so that the
-ALUs, SFUs, memory, and likely register file [TODO: check] run at twice the
-rate of the warp schedulers and other frontend components. We refer to the
-clock driving the ALUs as the "hot clock", and likewise the "cold clock"
-for the rest of the chip.
+absolute marketing bollocks. We call it a core.
+
+Each core[^bollocks] in GF110 contains a 128KB register file, two sets of 16
+ALUs, one set of 16 load/store units, and a single set of 4 special function
+units.  It also contains two warp schedulers, assigned to handle even- and
+odd-numbered warps, respectively. This area is partitioned so that the ALUs,
+SFUs, memory, and register file run at twice the rate of the warp schedulers
+and other frontend components. We refer to the clock driving the ALUs as the
+"hot clock", and likewise the "cold clock" for the rest of the chip.
+
+[^bollocks]: NVIDIA actually refers to the smallest unit of independent
+execution as a *shader processor*, or SM. This is
 
 Every thread in a warp executes together. At each cold clock, a warp's
 instructions are loaded by the scheduler and issued to the appropriate
@@ -547,30 +541,44 @@ increased to 0.88Ghz in Cayman (up from 0.85GHz in Cypress).
 
 ### Memory architecture
 
-[TODO: Finish memory architecture]
+The Cayman architecture uses a memory architecture which is OpenCL-compliant,
+and thus is not dissimilar from that used by Fermi: high-bandwidth but
+high-latency GDDR5 global memory is available for cross-device communication
+and long-term data storage, while fast, core-local shared memory under manual
+control is provided to store the working set and communicate across a core. L1
+texture caches, which are small but achieve extremely high throughput, are
+located in each core, and a small constant cache accomodates the
+parameterization needs of graphics shaders.
 
-Incoherent global read and write caches, separate texture caches. Slow
-atomics.
+Cayman differs considerably from Fermi in its treatment of cache. 512KB of L2
+*read* cache serves to accelerate both texture and gather reads, while a
+separate 64KB cache serves to assist in consolidating writes to reach the
+minimum burst width of GDDR5 and avoid wasting bandwidth on masked bits. These
+caches operate independently, meaning that communication via global memory is
+never cached, and often requires substantial delays to allow all writes to be
+flushed. The global data share, discussed in Section \ref{sect:globalshare}),
+is designed to offer a separate datapath for transactions that need immediate
+coordination.
+
+<!-- this info doesn't get used elsewhere in the document, commenting for now
 
 ### Instruction set
 
-VLIW4 handles parallelizable computations, but can be underscheduled in
-case of register dependency (which happens frequently).  This situation was even
-worse for Cypress since its 5 execution units are not symmetric.  4 of its
-units are for shading and the remaining is used for branch operations.  It is
-difficult for the compiler to schedule these instructions together
-simulatneously and so, branch operations will many times be the only scheduled
-instruction in an instruction word.  Wavefront method of latency hiding. Instead
-of scoreboarding, clauses are used, which always execute to completion on a
-given unit. Considerably simpler design allows higher peak theoretical
-performance but requires a much smarter compiler. Combination of explicit and
-external predication.
+VLIW4 handles parallelizable computations, but can be underscheduled in case of
+register dependency.  This situation was even worse for Cypress since its 5
+execution units are not symmetric.  4 of its units are for shading and the
+remaining is used for branch operations.  It is difficult for the compiler to
+schedule these instructions together simulatneously and so, branch operations
+will many times be the only scheduled instruction in an instruction word.
+
+
+Wavefront method of latency hiding. Instead of scoreboarding, clauses are used,
+which always execute to completion on a given unit. Considerably simpler design
+allows higher peak theoretical performance but requires a much smarter
+compiler. Combination of explicit and external predication.
 
 Because of VLIW, and frequent architecture changes, should definitely use
 OpenCL-level code instead of assembly. [TODO: expand or comment this statement]
-
-
-<!--
 
 ## Vectorization and theoretical performance
 
