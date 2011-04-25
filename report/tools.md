@@ -8,7 +8,7 @@ Standards-compliant OpenCL code which does not rely on vendor-specific
 extensions should run correctly on every compatible device without
 modification, including the newest GPUs from both manufacturers; the standard,
 however, offers no indication that the same code will achieve similar
-*performance* across multiple architectures [CITE?].
+*performance* across multiple architectures [@OpenCLSpec].
 
 The flame algorithm is, in one sense, an embarrassingly parallel problem, and
 thus fits well into the abstract model of computation offered by OpenCL. Yet,
@@ -39,18 +39,18 @@ tool selection first and extensively referencing future chapters.
 
 The fastest compute devices available to consumers, at time of writing, feature
 AMD's Cayman or NVIDIA's Fermi architectures. Cayman devices have dramatically
-higher peak theoretical performance values, but as previously discussed [REF?]
-it is difficult to reach peak throughput due to the nature of the VLIW4
-architecture used. In low-level optimization projects, it may be tempting to
-believe that hand-tuned code can beat even the best optimizing compilers; the
-pragmatic view, however, is that even if such an extraordinary hand-tuning
-effort were to produce faster code, architecture variations in the next GPU
-cycle would likely erase that performance gain. In other words, there is a
-practical limit to how low a project of this scope can delve for optimizations
-and still be successful. With that in mind, we accept the general consensus on
-raw computing power — that Cayman and Fermi are generally well-matched, and the
-winner is workload-dependent [CITE] — and focus on other factors to choose an
-architecture.
+higher peak theoretical performance values, but as discussed in Section
+\ref{sect:cayman}, it can be difficult to reach peak throughput due to the
+nature of the VLIW4 architecture used. In low-level optimization projects, it
+may be tempting to believe that hand-tuned code can beat even the best
+optimizing compilers; the pragmatic view, however, is that even if such an
+extraordinary hand-tuning effort were to produce faster code, architecture
+variations in the next GPU cycle would likely erase that performance gain. In
+other words, there is a practical limit to how low a project of this scope can
+delve for optimizations and still be successful. With that in mind, we accept
+the general consensus on raw computing power — that Cayman and Fermi are
+generally well-matched, and the winner is workload-dependent [@gtx590] — and
+focus on other factors to choose an architecture.
 
 AMD's architecture implements flow control using clauses [REF if this will be
 covered earlier] which execute to completion; each clause specifies the next
@@ -61,8 +61,8 @@ requiring each thread to consume its worst case number of registers at all
 times, whereas Cayman and other AMD architectures allow non-persistent
 resources to be shared. This could significantly increase occupancy of AMD
 cores when the most complex variations are active, helping to hide latency. On
-the other hand, NVIDIA's solution — provde an enormous 128KB [CHECK] register
-file per core — tends to be sufficient to avoid this circumstance.
+the other hand, NVIDIA's solution — provde an enormous 128KB register file per
+core — tends to be sufficient to avoid this circumstance.
 
 AMD executes clauses in wave-fronts [REF again if covered earlier] of 64
 threads, whereas NVIDIA uses a 32-lane warp. Both methods accomodate the
@@ -73,23 +73,25 @@ intra-warp communication without using shared memory. Warp voting is not a
 common activity in graphics operations, but it is a required part of some of
 the optimizations described herein, and in such cases Fermi holds a 32× lead.
 
+\label{sect:globalshare}
+
 Another key differentiator between the two compute platforms is the use of
-cache in main memory access. Cayman devices have 64KB of read cache, and a
-separate 64KB of write cache [CHECK]; the latter is used primarily to extract
-spatial coherency from temporally-coherent data. The separation of concerns
-makes the cache a less costly addition to Cayman devices than Fermi's
-full-featured L2, but does little to accelerate random-access updates to values
-in global memory, and can increase the complexity required to ensure
-consistency of global values.
+cache in main memory access. Cayman devices have 512KB of read cache, and a
+separate 64KB of write cache; the latter is used primarily to extract spatial
+coherency from temporally-coherent data. The separation of concerns makes the
+cache a less costly addition to Cayman devices than Fermi's full-featured L2,
+but does little to accelerate random-access updates to values in global memory,
+and can increase the complexity required to ensure consistency of global
+values.
 
 AMD's solution is the global data store, another 64KB chunk of memory shared
-across all cores [CHECK]. This structure is intended only for inter-work-group
+across all cores. This structure is intended only for inter-work-group
 communication, providing fast and atomic access via a separate address space.
 This anomaly is a useful tool for coordinating access to complex data
 structures, but may simply be a stepping stone on the way to a full cache in
-future architectures [CITE if possible].  For the complex addressing patterns
-needed to support full-rate accumulation, Fermi's L2 seems the more capable
-solution for inter-thread communication.
+future architectures [@Kanter2010].  For the complex addressing patterns needed
+to support full-rate accumulation, Fermi's L2 seems the more capable solution
+for inter-thread communication.
 
 The company behind Cayman has a history of being more open than its competitors
 with technical information, a trend continued with its latest GPU offerings;
@@ -106,8 +108,8 @@ devices is more challenging, and a backend must target a set of primitives that
 changes with each hardware generation while performing device-specific
 optimization itself.  A more realistic solution to take advantage of low-level
 instructions on AMD hardware is to precompile code for AMD hardware and
-monkey-patch in memory [CITE], but this task becomes much more challenging with
-dynamically-assembled code.
+monkey-patch in memory [@whitepixel], but this task becomes much more
+challenging with dynamically-assembled code.
 
 There is no substitute for profiling live code; conjecture on the performance
 of optimized code across multiple architectures is speculative at best. Given
@@ -115,31 +117,35 @@ the need to standardize on a single architecture, the information available
 suggests that NVIDIA's Fermi is more likely to yield the highest performance
 without overwhelming optimization efforts.
 
-[TODO: a paragraph about which model to get?]
-
 ## GPGPU framework
 
 OpenCL is, well, open. Its broad industry support, including stalwart backers
 Apple and AMD, and adoption in the mobile computing space make it likely to be
 the standard of choice for cross-platform development of high-performance
-compute software [CITE?]. It also offers an extension mechanism, similar to the
-one used in OpenGL, to offer a clean path for a vendor-specific hardware or
-driver feature to become a part of the standard without breaking old code.
+compute software [@Kanter2010a]. It also offers an extension mechanism, similar
+to the one used in OpenGL, to offer a clean path for a vendor-specific hardware
+or driver feature to become a part of the standard without breaking old code.
 OpenGL's history presents evidence that vendor support of these extensions is
 important in determining whether the standard will stay current and relevant.
 
-- OpenCL is, erm, open. Supports runtime compilation of device code from C, so
-  we wouldn't have to write a language frontend. Lamentably, however, it lags
-  behind CUDA and hides many core features we need.
+Once again, however, NVIDIA's technological head-start in the GPGPU market is
+large enough to warrant ignoring ideological preferences. Kanter notes that
+OpenCL is "about two years behind CUDA [@Kanter2010]," a sentiment echoed by
+many industry observers and supported both by a simple comparison of the
+feature sets of both frameworks and by the authors' first-hand experience.
 
-- CUDA has PTX, UVA, a bloody fantastic runtime optimizer. It's lock-in, but it
-  feels so good. Far more initial investment required to take advantage of all
-  this, though; OpenCL may have needed the same thing in the end, but at least
-  we'd get code running.
+Due to the need to optimize the rendering engine to hardware constraints,
+particularly with regard to components such as the accumulation process
+(Chapter \ref{ch:accum}), porting this implementation across GPUs is expected
+to be difficult. As a result, compatibility and standards compliance is not a
+priority for this implementation. This implementation will therefore be based
+on the CUDA toolkit, rather than OpenCL[^future].
 
-- We go with the best, and damn the labor.
-
-[TODO: this section]
+[^future]: The authors are also planning an entirely new implementation which
+should not be quite so *fussy* about the hardware parameters. This
+implementation operates quite differently from the traditional flame algorithm,
+and we're still working out the necessary mathematics, so it is not documented
+here — but when it is ready to be implemented, we do intend to use OpenCL.
 
 ## Host language
 
@@ -157,9 +163,9 @@ interpreted programming language with high-quality bindings to CUDA and flam3.
 Its rich object model, duck-typing of numerics, and monad-like ContextManager
 allows for the extraction of instruction streams from "pure" mathematical code.
 This approach was in fact followed by one of the authors before this project
-began, resulting in the PyPTX library for dynamic GPU kernel generation [CITE]
-and a modest but functioning prototype implementation of the fractal flame
-algorithm on top of PyPTX [CITE].
+began, resulting in the PyPTX library for dynamic GPU kernel generation
+[@pyptx] and a modest but functioning prototype implementation of the fractal
+flame algorithm on top of PyPTX [@cuburn].
 
 Experimentation with PyPTX revealed shortcomings inherent in the expression of
 EDSLs in Python. Inside a code generation context, operations on PTX variables
@@ -176,13 +182,13 @@ too many opportunities for improper code generation.
 In place of Python, Haskell was considered. Haskell is a lazy, pure, functional
 language with a remarkably expressive static type system and excellent support
 for both traditional domain-specific languages (with excellent native parsers
-such as Parsec [CITE] and compile-time evaluation of native expressions using
-Template Haskell [CITE]) and embedded DSLs (via infix operators, rebindable
-syntax, and other language features [CITE?]). The Haskell and Python
-communities are intermixed, with both programmers and language features
-frequently crossing the gap between the two [CITE], but at its core, Haskell's
-purity and type safety make it an ideal host language to build run-time code
-generation facilities that feature compile-time analysis [CITE].
+such as Parsec and compile-time evaluation of native expressions using Template
+Haskell) and embedded DSLs (via infix operators, rebindable syntax, and other
+language features [@haskell2010]). The Haskell and Python communities are
+intermixed, with both programmers and language features frequently crossing the
+gap between the two [CITE], but at its core, Haskell's purity and type safety
+make it an ideal host language to build run-time code generation facilities
+that feature compile-time analysis [CITE].
 
 Other languages were also considered. Ruby is considered to be EDSL-friendly
 due to its rich, rebindable syntax [CITE], but as a dynamic language, it would
@@ -192,7 +198,9 @@ reliance on the JVM would complicate the memory model and FFI tasks, and would
 require additional bindings to be written. Microsoft's F# is an interesting
 effort from the company, but its type system inherits much from its
 object-oriented underpinnings and is less suitable for expressing the desired
-strong constraints. [TODO: conclude?]
+strong constraints.
+
+<!--
 
 ## Interface language
 
@@ -207,4 +215,4 @@ strong constraints. [TODO: conclude?]
 - Final decision: SSA-based EDSL, with stackless recursive notation for
   loops. Easy to port to LLVM if we need to.
 
-
+-->
