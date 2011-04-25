@@ -127,15 +127,15 @@ Another approach would be to pre-compute a large number of random values with IS
 
 If neither of the previous apporaches work, the last is to use a manual implementation of semaphores and locks to trigger the generation of more RNGs as required.
 
-REFERENCES
 
-[1] http://www.azillionmonkeys.com/qed/random.html
+<!-- Nick please cite correctly -->
+[TODO 1 http://www.azillionmonkeys.com/qed/random.html
 
-[6] http://www.rlmueller.net/MWC32.htm
+[TODO 6 http://www.rlmueller.net/MWC32.htm]
 
-[7] Image generated and published within the pLab-random number generators project http://random.mat.sbg.ac.at/
+[TODO 7 Image generated and published within the pLab-random number generators project http://random.mat.sbg.ac.at/]
 
-[8] http://random.mat.sbg.ac.at/tests/theory/spectral/
+[TODO 8 http://random.mat.sbg.ac.at/tests/theory/spectral/]
 
 
 
