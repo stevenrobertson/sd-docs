@@ -29,7 +29,7 @@ Geometry has formalized the way humans talk about and perceive points, shapes of
 
 *Element*'s impact was dramatic. So much so that *Euclid* is often referred to as the "Father of Geometry". By the $20^{th}$ century Euclidean geometry was being taught globally in schools. Shapes such as: circles, triangles, and polygons are taught at an early age.
 
-However as influential as the idea of Euclidean Geometry is its ideal shapes failed to describe the shapes that appear in nature. As stated in the opening paragraph of Benoît Mandelbrot's book, The Fractal Geometry of Nature: *"Clouds are not spheres, mountains are not cones, and lightning does not travel in a straight line. The complexity of nature's shapes differs in kind, not merely degree, from that of the shapes of ordinary geometry."*[@Mandelbrot1983]
+However as influential as the idea of Euclidean Geometry is its ideal shapes failed to describe the shapes that appear in nature. As stated in the opening paragraph of Benoît Mandelbrot's book, The Fractal Geometry of Nature[@Mandelbrot1983]: *"Clouds are not spheres, mountains are not cones, and lightning does not travel in a straight line. The complexity of nature's shapes differs in kind, not merely degree, from that of the shapes of ordinary geometry."*
 
 ##Fractal Geometry and Its Properties
 
