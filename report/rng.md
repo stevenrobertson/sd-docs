@@ -36,7 +36,7 @@ There are various properties that a PRNG can have, but for this project, we are 
 
 The search for pseudo-random number generators begins with the most commonly
 used, win32’s `rand()` function. The problem with this function is that its
-randomness is biased.  If we say `x=rand()%RANGE;` the function returns any
+randomness is biased. Evaluation of the statement `x=rand()%RANGE;` returns any
 number represented by $[0, \text{RANGE})$ instead of $[0,\text{RANGE}]$.
 Assuming that `rand()` outputs a number $[0, \text{MAX}]$, RANGE should be able
 to divide by $\text{MAX}+1$ entirely in an ideal PRNG, however it doesn’t in

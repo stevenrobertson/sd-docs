@@ -20,14 +20,14 @@ This primer aims to present the fundamental concepts of iterated function system
 These concepts are the building blocks of the flame algorithm. If the reader is already familiar with the concept of iterated function systems feel free to skip to Section \ref{fractalflamealg} and begin reading about the fractal flame algorithm.
 
 ###Definition
-An **Iterated Function System** is defined as a finite set of **affine contraction transformations** $F_{i}$ where i= 1, 2, ..., N that map a **metric space** onto itself. Mathematically this is [@Barnsley1988] :
+An **Iterated Function System** is defined as a finite set of **affine contraction transformations** $F_{i}$ where i= 1, 2, ..., N that map a **metric space** onto itself. Mathematically this is [@Barnsley1988]:
 
 $\left \{  f_{i} : X \mapsto X  \right \}, N \text{ } \epsilon \text{ } \mathbb{N}$
 
 
 A **metric space** is any space whose elements are points, and between any two of which a non-negative real number can be defined as the distance between the points (e.g. Euclidean Space).
 
-An **affine transformation** from one vector space to another is comprised of a linear transform which gives eitherrotation, scaling, or shear following by a translation. Mathematically this is [@Weissteinaffine] :
+An **affine transformation** from one vector space to another is comprised of a linear transform which gives eitherrotation, scaling, or shear following by a translation. Mathematically this is [@Weissteinaffine]:
 
 $x \mapsto Ax +b$
 
@@ -38,7 +38,7 @@ These transforms can be represented in one of two ways:
 
 2.	By using a transformation matrix. To do this we must use homogeneous coordinates. Homogenous coordinates have the property that preserves the coordinates in which the point refers even if the point is scaled. By using the transformation matrix we can represent the coefficients as matrix elements and combine multiple transformation steps by multiplying the matrices. This has the same effect as multiplying each point by each transform in the sequence. This effectively cuts down the number of multiplications needed- this is worth noting as it will be utilized in our implementation. Figure \ref{affineoperations} shows the operations in which the transformation can perform.
 
-\begin{figure}[h]
+\begin{figure}[htpb]
 	\centering
 	\includegraphics{./flame/sheer_trans_rot_scale.png}
 	\caption{Visual representation of Shear, Translation, Rotation, and Scaling.}
@@ -219,17 +219,17 @@ Notice how the next point is the midpoint between the vertex and current point. 
     7,500, 15,000, and 25,000 iterations.}{sierpinski_iterations}
 
 \clrimfig{./flame/sierpinski_vertex_pull.png}{Illustrative process of the chaos game.}{sierpinski_application}
-	
-	
+
+
 The more one stochastically samples, the closer the output image is to the solution of the Iterated Function System being computed.
 
-###Classical Iterated Function System : Barnsley's Fern
+###Classical Iterated Function System: Barnsley's Fern
 \label{fernsection}
 
 
-As a more intricate example, the classical iterated function system called Barnsley's Fern is presented. This system was introduced by the mathematician Michael Barnsley in *Fractals Everywhere* [@Barnsley1988] . This example is suitable to show all of the operations of an affine transform : shear, scale, rotation, and scaling.
+As a more intricate example, the classical iterated function system called Barnsley's Fern is presented. This system was introduced by the mathematician Michael Barnsley in *Fractals Everywhere* [@Barnsley1988]. This example is suitable to show all of the operations of an affine transform : shear, scale, rotation, and scaling.
 
-To construct Barnsley's Fern using the chaos game we need to describe the affine transformations that will be used. Using the most basic version of an affine transformation (which use vecotr multiplication and vector addition), we can describe the system with the following 4 transformations seen below. As a note, the affine transformations of this system are not equally weighted and have their own probabilistic model associated with each [@Barnsley1988] . 
+To construct Barnsley's Fern using the chaos game we need to describe the affine transformations that will be used. Using the most basic version of an affine transformation (which use vecotr multiplication and vector addition), we can describe the system with the following 4 transformations seen below. As a note, the affine transformations of this system are not equally weighted and have their own probabilistic model associated with each [@Barnsley1988].
 
 $A_{0}=
 \begin{vmatrix}
@@ -313,7 +313,7 @@ $F_{3}=
 \end{vmatrix}
 \text{ selected with a probability of 0.07.}$
 
-Figure \ref{barnsleyfern} shows the procedure which results in the final system. This system resembles the Black Spleenwort fern [@WeissteinBarnsley]. This fern was not shown soley because it resembles a similar shape in nature but because of the explicit way the transforms were used to get the shape desired (which is often seen in the flame user community when creating intricate flames). Below in Table \ref{barnsleytable} is an explanation of what each transformation conceptually does to produce the fern [@Barnsley1988][@WeissteinBarnsley].
+Figure \ref{barnsleyfern} shows the procedure which results in the final system. This system resembles the Black Spleenwort fern [@WeissteinBarnsley]. This fern was not shown soley because it resembles a similar shape in nature but because of the explicit way the transforms were used to get the shape desired (which is often seen in the flame user community when creating intricate flames). Below in Table \ref{barnsleytable} is an explanation of what each transformation conceptually does to produce the fern [@Barnsley1988] [@WeissteinBarnsley].
 
 \afterpage{
 \clearpage
@@ -322,13 +322,13 @@ Figure \ref{barnsleyfern} shows the procedure which results in the final system.
 		\hline
 		Name of Transform	& 	Conceptual Description  	\\
 		\hline
-		$F_{0}$				&	Maps the next point to the base of the stem.						\\
+		$F_{0}$				&	Maps to the base of the stem.						\\
 		\hline
-		$F_{1}$				&	Maps the next point inside the leaflet described by the  \textcolor{red}{red} triangle in Figure \ref{barnsleyfern}.						\\
+		$F_{1}$				&	Maps inside the leaflet described by the  \textcolor{red}{red} triangle in Figure \ref{barnsleyfern}.						\\
 		\hline
-		$F_{2}$				&	Maps the next point inside the leaflet described by the  \textcolor{blue}{blue} triangle in Figure \ref{barnsleyfern}.						\\
+		$F_{2}$				&	Maps inside the leaflet described by the  \textcolor{blue}{blue} triangle in Figure \ref{barnsleyfern}.						\\
 		\hline
-		$F_{3}$				&	Maps the next point inside the leaflet represented by the  \textcolor{blue}{blue} triangle in Figure \ref{barnsleyfern}.						\\
+		$F_{3}$				&	Maps inside the leaflet represented by the  \textcolor{blue}{blue} triangle in Figure \ref{barnsleyfern}.						\\
 		\hline
 	\end{tabular}
 	\caption{Conceptual descriptions of each affine transformation of Barnsley's Fern.}
@@ -404,7 +404,7 @@ By applying variations, the resulting plane is changed in a particular way. Fund
 
 **Parametric Variations:** A parametric variation is a remapping of the plane such that the mapping is a simple remapping but additionally controlled by coefficients that are independent of the affine transformation applied.
 
-A baseline flame with purely an affine transform applied is shown side by side with both a simple remapping, dependent variation, and parametric variation in Figure \ref{variations}. This will give you a good idea on what a single variation can do to shape the system and how intricate some of the variations can be. As an additional visual supplement please refer to the Appendix of the original Flame Algorithm Paper for an extensive collection of many catalogued variations[@Draves2003]. 
+A baseline flame with purely an affine transform applied is shown side by side with both a simple remapping, dependent variation, and parametric variation in Figure \ref{variations}. This will give you a good idea on what a single variation can do to shape the system and how intricate some of the variations can be. As an additional visual supplement please refer to the Appendix of the original Flame Algorithm Paper for an extensive collection of many catalogued variations [@Draves2003].
 
 <!-- for correct formatting moved this to log density section -->
 
@@ -542,7 +542,7 @@ Initially presenting the fractal algorithm usually results in a lengthy discussi
 [^simplicity]:For simplicty's sake we ignore the effects that Early Clip (Section \ref{earlyclipsection}) and Highlight Power (Section \ref{highlightpowersection}) have upon the algorithm and the way they reorder or modifications of core steps.
 
 
-The procedure is as follows: First, a random point is picked on the biunit square. The user picks the quality of the flame they wish to render and the program enters into a loop for Q iterations (where Q is quality). At each iteration a transformation is applied based on a probabilistic weighting (similar to Barnsley's Fern : Section \ref{fernsection}). This transformation will apply an affine transformation (which applies scaling, rotation, sheer, and translation), a variation transformation (to change the characteristics of the point), and a post function (to change the coordinate system). When the variation transform is applied a color associated with it is also applied (See Section \ref{coloringflame}). After the new point and color are selected this vector is accumulated in it's respective histogram bin representing the density of each point. The points are not accumulated in the bins for the first 20 points in order to allow the system to settle.
+The procedure is as follows: First, a random point is picked on the biunit square. The user picks the quality of the flame they wish to render and the program enters into a loop for Q iterations (where Q is quality). At each iteration a transformation is applied based on a probabilistic weighting (similar to Barnsley's Fern: Section \ref{fernsection}). This transformation will apply an affine transformation (which applies scaling, rotation, sheer, and translation), a variation transformation (to change the characteristics of the point), and a post function (to change the coordinate system). When the variation transform is applied a color associated with it is also applied (See Section \ref{coloringflame}). After the new point and color are selected this vector is accumulated in it's respective histogram bin representing the density of each point. The points are not accumulated in the bins for the first 20 points in order to allow the system to settle.
 
 This process happens until the final iteration. On the final iteration, many final processing steps happen. First, the histogram bins of point densities are log scaled. Next, filtering is performed. Supersampling removes the aliases. Density Estimation allows the reduction of noise. As an added note, motion blur can also occur next and requires a second buffer of points to be filtered down. The final transform is now applied which is a non-linear camera transform. This final transform also applies a color associated with it. Now that the correctly filtered, log scaled and colored image has been produced color correction is now applied. This provides hue, brightness, gamma, and other corrections. The image is then written to a file and the procedure ends.
 

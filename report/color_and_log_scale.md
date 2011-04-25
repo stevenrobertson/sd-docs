@@ -26,9 +26,14 @@ The techniques that allow going from a lower dynamic range to a high dynamic ran
 
 By observing common dynamic ranges of some typical mediums as well as various digital file formats we can begin to see why we are limited.
 
-Both the file format technologies in which our images or videos and stored in as well as monitor or paper in which they are viewed on are interrelated limiting factors governing the dynamic range. Various typical contrast values that these scenes can emit or in the case of file formats are capable of representing are seen in Table \ref{hdrtable} [@Kolor].
+Both the file format technologies in which our images or videos and stored in
+as well as monitor or paper in which they are viewed on are interrelated
+limiting factors governing the dynamic range. Various typical contrast values
+that these scenes can emit or in the case of file formats are capable of
+representing are seen in Table \ref{hdrtable}
+[@Kolor].
 
-\begin{table}[h]
+\begin{table}[htpb]
 	\begin{tabular}{|l|l|l|}
 		\hline
 		Medium					&	Ratio		&	Stop  	\\
@@ -89,7 +94,7 @@ It does this by representing these using a cylindrical coordinate system. The ax
 
 - **Horizontal Axis:** The horizontal axis represents saturation. Saturation is defined here as how prominent the hue is in the resulting color. The outer regions are that of the pure color spectrum whereas the inner regions are gray scale color where no hue is observed and the values depend purely on brightness.
 
-\begin{figure}[h]
+\begin{figure}[htpb]
 	\centering
 	\includegraphics{./color_and_log_scale/hsv.png}
 	\caption{HSV Color Model}
@@ -129,7 +134,7 @@ The formula for *gamma correction* is $b_{corrected} = b^{1/\gamma}$ where $\gam
 To understand the non-linearity of the gamma function 4 gamma correction values are applied to an image for visual depiction of the concept. The results are seen in Figure \ref{gammacomparison}.
 
 
-\begin{figure}[h]
+\begin{figure}[htpb]
 	\centering
 	\includegraphics{./color_and_log_scale/gamma_comparison.png}
 	\caption{Comparison of gamma correction values.}
@@ -154,7 +159,7 @@ We can attempt to quantatively talk about brightness using the concept of a colo
 
 An example of the first application would be a naïve approach that goes on the notation that if black is $Red = 0$ , $Green = 0$, $Blue = 0$ and white is $Red = 255$ , $Green = 255$, and $Blue = 255$ then the brightness can be simply $Red + Green + Blue$.
 
-\begin{figure}[h]
+\begin{figure}[htpb]
 	\centering
 	\includegraphics{./color_and_log_scale/rgb_wavelength.png}
 	\caption{Wavelengths of Red, Blue, and Green}
@@ -165,21 +170,13 @@ This flaw can be seen in Figure \ref{rgbwavelength}. The red, green, and blue co
 
 Some examples of weighted models to calculate brightness are below in Table \ref{brightnessmodel}.
 
-\begin{table}[h]
-	\begin{tabular}{|l|l|}
-		\hline
-		Model					&	Formula	\\
-		\hline
-		Photometric/digital ITU-R		&	$0.2126 \times R + 0.7152 \times G + 0.0722 \times B$		\\
-		\hline
-		Digital CCIR601 				&	$0.299 \times R + 0.587 \times G + 0.114 \times B$		\\
-		\hline
-		HSP Color Model (Percieved Brightness)[@Finley] &	$\sqrt{0.241 \times  R^2 + 0.691 \times G^2 + 0.068 \times  B^2 }$		\\
-		\hline
-	\end{tabular}
-	\caption{Weighted Brightness Calculations. }
-	\label{brightnessmodel}
-\end{table}
+Model                       Formula
+-------------------         ------------------------------
+Photometric/digital ITU-R   $0.2126 \times R + 0.7152 \times G + 0.0722 \times B$
+Digital CCIR601             $0.299 \times R + 0.587 \times G + 0.114 \times B$
+HSP Color Model [@Finley]   $\sqrt{0.241 \times  R^2 + 0.691 \times G^2 + 0.068 \times  B^2 }$
+
+Table: Weighted brightness calculations.
 
 Later, the topic of *brightness correction* is of interest- the act of adjusting the brightness. Flame's brightness can be adjusted however care must be taken so that the minimum and maximum bounds are not exceeded.
 
@@ -207,7 +204,7 @@ Now that saturation was explained, the term *vibrancy* can be explained. Vibranc
 
 Saturation is linear in nature whereas vibrancy works in a non-linear fashion. In vibrancy the less saturated colors of the image get more of a saturation boost than colors that already have higher saturation values. A simple non-linear saturation is applied to photograph shown in Figure \ref{vibrancyexample}.
 
-\begin{figure}[h]
+\begin{figure}[htpb]
 	\centering
 	\includegraphics{./color_and_log_scale/vibrancy.png}
 	\caption{Original image compared to a non-linearly saturated image.}
@@ -591,14 +588,14 @@ One of the complications of log-scaling is that an exponentially more amount of 
 [TODO New Approach]
 
 
-\begin{figure}[h]
+\begin{figure}[htpb]
 	\centering
 	\includegraphics{./color_and_log_scale/flame_palette.png}
 	\caption{4 different predefine color palettes applied to the baseline flame.}
 	\label{paletteflame}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[htpb]
 	\centering
 	\includegraphics{./color_and_log_scale/flame_gamma.png}
 	\caption{12 different gamma threshold values are presented one the baseline flame.}
@@ -606,35 +603,35 @@ One of the complications of log-scaling is that an exponentially more amount of 
 \end{figure}
 
 
-\begin{figure}[h]
+\begin{figure}[htpb]
 	\centering
 	\includegraphics{./color_and_log_scale/flame_gamma_threshold.png}
 	\caption{12 different gamma threshold values are presented on the baseline flame.}
 	\label{gammathresholdflame}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[htpb]
 	\centering
 	\includegraphics{./color_and_log_scale/flame_hue.png}
 	\caption{12 different hue values are presented to the baseline flame with a non-vibrant color palette.}
 	\label{hueflame}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[htpb]
 	\centering
 	\includegraphics{./color_and_log_scale/flame_brightness.png}
 	\caption{12 brightness correction values are presented on the baseline flame.}
 	\label{brightnessflame}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[htpb]
 	\centering
 	\includegraphics{./color_and_log_scale/flame_vibrancy.png}
 	\caption{12 different vibrancy values are presented on the baseline flame.}
 	\label{vibrancyflame}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[htpb]
 	\centering
 	\includegraphics{./color_and_log_scale/flame_highlight.png}
 	\caption{12 different highlight power values are presented on the baseline flame.}
