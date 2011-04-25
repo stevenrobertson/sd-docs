@@ -168,7 +168,11 @@ An example of the first application would be a naïve approach that goes on the 
 
 This flaw can be seen in Figure \ref{rgbwavelength}. The red, green, and blue components of a color have different wavelengths and therefore have a different perceived effect on the eye. A good brightness calculation attempts to model how the eye perceives color rather than treating each color component with equal weights. A common flaw of a color model for brightness is the under or over represent one of the color components.
 
-Some examples of weighted models to calculate brightness are below in Table \ref{brightnessmodel}.
+Some examples of weighted models to calculate brightness are below in Table 8.2.
+
+[TODO: because of citation in table, had to make this a Markdown table, so
+label got lost. Convert explicitly-numbered reference above back to real
+reference after this bug is fixed.]
 
 Model                       Formula
 -------------------         ------------------------------
