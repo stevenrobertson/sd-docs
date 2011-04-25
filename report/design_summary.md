@@ -81,18 +81,26 @@ counterparts; while the raw data can be maintained for fast consecutive
 function calls, the only means of turning a native Haskell genome into one
 compatible with `flam3` is to use XML as an intermediate format.
 
-### Shard
+### Shard and `cuburn`
 
-Shard is the foundation of the `cuburn` library. Shard is an embedded
-domain-specific language for GPU programming which extends and modifies
-Haskell's syntax without sacrificing the parent language's expressiveness and
-safety.
+The `cuburn` library contains the actual code used to render fractal flames.
+The code is written in the Shard language for GPU programming, which is being
+developed as part of this project. As an embedded domain-specific language,
+Shard allows developers to build code at runtime for the GPU using ordinary,
+pure Haskell expressions. This allows for complex analysis and optimization
+efforts to take place without sacrificing functional purity or type safety.
 
-[TODO: figure out what to say and what to ignore about shard.]
+`cuburn` also includes ancillary functions to help with generating and running
+device code. It intentionally omits "all-in-one" rendering functions which
+encapsulate the rendering process from start to finish, so that focus can be
+placed on ensuring the interface for full control is straightforward enough for
+common use. Management of CUDA state is also omitted; operations on CUDA
+contexts are effectful, and a developer making use of this library must that
+`cuburn` does not interfere with other CUDA activity in the same process.
 
-### Cuburn
-
-[TODO: write about cuburn]
+The full API is not difficult to use; while the full flow presented in Figure
+\ref{fig:host_design} may appear to be intimidating, it lends itself to concise
+expression under idiomatic Haskell.
 
 ## Device software
 
@@ -207,5 +215,15 @@ the work-group once again waits for data by polling global memory.
 
 ### Filtering
 
-[TODO: filtering subsection]
+The filtering kernels perform the log scaling process described in Chapter
+\ref{ch:coloring}, and one of the filtering mechanisms described in Chapter
+\ref{filteringsection}. The log scaling information is applied per-pixel, and
+maps cleanly to the traditional threading dispatch model employed in GPU
+shading; while the particular method has considerable impact on the appearance
+of the final image, the implementation is straightforward. On the other hand,
+efficient implementation of filtering algorithms on GPU architectures can be
+challenging, and almost always involves optimizations particular to the kind of
+algorithm chosen, so there is little opportunity for a general description. In
+both cases, full explanations of the processes involved are available in the
+appropriate chapters.
 
