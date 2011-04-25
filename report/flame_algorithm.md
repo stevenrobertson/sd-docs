@@ -20,14 +20,14 @@ This primer aims to present the fundamental concepts of iterated function system
 These concepts are the building blocks of the flame algorithm. If the reader is already familiar with the concept of iterated function systems feel free to skip to Section \ref{fractalflamealg} and begin reading about the fractal flame algorithm.
 
 ###Definition
-An **Iterated Function System** is defined as a finite set of **affine contraction transformations** $F_{i}$ where i= 1, 2, ..., N that map a **metric space** onto itself. Mathematically this is [@Barnsley1988]:
+An **Iterated Function System** is defined as a finite set of **affine contraction transformations** $F_{i}$ where i= 1, 2, ..., N that map a **metric space** onto itself. Mathematically this is [@Barnsley1988] :
 
 $\left \{  f_{i} : X \mapsto X  \right \}, N \text{ } \epsilon \text{ } \mathbb{N}$
 
 
 A **metric space** is any space whose elements are points, and between any two of which a non-negative real number can be defined as the distance between the points (e.g. Euclidean Space).
 
-An **affine transformation** from one vector space to another is comprised of a linear transform which gives eitherrotation, scaling, or shear following by a translation. Mathematically this is [@Weissteinaffine]:
+An **affine transformation** from one vector space to another is comprised of a linear transform which gives eitherrotation, scaling, or shear following by a translation. Mathematically this is [@Weissteinaffine] :
 
 $x \mapsto Ax +b$
 
@@ -227,9 +227,9 @@ The more one stochastically samples, the closer the output image is to the solut
 \label{fernsection}
 
 
-As a more intricate example, the classical iterated function system called Barnsley's Fern is presented. This system was introduced by the mathematician Michael Barnsley in *Fractals Everywhere* [@Barnsley1988]. This example is suitable to show all of the operations of an affine transform : shear, scale, rotation, and scaling.
+As a more intricate example, the classical iterated function system called Barnsley's Fern is presented. This system was introduced by the mathematician Michael Barnsley in *Fractals Everywhere* [@Barnsley1988] . This example is suitable to show all of the operations of an affine transform : shear, scale, rotation, and scaling.
 
-To construct Barnsley's Fern using the chaos game we need to describe the affine transformations that will be used. Using the most basic version of an affine transformation (which use vecotr multiplication and vector addition), we can describe the system with the following 4 transformations seen below. As a note, the affine transformations of this system are not equally weighted and have their own probabilistic model associated with each[@Barnsley1988]. 
+To construct Barnsley's Fern using the chaos game we need to describe the affine transformations that will be used. Using the most basic version of an affine transformation (which use vecotr multiplication and vector addition), we can describe the system with the following 4 transformations seen below. As a note, the affine transformations of this system are not equally weighted and have their own probabilistic model associated with each [@Barnsley1988] . 
 
 $A_{0}=
 \begin{vmatrix}
