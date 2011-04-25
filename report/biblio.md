@@ -16,7 +16,7 @@ Fractal Section
 
 - *Source*: Self made based on Java Appplication (http://to-campos.planetaclix.pt/fractal/koch.html).
 - *Date*: 15 May 2007
-- *Author*: António Miguel de Campos
+- *Author*: AntÃ³nio Miguel de Campos
 - *Description*: 7 first steps of the building of the von Koch curve in animated gif. Notice the parallel corresponding diameters present in the inner rhomboids.
 
 <!-- Statistical Self Similarity of a tree --> 
@@ -47,7 +47,7 @@ Fractal Section
 
 - *Source*: Self made based on Java Appplication (http://en.wikipedia.org/wiki/File:Animated_fractal_mountain.gif).
 - *Date*: March 2006
-- *Author*: António Miguel de Campos
+- *Author*: AntÃ³nio Miguel de Campos
 - *Description*: Animated fractal mountain.
 
 <!-- Fractal Landscape -->
