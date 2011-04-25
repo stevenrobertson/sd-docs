@@ -134,7 +134,7 @@ Color and Log Scaling
  <!-- bias.png -->
 **Figure \ref{bias.png}
 
-- *Source*: http://random.mat.sbg.ac.at/tests/theory/spectral/
+- *Source*: http://random.mat.sbg.ac.at/tests/theory/spectral/img13.gif
 - *Date*: April 17 2011
 
 >Dear Nicolas,
