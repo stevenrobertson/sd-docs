@@ -509,6 +509,7 @@ peak throughput than coalesced read-modify-write cycles, but have higher
 throughput than any uncoalesced operation.
 
 ## Closer look: AMD Cayman
+\label{sect:cayman}
 
 Cayman is the latest GPU microarchitecture as implemented in the ATI
 Radeon 69xx graphics cards.  It is the most significant change in AMD's

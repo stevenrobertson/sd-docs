@@ -1,4 +1,6 @@
-# Fractal Flame Coloring and Log Scaling
+# Coloring and Log Scaling
+\label{ch:coloring}
+
 ## Overview
 The *chaos game* provides a way to plot whether points in the plane[^planetwo] are members of the iterative function system or are not. However, the resulting image appears in black and white (lacking color or even shades of gray). The application of color as well as making these images vibranat are their own processes in the algorithm which deserves much text for several reasons:
 
@@ -259,7 +261,7 @@ The log scaling performed in ``flam3`` coincides with the overall goal of approx
 
 As seen in the previous section, at the end of each iteration the color coordinate looks up the actual RGB color mapped to it inside the palette and applies that R,G,B triplet to the accumulator. ``flam3`` contains 701 color palettes packaged in the software however the user can define their own mapping. Some of these palettes will be explored later on in this section. In ``flam3`` each color palette is traditionally consists of 255 color entries. The reason behind this is that the mapping to the palette is in the form of a byte which contains 256 different bit choices.
 
-Along with the application of color correction (gamma, vibrancy, etc.) this combination of mapping grayscale to a set of colors and then correcting them is a form of highly specialized tone mapping. 
+Along with the application of color correction (gamma, vibrancy, etc.) this combination of mapping grayscale to a set of colors and then correcting them is a form of highly specialized tone mapping.
 
 [TODO R,G,B,Alpha. Why Alpha? What does it do?]
 
@@ -298,7 +300,7 @@ For reference to the reader a baseline image of a detailed flame containing seve
 		Early Clipping					&	Off 				\\
 		\hline
 		Highlight Power					&	0.0 				\\
-		\hline		
+		\hline
 		Hue								& $0^\circ$ Rotation to the Color Space	\\
 		\hline
 		Color Palette					& User Defined Palette			\\
@@ -407,7 +409,7 @@ As mentioned in the *Gamma Correction Background* (Section \ref{gammasection}) a
 <!-- move pictures to the end -->
 
 ####Hue
-Hue is a *float* data type value ranging from 0.00 to 1.00. 0.00 means that the color space is not rotated while 1.00 means there is a $360^\circ$ rotation in the color space (which effectively is the same as 0.00). Any value in between rotates the color space by a certain degree. The 12 different hue values that provide rotation to the color space are shown in Table \ref{huetable}. The resulting images from the altered hue values can be seen in Figure \ref{hueflame}. To properly showcase hue, a light color palette has been applied which will be our new baseline image. This palette can be seen unmodified in Flame Number 1.  
+Hue is a *float* data type value ranging from 0.00 to 1.00. 0.00 means that the color space is not rotated while 1.00 means there is a $360^\circ$ rotation in the color space (which effectively is the same as 0.00). Any value in between rotates the color space by a certain degree. The 12 different hue values that provide rotation to the color space are shown in Table \ref{huetable}. The resulting images from the altered hue values can be seen in Figure \ref{hueflame}. To properly showcase hue, a light color palette has been applied which will be our new baseline image. This palette can be seen unmodified in Flame Number 1.
 
 [TODO analyze hue]
 
