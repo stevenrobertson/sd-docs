@@ -13,6 +13,7 @@ import Control.Arrow
 import Control.Monad
 import Data.Char (toUpper, isSpace)
 import Data.Either
+import Data.List (elem)
 import System.FilePath
 import System.Directory
 import System.Environment
@@ -116,7 +117,8 @@ pprAnnos annos = header $$ nest 2 (vcat $ map go annos)
     msg ty m = fsep ((ty <> colon) : map text (words m))
 
 main = do
-    useDraft <- any (== "-d") <$> getArgs
+    args <- getArgs
+    let testArg a = if a `elem` args then "1" else ""
 
     refs <- readBiblioFile "mendeley.bib"
     sourcePaths <- lines <$> readFile "order.txt"
@@ -132,7 +134,10 @@ main = do
 
     let vars = [ ("report", "1")
                , ("include-before", topmatter)
-               , ("draft", if useDraft then "1" else "") ]
+               , ("draft",      testArg "-d")
+               , ("print",      testArg "-p")
+               , ("leftspace",  testArg "-l")
+               , ("justify",    testArg "-j") ]
         latex = renderLaTeX template vars $ bottomUp urlize joined
 
     tmpdir <- fmap (</> "pandoc_report") getTemporaryDirectory
@@ -144,6 +149,7 @@ main = do
     writeFile tex latex
 
     errCode <- renderPDF tmpdir tex
+    let useDraft = "-d" `elem` args
     unless useDraft $ do
         putStrLn "Running xelatex again to update TOC"
         renderPDF tmpdir tex
