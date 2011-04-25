@@ -75,7 +75,7 @@ AMD was, at the time, shipping cards based on the much-derided R600
 architecture, which did not meet even the limited requirements of OpenCL.
 While the company was preparing to include the necessary components in
 their next graphics architecture, full support did not emerge until two
-hardware generations later, with the *Evergreen* family of GPUs.
+hardware generations later, with the competitive *Evergreen* family of GPUs.
 
 On the heels of a very successful graphics architecture which was
 compatible with OpenCL from day one, NVIDIA invested even more engineering
