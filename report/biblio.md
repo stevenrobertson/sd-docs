@@ -10,7 +10,7 @@ Fractal Section
 -->
 
 <!-- Koch Curve -->
-**Figure \ref{todo}:** Reprinted with permission under the Creative Commons Attribution-ShareAlike 3.0 license.
+**Figure \ref{kochcurve}:** Reprinted with permission under the Creative Commons Attribution-ShareAlike 3.0 license.
 
 [TODO: STUPID UNICODE MAN!]
 
@@ -20,7 +20,7 @@ Fractal Section
 - *Description*: 7 first steps of the building of the von Koch curve in animated gif. Notice the parallel corresponding diameters present in the inner rhomboids.
 
 <!-- Statistical Self Similarity of a tree --> 
-**Figure \ref{todo}:** Reprinted with permission from Vlado from FreeDigitalPhotos.net a royalty-free site. 
+**Figure \ref{treebranching}:** Reprinted with permission from Vlado from FreeDigitalPhotos.net a royalty-free site. 
 
 - *Source*: http://www.freedigitalphotos.net/images/Trees_and_Shrubs_g75-Cherry_Tree_In_Winter_p33977.html
 -*Terms*: http://www.freedigitalphotos.net/images/help/acknowledgement/terms.php
@@ -30,7 +30,7 @@ Fractal Section
 
 
 <!-- Strange Attractor -->
-**Figure \ref{todo}:** Reprinted with permission under the  Creative Commons Attribution-Share Alike 3.0 Unported.
+**Figure \ref{strangeattractor}:** Reprinted with permission under the  Creative Commons Attribution-Share Alike 3.0 Unported.
 
 
 - *Source*: http://www.chaoscope.org/gallery.htm
@@ -41,7 +41,7 @@ Fractal Section
 
 
 <!-- Random Fractal-->
-**Figure \ref{todo}:** Reprinted with permission under the Creative Commons Attribution-ShareAlike 3.0 license.
+**Figure \ref{randomfractal} (Left):** Reprinted with permission under the Creative Commons Attribution-ShareAlike 3.0 license.
 
 [TODO: STUPID UNICODE MAN!]
 
@@ -51,7 +51,7 @@ Fractal Section
 - *Description*: Animated fractal mountain.
 
 <!-- Fractal Landscape -->
-**Figure \ref{todo}:** Reprinted with permission under the Creative Commons Attribution 3.0 Unported.
+**Figure \ref{randomfractal} (Right):** Reprinted with permission under the Creative Commons Attribution 3.0 Unported.
 
 - *Source*: Terragen.
 - *Date*: 2002
@@ -68,7 +68,7 @@ Fractal Flame Section
  
  
 <!-- Barnsley's Fern-->
-**Figure \ref{todo}:** Reprinted with permission under the Creative Commons Attribution-ShareAlike 3.0 license.
+**Figure \ref{barnsleyfern}:** Reprinted with permission under the Creative Commons Attribution-ShareAlike 3.0 license.
 
 - *Source*: Own work, using model written by Mike Borrello (http://www.vissim.com/node/199)
 - *Date*: 6 January 2010
@@ -78,14 +78,14 @@ Fractal Flame Section
  
  
 <!-- 3 way rotational symmetry -->
-**Figure \ref{todo} (Top):** Reprinted with permission under the Creative Commons Attribution 3.0 license.
+**Figure \ref{symmetry} (Top):** Reprinted with permission under the Creative Commons Attribution 3.0 license.
 
 - *Source*: http://sheep.arces.net/generation-243/dead.cgi?id=1490
 - *Date*: July 28 2008
 - *Author*: ReFa
  
 <!-- dihedral symmetry -->
-**Figure \ref{todo} (Top):** Reprinted with permission under the Creative Commons Attribution 3.0 license.
+**Figure \ref{symmetry} (Top):** Reprinted with permission under the Creative Commons Attribution 3.0 license.
 
 - *Source*: http://sheep.arces.net/generation-243/dead.cgi?id=243
 - *Date*: June 28 2008
@@ -98,7 +98,7 @@ Color and Log Scaling
 -->  
   
 <!-- HSV Color Model -->
-**Figure \ref{todo}:** Reprinted with permission under the Creative Commons Attribution-ShareAlike 3.0 license.
+**Figure \ref{hsvmodel}:** Reprinted with permission under the Creative Commons Attribution-ShareAlike 3.0 license.
 
 - *Source*: http://en.wikipedia.org/wiki/File:HSV_color_solid_cylinder_alpha_lowgamma.png
 - *Date*: March 22 2010
@@ -106,7 +106,7 @@ Color and Log Scaling
 - *Description*: The HSV color model mapped to a cylinder. POV-Ray source is available from the POV-Ray Object Collection.
   
 <!-- Gamma Correction -->
-**Figure \ref{todo}:** Reprinted with permission under the Creative Commons Attribution-ShareAlike 3.0 license.
+**Figure \ref{gammacomparison}:** Reprinted with permission under the Creative Commons Attribution-ShareAlike 3.0 license.
 
 - *Source*: http://en.wikipedia.org/wiki/File:GammaCorrection_demo.jpg
 - *Date*: September 14 2010
@@ -116,14 +116,14 @@ Color and Log Scaling
 
   
 <!-- Wavelengths -->
-**Figure \ref{todo}:** Reprinted with permission under the Creative Commons Attribution-ShareAlike 3.0 license.
+**Figure \ref{rgbwavelength}:** Reprinted with permission under the Creative Commons Attribution-ShareAlike 3.0 license.
 
 - *Source*: http://en.wikipedia.org/wiki/File:GammaCorrection_demo.jpg
 - *Author*:  UC Davis ChemWiki by University of California
 - *Description*: Different Wavelengths and Frequencies
  
 <!-- dihedral symmetry -->
-**Figure \ref{todo}, ... (all of them):** Reprinted with permission under the Creative Commons Attribution 3.0 license.
+**Figure \ref{baselineflame}, Figure \ref{paletteflame}, Figure \ref{gammaflame}, Figure \ref{gammathresholdflame}, Figure \ref{hueflame}, Figure \ref{brightnessflame}, Figure \ref{vibrancyflame}, Figure \ref{highlightflame}:** Reprinted with permission under the Creative Commons Attribution 3.0 license.
 
 - *Source*: http://v2d7c.sheepserver.net/cgi/dead.cgi?id=11148
 - *Date*: January 28 2011
