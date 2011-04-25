@@ -131,10 +131,47 @@ Color and Log Scaling
   
  
  
- <!-- Nick PLEASE PUT EMAIL In block quotes here and follow a similar format as above -->
- 
- <!--
+ <!-- bias.png -->
+**Figure \ref{bias.png}
 
+- *Source*: http://random.mat.sbg.ac.at/tests/theory/spectral/
+- *Date*: April 17 2011
+
+>Dear Nicolas,
+>
+>thank you very much for your interest in our research.
+>
+>The images are the scientific property of Karl Entacher, now
+>at Fachhochschule Salzburg (Salzburg Polytechnical University).
+>Please contact Karl at the address
+> karl.entacher@holztechnikum.at
+> or, alternatively,
+> entacher@cosy.sbg.ac.at
+> 
+> Best regards
+> 
+> Peter
+> 
+> 
+> ---
+> Peter Hellekalek
+> Dept. of Mathematics
+> University of Salzburg
+> Hellbrunner Str. 34
+> A-5020 Salzburg
+> 
+> tel.: +43-(0)662 8044 5310
+> fax : +43-(0)662 6389 5310
+> web : http://random.mat.sbg.ac.at
+> 
+> _________________________________
+> This message is for personal use only.
+> It may not be forwarded without permission.
+> Die Weitergabe dieser e-mail ist ohne
+> ausdrueckliche Zustimmung untersagt.                                          
+  
+ <!--
+ 
 Filtering
 
 -->
