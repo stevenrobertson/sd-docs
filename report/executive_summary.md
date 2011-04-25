@@ -119,4 +119,9 @@ algorithms for use on GPU's is key for this software to function optimally.
 
 ## Design
 
-
+The software will be broken up into a small collection of libraries that perform 
+the operations necessary for rendering a fractal flame.  The libraries that will 
+be developed will be known as cuburn, flam3-types, and flam3-hs.  cuburn will do 
+the actual flame rendering, flam3-types contains flame genome datatypes and a 
+basic flame parse, and flam3-hs provides Haskell bindings to the original flam3 
+library for the purpose of compatibility.
