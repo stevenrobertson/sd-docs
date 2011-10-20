@@ -10,4 +10,4 @@ regenerate and serve the PDF with the template later):
 
     markdown2pdf --xetex --template=../latex.template INPUT.md
 
-This is a test. I'm so sorry.
+This is a test. I'm so sorry. This is another test (my apologies).
