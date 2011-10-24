@@ -18,15 +18,12 @@ Conversely, if the probability of selecting the affine transform related to Vert
 
 Obviously, this example was meant to show the extremes of PNG bias, however even subtle biases can propagate through the system and cause similar biases. This is why selecting a solid PNG is an important decision.
 
-\afterpage{
-\clearpage
-\begin{figure}[!htp]
+\begin{figure}[!ht]
 	\centering
 	\includegraphics{./rng/bias.png}
 	\caption{Sierpinski's Triangle shown with biased values of applying the function which pulls the points towards Vertex A.}
 	\label{bias}
 \end{figure}
-}
 
 
 ##  Pseudo Random Number Generators
@@ -109,9 +106,16 @@ This algorithm can be used in the GPU for 4 main reasons; it is very elastic whe
 
 ## Spectral Distribution
 The spectral distribution test is devised to study the lattice structures of PRNGs and especially that of LCGs. It is also famous in great part because it fails LCGs that that have passed other tests.
-It works by taking the outputs of PRNGs and finding where the numbers lie in s number of dimensions; it then takes that information and displays it as a lattice as seen in Figure R.2. Mathematically, overlapping vectors  $L_s = {x_n = (x_n, …, x_{n+s}-1)}$ where $n\ge 0$ are considered, since they exhibit the lattice structure.
+It works by taking the outputs of PRNGs and finding where the numbers lie in s number of dimensions; it then takes that information and displays it as a lattice as seen in Figure R.2. Mathematically, overlapping vectors  $L_s = {x_n = (x_n, …, x_{n+s}-1)}$ where $n\ge 0$ are considered, since they exhibit the lattice structure. An example of lattice structures can be seen in Figure \ref{lattice}.
 
-![Example of lattice structure. [CITE 7] [TODO: Improve this caption] ](rng/latice.png)
+
+\begin{figure}[!ht]
+	\centering
+	\includegraphics{./rng/latice.png}
+	\caption{Example of lattice structure.}
+	\label{lattice}
+\end{figure}
+
 
 However, without having to draw the dots, a conclusion about a PRNG can be made because of its mathematical properties; the spectral test determines a value $y_k$ which determines the minimum distance between points in the s hyper-planes on which it tests.
 The formula is given by $y_k = \min(\sqrt(x_1^2 + x_2^2 + …+ x_k^2))$

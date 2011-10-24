@@ -8,9 +8,9 @@ The innovation is what the majority of this paper is about and as a guiding rule
 As unwise as it would be to assume a solution to the current design challenge has already been solved, it would also be unwise not to draw from previous knowledge from the aforementioned fields. Therefore knowledge from mathematics, statistics, and graphics will be supplemented as needed when design decisions are presented later in the paper. However, before the paper transitions into the innovation aspect of this project, the need to present ample background information on two fields of which warrant attention is felt. These fields are fractal geometry and the aesthetic nature of fractal geometry.
 
 
-The justification of presenting fractal geometry lies in the reasoning that the mathematics and properties behind it is not blatantly intuitive and key concepts cannot be hand waved later in this paper. Had the famous equation $z_{n+1} = z^2_n + C$ been intuitive then humans would be able to visualize it, without the aid of computer graphics, as the Mandelbrot Set (Figure \ref{mandelbrot}) and understand its ability to scale infinitely without degradation.
+The justification of presenting fractal geometry lies in the reasoning that the mathematics and properties behind it is not blatantly intuitive and key concepts cannot be hand waved later in this paper. Had the famous equation $z_{n+1} = z^2_n + C$ been intuitive then humans would be able to visualize the Mandelbrot Set, seen in  as seen in Figure \ref{mandelbrot}, and understand its ability to scale infinitely without degradation, without the aid of computer graphics.
 
-\begin{figure}[htpb]
+\begin{figure}[!ht]
 	\centering
 	\includegraphics{./fractal/mandelbrot.png}
 	\caption{The Mandelbrot Set}
@@ -43,9 +43,9 @@ The properties in which Mandelbrot and his predecessors have found are summarize
 
 Fractals contain the property of self-similarity. This self-similarity is classified into different types ranging from the strongest form which is called exact self-similarity to the weakest form called statistical or approximate self-similarity. The three classifications are below:
 
-**Exact Self-Similarity:** This type of self-similarity contains, as its name implies, exact copies of itself repeating at infinitely smaller scales. Classical examples include Sierpinski's gasket or the Koch Curve (Figure \ref{kochcurve}).
+**Exact Self-Similarity:** This type of self-similarity contains, as its name implies, exact copies of itself repeating at infinitely smaller scales. Classical examples include Sierpinski's gasket or the Koch Curve which can be seen in Figure \ref{kochcurve}.
 
-\begin{figure}[htpb]
+\begin{figure}[!ht]
 	\centering
 	\includegraphics{./fractal/koch_curve.png}
 	\caption{The Koch Curve}
@@ -53,24 +53,26 @@ Fractals contain the property of self-similarity. This self-similarity is classi
 \end{figure}
 
 
-**Quasi Self-Similarity:** This type of self-similarity does not contain exact copies but rather distorted or degenerate forms of itself at infinitely smaller scales. Classical examples include the Mandelbrot set (Figure \ref{mandelbrot}).
+**Quasi Self-Similarity:** This type of self-similarity does not contain exact copies but rather distorted or degenerate forms of itself at infinitely smaller scales. Classical examples include the Mandelbrot set seen above in Figure \ref{mandelbrot}.
 
-**Statistical Self-Similarity:** This type of self-similarity is the weakest and is the type often encountered in the real world. Statistical self-similarity refers to the fact that the object has numerical or statistical measurements that are maintained at different scales. When classifying shapes in nature as fractal-like this definition is being implied. For example, the self-similar aspects of how a tree branches (See Figure \ref{treebranching}) are never found to be exact and sometimes deviate from their expected pattern but still exhibit self similarity in a sense. The definition of statistical self-similarity  account for this and is important because the luxury is not always given to observe concepts in their ideal sense.
-Another classical example is measuring a coastline such as Britain. When scaling the coastline it appears similar to at magnified scales. Additionally, what follows from this is the more accurately one measures the coastline (with a smaller base measurement) the more the length increases. This length increases without limit and contrary to intuition shows that the coastline of a country is infinite.
+**Statistical Self-Similarity:** This type of self-similarity is the weakest and is the type often encountered in the real world. Statistical self-similarity refers to the fact that the object has numerical or statistical measurements that are maintained at different scales. When classifying shapes in nature as fractal-like this definition is being implied. For example, the self-similar aspects of how a tree branches are never found to be exact and sometimes deviate from their expected pattern but still exhibit self similarity in a sense. The definition of statistical self-similarity accounts for this and is important because the luxury is not always given to observe concepts in their ideal sense.  We can attempt to observe this notion of statistical self-similarity in Figure \ref{treebranching} which shows a depiction of a leafless tree in order to exemplify the properties of the tree's branches.
 
-\begin{figure}[htpb]
+\begin{figure}[!ht]
 	\centering
 	\includegraphics{./fractal/tree_branching.png}
 	\caption{Statistical self-similarity found in the branching of trees.}
 	\label{treebranching}
 \end{figure}
 
+Another classical example is measuring a coastline such as Britain. When scaling the coastline it appears similar to at magnified scales. Additionally, what follows from this is the more accurately one measures the coastline (with a smaller base measurement) the more the length increases. This length increases without limit and contrary to intuition shows that the coastline of a country is infinite.
+
+
 
 ###Fractal Dimensionality
 
-Classical dimensionality is often expressed in whole number integer values. Lines have a dimensionality of 1, squares have a dimensionality of 2, and cubes have a dimensionality of 3. This however does not explain how completely a fractal fills a space. Does the Sierpinski's Triangle (Figure \ref{sierpinskitriangle}) cover 1 dimension like a line or 2 dimensions like a triangle? The answer is actually that it contains a dimension that is between the two!
+Classical dimensionality is often expressed in whole number integer values. Lines have a dimensionality of 1, squares have a dimensionality of 2, and cubes have a dimensionality of 3. This however does not explain how completely a fractal fills a space. Does the Sierpinski's Triangle, seen in Figure \ref{sierpinskitriangle}, cover 1 dimension like a line or 2 dimensions like a triangle? The answer is actually that it contains a dimension that is between the two!
 
-\begin{figure}[htpb]
+\begin{figure}[!ht]
 	\centering
 	\includegraphics{./fractal/sierpinski.png}
 	\caption{A visual of Sierpinski's Triangle which has a fractal dimensionality.}
@@ -87,7 +89,9 @@ rather than providing the reader with a heavy mathematical explanation. This
 will be done using the concept of a box-counting dimension which lends itself
 to ideas from the Rènyi dimension.
 
-To calculate the dimensionality of an object, an equidistant grid is imposed upon the object and the number of boxes that are necessary to cover the object are counted. The process continues and the equidistant grid is refined by decreasing the size of the grid. Again, the number of boxes that are necessary to cover the object are counted and the process repeats. The formula used is:
+To calculate the dimensionality of an object, an equidistant grid is imposed upon the object and the number of boxes that are necessary to cover the object are counted. The process continues and the equidistant grid is refined by decreasing the size of the grid. Again, the number of boxes that are necessary to cover the object are counted and the process repeats.
+
+The formula used is:
 
 \begin{displaymath}
     \text{Dimensionality}_{box}(S) =
@@ -97,9 +101,9 @@ To calculate the dimensionality of an object, an equidistant grid is imposed upo
 
 where $N(\varepsilon)$ is the number of boxes needed to cover the set, $\varepsilon$ is the side length of each box, and $S$ is the set to be covered.
 
-For a line with a known dimensionality of 1 the box counting procedure is performed. The procedure will start with a side length of length 1 and continually half the side length until a recognizable pattern emerges (See Figure \ref{bcline}).
+For a line with a known dimensionality of 1 the box counting procedure is performed. The procedure will start with a side length of length 1 and continually half the side length until a recognizable pattern emerges which can be observed in Figure \ref{bcline}.
 
-\begin{figure}[htpb]
+\begin{figure}[!ht]
 	\centering
 	\includegraphics{./fractal/bc_line.png}
 	\caption{Box Counting Dimension Process For a Line}
@@ -108,7 +112,8 @@ For a line with a known dimensionality of 1 the box counting procedure is perfor
 
 The box counting equation can be solved by completing the pattern that shows the rate at which the number of boxes in the grid grow compared to the number of boxes needed to cover the shape as the side length approaches 0. This is shown in Table \ref{bclinetable}.
 
-\begin{table}[htpb]
+\begin{table}[!ht]
+	\centering
 	\begin{tabular}{|l|l|}
 		\hline
 		\ \textbf{Box Length: }	$\varepsilon$	& \textbf{Number of Boxes:} $N(\varepsilon)$  	\\
@@ -129,6 +134,7 @@ The box counting equation can be solved by completing the pattern that shows the
 	\caption{ Box length ($\varepsilon$) and the number of boxes ($N(\varepsilon)$)  as $\varepsilon$ approaches 0. }
 		\label{bclinetable}
 \end{table}
+\end{center}
 
 From this table the following formula can be deduced by solving the pattern.
 
@@ -138,9 +144,11 @@ From this table the following formula can be deduced by solving the pattern.
         \frac{\log \frac{1}{\varepsilon}}{\log \frac{1}{\varepsilon}} = 1
 \end{displaymath}
 
-Our box counting procedure coincides with the view that a line has a dimensionality of one. We now use this same box counting procedure to calculate a shape of non integer value dimensionality. Sierpinski's gasket will be used as the example. The procedure will again start with side length of 1 and continually half it until a recognizable pattern emerges (See Figure \ref{bcsierpinski}).
+Our box counting procedure coincides with the view that a line has a dimensionality of one. We now use this same box counting procedure to calculate a shape of non integer value dimensionality. Sierpinski's gasket will be used as the example. The procedure will again start with side length of 1 and continually half it until a recognizable pattern emerges which can be observed in Figure \ref{bcsierpinski}.
 
-\begin{figure}[htpb]
+\newpage
+
+\begin{figure}[!ht]
 	\centering
 	\includegraphics{./fractal/bc_sierpinski.png}
 	\caption{Box Counting Dimension Process For Sierpinski's Gasket}
@@ -149,8 +157,8 @@ Our box counting procedure coincides with the view that a line has a dimensional
 
 The results are rewritten in the form of powers to expose the pattern.  This is shown in Table \ref{bcsierpinskitable}.
 
-
-\begin{table}[htpb]
+\begin{table}[!ht]
+	\centering
 	\begin{tabular}{|l|l|}
 		\hline
 		\ \textbf{Box Length: }	$\varepsilon$	& \textbf{Number of Boxes:} $N(\varepsilon)$  	\\
@@ -172,7 +180,6 @@ The results are rewritten in the form of powers to expose the pattern.  This is 
 		\label{bcsierpinskitable}
 \end{table}
 
-
 From this table the following formula can be deduced by solving the pattern.
 
 \begin{displaymath}
@@ -180,7 +187,6 @@ From this table the following formula can be deduced by solving the pattern.
     \lim_{\varepsilon \to 0}
         \frac{\log 3^{N} }{\log 2^{N} } \approx  1.58
 \end{displaymath}
-
 
 
 The concept of dimensionality is often referred to as **roughness** which is a measure of a shape's irregularity.
@@ -193,6 +199,8 @@ The method for constructing a fractal relies on an iterative process. Regardless
 
 ##Fractal Types
 When one gets their first taste of fractal geometry they notice the diversity of shapes and figures that encompass it. For the paper's purposes, fractals will not be classified by how they visually look but rather the process for creating them. This is done because given the nature of this project the focus is on the data structures and algorithms used to create the fractal. The shape and patterns that are merely the byproduct of the process. It is not always apparent which creation method was used to create a certain pattern. By classifying fractals by their creation method, the following information is gained:
+
+\newpage
 
 1. Explain what this project is not
 2. Draw similarities from closely related fractal systems
@@ -216,19 +224,22 @@ and many others.
 
 
 ###Strange Attractors
-Strange attractors (See Figure \ref{strangeattractor}) are attractors whose final attractor set are that of a fractal dimension. An attractor is a set that a dynamical system approaches as it evolves. Dynamical systems are systems which describe the state of the system at any instant and contain a rule that specifies the future state of system. A difference of the strange attractor versus a traditional attractor is that strange attractors have a sensitive dependence on their initial conditions and often exhibit properties of chaos[^propchaos] which makes their behavior hard to predict.
+Strange attractors, such as the one seen in Figure \ref{strangeattractor}, are attractors whose final attractor set are that of a fractal dimension. An attractor is a set that a dynamical system approaches as it evolves. Dynamical systems are systems which describe the state of the system at any instant and contain a rule that specifies the future state of system. 
 
 [^propchaos]: When the properties of chaos are referred to what is meant by them is the notation that a point which is close to the attractor will become separated at an exponential rate.
 
-\begin{figure}[htpb]
+\begin{figure}[!ht]
 	\centering
 	\includegraphics{./fractal/strange_attractor.jpg}
 	\caption{Image of a Strange Attractor}
 	\label{strangeattractor}
 \end{figure}
 
+A difference of the strange attractor versus a traditional attractor is that strange attractors have a sensitive dependence on their initial conditions and often exhibit properties of chaos[^propchaos] which makes their behavior hard to predict.
+
+
 ###Random Fractals
-Random fractal's iterative process relies on a non-deterministic process for creation (See Figure \ref{randomfractal}). By applying some process the resulting set or image exhibits fractal-like properties. Many landscapes and plants in nature exhibit this property. For example, mountains are not formed by a deterministic process yet exhibit statistical self-similarity. Fractal landscape generation is a stochastic process which tries to mimic this stochastic process in nature.
+Random fractal's iterative process relies on a non-deterministic process for creation. By applying some process the resulting set or image exhibits fractal-like properties such as the two images seen in Figure \ref{randomfractal}. Many landscapes and plants in nature exhibit this property. For example, mountains are not formed by a deterministic process yet exhibit statistical self-similarity. Fractal landscape generation is a stochastic process which tries to mimic this stochastic process in nature.
 
 \begin{figure}[htpb]
 	\centering

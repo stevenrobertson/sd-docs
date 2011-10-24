@@ -443,6 +443,7 @@ the results of calculating these probabilities for a few configurations and
 lengths in Table \ref{probtable}. Fixed values of $N=8$ and $W=32$ are used.
 
 \begin{table}
+  \centering
   \begin{tabular}{ r l r r r r }
     & & $l=2$ & $l=4$ & $l=8$ & $l=32$ \\
     \cline{3-6}

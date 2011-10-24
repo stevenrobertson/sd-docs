@@ -33,7 +33,8 @@ that these scenes can emit or in the case of file formats are capable of
 representing are seen in Table \ref{hdrtable}
 [@Kolor].
 
-\begin{table}[htpb]
+\begin{table}[!ht]
+	\centering
 	\begin{tabular}{|l|l|l|}
 		\hline
 		Medium					&	Ratio		&	Stop  	\\
@@ -101,7 +102,7 @@ It does this by representing these using a cylindrical coordinate system. The ax
 	\label{hsvmodel}
 \end{figure}
 
-Using the HSV model (Figure \ref{hsvmodel}) provides a simple way of representing the color space and describing the relationship between them. The calculations also require little computation. However, one of the major drawbacks is that the model gives no insight into color production or manipulation.
+Using the HSV model, seen in Figure \ref{hsvmodel}, provides a simple way of representing the color space and describing the relationship between them. The calculations also require little computation. However, one of the major drawbacks is that the model gives no insight into color production or manipulation.
 
 ###Hue
 \label{huesection}
@@ -118,7 +119,7 @@ The term *gamma* refers to the amount of light that will be emitted from each pi
 The main concept we're interested in is *gamma correction*. The reason *gamma correction* is needed is the following:
 
 1. CRT and LCDs displays do not display the light proportional to the voltage given to each phosphor. Therefore the image does not appear in the way it was expected to be viewed.
-3. A typical consumer grade printer works upon 8 or 16 bit color and result in a relatively low HDR as seen in Table \ref{hdrtable}.
+3. A typical consumer grade printer works upon 8 or 16 bit color and result in a relatively low HDR as seen above in Table \ref{hdrtable}.
 
 To summarize, the RGB color system with red, green, and blue values ranging from 0 to 255 cannot be accurately represented. Some kind of correction must be performed in order to get the images that are expected to be seen rather than the images that are actually seen as output.
 
@@ -159,32 +160,43 @@ We can attempt to quantatively talk about brightness using the concept of a colo
 
 An example of the first application would be a naïve approach that goes on the notation that if black is $Red = 0$ , $Green = 0$, $Blue = 0$ and white is $Red = 255$ , $Green = 255$, and $Blue = 255$ then the brightness can be simply $Red + Green + Blue$.
 
-\begin{figure}[htpb]
+This flaw can be seen in Figure \ref{rgbwavelength}. The red, green, and blue components of a color have different wavelengths and therefore have a different perceived effect on the eye. A good brightness calculation attempts to model how the eye perceives color rather than treating each color component with equal weights. A common flaw of a color model for brightness is the under or over represent one of the color components.
+
+\begin{figure}[!ht]
 	\centering
 	\includegraphics{./color_and_log_scale/rgb_wavelength.png}
 	\caption{Wavelengths of Red, Blue, and Green}
 	\label{rgbwavelength}
 \end{figure}
 
-This flaw can be seen in Figure \ref{rgbwavelength}. The red, green, and blue components of a color have different wavelengths and therefore have a different perceived effect on the eye. A good brightness calculation attempts to model how the eye perceives color rather than treating each color component with equal weights. A common flaw of a color model for brightness is the under or over represent one of the color components.
+\newpage
 
-Some examples of weighted models to calculate brightness are below in Table 8.2.
+Some examples of weighted models to calculate brightness are below in Table \ref{brightnesscalcs}.
 
 [TODO: because of citation in table, had to make this a Markdown table, so
 label got lost. Convert explicitly-numbered reference above back to real
 reference after this bug is fixed.]
 
-Model                       Formula
--------------------         ------------------------------
-Photometric/digital ITU-R   $0.2126 \times R + 0.7152 \times G + 0.0722 \times B$
-Digital CCIR601             $0.299 \times R + 0.587 \times G + 0.114 \times B$
-HSP Color Model [@Finley]   $\sqrt{0.241 \times  R^2 + 0.691 \times G^2 + 0.068 \times  B^2 }$
-
-Table: Weighted brightness calculations.
+\begin{table}[!ht]
+	\centering
+    \begin{tabular}{|l|l|}
+        \hline
+        Model & Formula \\ 
+		\hline
+        Photometric/digital ITU-R & $0.299 \times R + 0.587 \times G + 0.114 \times B$ \\
+		\hline
+        Digital CCIR601 &  $0.299 \times R + 0.587 \times G + 0.114 \times B$ \\
+		\hline
+        HSP Color Model & $\sqrt{0.241 \times  R^2 + 0.691 \times G^2 + 0.068 \times  B^2 }$ \\
+        \hline
+    \end{tabular}
+	\caption{Weighted brightness calculations models[@Finley].}
+	\label{brightnesscalcs}
+\end{table}
 
 Later, the topic of *brightness correction* is of interest- the act of adjusting the brightness. Flame's brightness can be adjusted however care must be taken so that the minimum and maximum bounds are not exceeded.
 
-With the addition of too much or too little brightness color clipping may occurs (See Section \ref{colorclippingsection}) and the colors fall outside of representable realms which result in a loss of data.
+With the addition of too much or too little brightness color clipping may occurs  and the colors fall outside of representable realms which result in a loss of data. See Section \ref{colorclippingsection} for additional detail.
 
 ###Saturation and related terms
 
@@ -198,7 +210,7 @@ The concept this section intends of describing is that of *saturation* but as a 
 
 The term that is of importance is that of *saturation*.
 
-[TODO  Expand on a bit on this section. Possible ideas: Describe R, G, and B model as well as the steepness of the bell curve slope described here. Linear]
+[TODO  Expand on a bit on this section. Possible ideas: Describe R, G, and B model as well as the steepness of the bell curve slope described here. Linear]
 
 Colors that are highly *saturated* are those closest to pure hues of color. Colors that have little saturation appear *washed out*. Also as a note, the changing of a color's saturation can be observed as linear effect.
 
@@ -283,9 +295,21 @@ Along with the application of color correction (gamma, vibrancy, etc.) this comb
 After visually inspecting them as well as describing their purpose and how the output flames benefit from them, ``flam3``'s implementation will be examined. Next, the authors discuss what features are essential for our task at hand and which color correction techniques could be omitted while still providing an essential subset of functionality.
 
 #### Visual Inspection of the Baseline Image
-For reference to the reader a baseline image of a detailed flame containing several transforms with a vivid default coloring scheme is provided (See Figure \ref{baselineflame}). In the following sections adjustments are performed to one parameter of the flame while holding the others constant so that the parameter effect in question can be observed. The parameters of the following flame are shown in Figure \ref{flametable}.
+For reference to the reader a baseline image of a detailed flame containing several transforms with a vivid default coloring scheme is provided in Figure \ref{baselineflame}.
+
+\begin{figure}[htp!]
+	\centering
+	\includegraphics{./color_and_log_scale/flame_baseline.png}
+	\caption{Baseline image of the flame whose parameters will be altered.}
+	\label{baselineflame}
+\end{figure}
+
+In the following sections adjustments are performed to one parameter of the flame while holding the others constant so that the parameter effect in question can be observed. The parameters that constructed the flame above are shown below in Figure \ref{flametable}.
+
+\newpage
 
 \begin{table}[htp!]
+	\centering
 	\begin{tabular}{|l|l|}
 		\hline
 		Correction Technique			&	Default Value		\\
@@ -312,25 +336,25 @@ For reference to the reader a baseline image of a detailed flame containing seve
 \end{table}
 
 
-\begin{figure}[htp!]
+#### Color Palette Revisited and Explored
+As mentioned in Section \ref{tonemapcolorpalette} : *Ad-Hoc Tone Mapping and The Color Palette* there are 701 standard palettes available. A minute amount of palettes are shown to give the reader an understanding of what a palette may look like. Figure \ref{paletteflame} shows 4 different palettes applied to the baseline flame. By observing both palette number 1 and 5, you can see that colors become clipped and their is varying degrees of detail loss. There is a careful balance of setting tweaking between brightness, gamma, that must be maintained in order to preserve a higher dynamic range. This is one of the reasons these features exist.
+
+\newpage
+
+\begin{figure}[htpb]
 	\centering
-	\includegraphics{./color_and_log_scale/flame_baseline.png}
-	\caption{Baseline image of the flame whose parameters will be altered.}
-	\label{baselineflame}
+	\includegraphics{./color_and_log_scale/flame_palette.jpg}
+	\caption{4 different predefine color palettes applied to the baseline flame.}
+	\label{paletteflame}
 \end{figure}
 
-
-#### Color Palette Revisited and Explored
-As mentioned in the *Ad-Hoc Tone Mapping and The Color Palette* (Section \ref{tonemapcolorpalette}) there are 701 standard palettes available. A minute amount of palettes are shown to give the reader an understanding of what a palette may look like. Figure \ref{paletteflame} shows 4 different palettes applied to the baseline flame. By observing both palette number 1 and 5, you can see that colors become clipped and their is varying degrees of detail loss. There is a careful balance of setting tweaking between brightness, gamma, that must be maintained in order to preserve a higher dynamic range. This is one of the reasons these features exist.
-
-
-<!-- move pictures to the end -->
-
+\newpage
 
 ####Gamma Correction
-As mentioned in the *Gamma Correction Background* (Section \ref{gammasection}) a non-linear function needs to be applied in order to produce an output flame that approximately replicates the expected image. The gamma correction formula's gamma (Seen in Section \ref{gammasection}) is left to be set by the user and is of the *positive float* data type. The 12 different gamma correction values that were applied to the baseline image are shown in Table \ref{gammacorrectiontable}. The resulting images from the altered gamma corrections can be seen in Figure \ref{gammaflame}. The first several images show the effects of when the gamma is set to values that are too low and show the characteristic signs of low gamma which is that the image looks washed out. The last images in the series show the effects of when the gamma is set to values that are too high and show characteristic signs of high gamma which is that the image looks too dark.
+As mentioned in Section  \ref{gammasection} *Gamma Correction Background* a non-linear function needs to be applied in order to produce an output flame that approximately replicates the expected image. The gamma correction formula's gamma seen in Section \ref{gammasection} is left to be set by the user and is of the *positive float* data type. The 12 different gamma correction values that were applied to the baseline image are shown in Table \ref{gammacorrectiontable}.
 
 \begin{table}[htp!]
+	\centering
 	\begin{tabular}{|l|l|}
 		\hline
 		Flame Number					&	$\gamma$ value	\\
@@ -365,15 +389,28 @@ As mentioned in the *Gamma Correction Background* (Section \ref{gammasection}) a
 \end{table}
 
 
-<!-- move pictures to the end -->
+The resulting images from the altered gamma corrections can be seen in Figure \ref{gammaflame}. The first several images show the effects of when the gamma is set to values that are too low and show the characteristic signs of low gamma which is that the image looks washed out. The last images in the series show the effects of when the gamma is set to values that are too high and show characteristic signs of high gamma which is that the image looks too dark.
+
+\newpage
+
+\begin{figure}[!ht]
+	\centering
+	\includegraphics{./color_and_log_scale/flame_gamma.jpg}
+	\caption{12 different gamma values are presented one the baseline flame.}
+	\label{gammaflame}
+\end{figure}
+
+
+\newpage
 
 ####Gamma Threshold
-*Gamma Threshold* is a parameter setting which controls the threshold for which colors recieve the non-linear gamma correction mentioned above. Colors brighter than the threshold receieve the non-linear correction and colors darker than the threshold receive a linear correction instead [@DravesReckase2011]. The threshold is a *float* data type value ranging from 0.00 to 1.00 (where 0.00 to 1.00 maps to the entire color space). This parameter can be used to linearly correct certain parts of an image and non-linearly correct others in attempts to produce a greater dynamic range or a stylistic affect. The 12 different gamma threshold values that were applied to the baseline image are show in Table \ref{gammathresholdtable}. The resulting images from the altered gamma threshold values can be seen in Figure \ref{gammathresholdflame}.
+*Gamma Threshold* is a parameter setting which controls the threshold for which colors recieve the non-linear gamma correction mentioned above. Colors brighter than the threshold receieve the non-linear correction and colors darker than the threshold receive a linear correction instead [@DravesReckase2011]. The threshold is a *float* data type value ranging from 0.00 to 1.00 (where 0.00 to 1.00 maps to the entire color space). This parameter can be used to linearly correct certain parts of an image and non-linearly correct others in attempts to produce a greater dynamic range or a stylistic affect. The 12 different gamma threshold values that were applied to the baseline image are show in Table \ref{gammathresholdtable}.
 
 
 [TODO Do we want to replicate this?]
 
 \begin{table}[htp!]
+	\centering
 	\begin{tabular}{|l|l|}
 		\hline
 		Flame Number					&	Gamma Threshold value	\\
@@ -407,15 +444,27 @@ As mentioned in the *Gamma Correction Background* (Section \ref{gammasection}) a
 		\label{gammathresholdtable}
 \end{table}
 
-<!-- move pictures to the end -->
+The resulting images from the altered gamma threshold values can be seen in Figure \ref{gammathresholdflame}.
+ 
+\newpage
+
+\begin{figure}[!ht]
+	\centering
+	\includegraphics{./color_and_log_scale/flame_gamma_threshold.jpg}
+	\caption{12 different gamma threshold values are presented on the baseline flame.}
+	\label{gammathresholdflame}
+\end{figure}
+
+\newpage
 
 ####Hue
-Hue is a *float* data type value ranging from 0.00 to 1.00. 0.00 means that the color space is not rotated while 1.00 means there is a $360^\circ$ rotation in the color space (which effectively is the same as 0.00). Any value in between rotates the color space by a certain degree. The 12 different hue values that provide rotation to the color space are shown in Table \ref{huetable}. The resulting images from the altered hue values can be seen in Figure \ref{hueflame}. To properly showcase hue, a light color palette has been applied which will be our new baseline image. This palette can be seen unmodified in Flame Number 1.
+Hue is a *float* data type value ranging from 0.00 to 1.00. 0.00 means that the color space is not rotated while 1.00 means there is a $360^\circ$ rotation in the color space (which effectively is the same as 0.00). Any value in between rotates the color space by a certain degree. The 12 different hue values that provide rotation to the color space are shown in Table \ref{huetable}.
 
 [TODO analyze hue]
 
 
 \begin{table}[htp!]
+	\centering
 	\begin{tabular}{|l|l|l|}
 		\hline
 		Flame Number					&	Hue			& Rotates Color Space By \\
@@ -449,13 +498,25 @@ Hue is a *float* data type value ranging from 0.00 to 1.00. 0.00 means that the 
 		\label{huetable}
 \end{table}
 
-<!-- move pictures to the end -->
+
+The resulting images from the altered hue values can be seen in Figure \ref{hueflame}. To properly showcase hue, a light color palette has been applied which will be our new baseline image. This palette can be seen unmodified in Flame Number 1.
+
+\newpage
+
+\begin{figure}[!ht]
+	\centering
+	\includegraphics{./color_and_log_scale/flame_hue.jpg}
+	\caption{12 different hue values are presented to the baseline flame with a non-vibrant color palette.}
+	\label{hueflame}
+\end{figure}
+
+\newpage
 
 ####Brightness
-Brightness correction is a function that changes the percieved intensity of light coming from the image can be enacted upon the image. Additional information is mentioned in the *Brightness Correction Background* (Section \ref{brightnesssection}). This percieved intensity can be set by the user and is a value of data type: *positive float*.  The 12 different brightness correction values that were applied to the baseline image are shown in Table \ref{brightnesscorrectiontable}. The resulting images from the altered brightness corrections can be seen in Figure \ref{brightnessflame}. Observe the first and last several images that color clipping occurs. There is absolute light in the flames with the highest brightness correction values (white) and there is an absense of light in the flames with the lowest correction values (black).
-
+Brightness correction is a function that changes the percieved intensity of light coming from the image can be enacted upon the image. Additional information is mentioned in Section \ref{brightnesssection}: *Brightness Correction Background*. This percieved intensity can be set by the user and is a value of data type: *positive float*.  The 12 different brightness correction values that were applied to the baseline image are shown in Table \ref{brightnesscorrectiontable}.
 
 \begin{table}[htp!]
+	\centering
 	\begin{tabular}{|l|l|}
 		\hline
 		Flame Number					&	Gamma Correction value	\\
@@ -489,14 +550,26 @@ Brightness correction is a function that changes the percieved intensity of ligh
 		\label{brightnesscorrectiontable}
 \end{table}
 
-<!-- move pictures to the end -->
+The resulting images from the altered brightness corrections can be seen in Figure \ref{brightnessflame}. Observe the first and last several images that color clipping occurs. There is absolute light in the flames with the highest brightness correction values (white) and there is an absense of light in the flames with the lowest correction values (black).
+
+\newpage
+
+\begin{figure}[!ht]
+	\centering
+	\includegraphics{./color_and_log_scale/flame_brightness.jpg}
+	\caption{12 brightness correction values are presented on the baseline flame.}
+	\label{brightnessflame}
+\end{figure}
+
+\newpage
 
 ####Vibrancy
-Vibrancy, as stated in the *Vibrancy Background* (Section \ref{vibrancysection}), provides saturation in a non-linear fashion. In the case of flam3, the actual implementation details to visually produce vibrancy are not found in the common literature. The concept that flam3 uses to alter vibrancy is by what factor the gamma correction should be applied (independently or simulatenously). Vibrancy is a setting in flam3 which the user defines and is a *float* from 0.0 to 1.0. A value of 0.0 denotes to apply gamma correction to each channel independently whereas a value of 1.0 denotes to apply gamma corrections to color channels simulatenously. Applying gamma correction to each channel independently results in *pastel* or *washed out* images of low saturation. Consequently, applying gamma correction to color channels simulatenously results in colors becomming saturated. The 12 different vibrancy values that were applied to the baseline image are show in Table \ref{vibrancytable}. The resulting images from the altered vibrancy values can be seen in Figure \ref{vibrancyflame}.
+Vibrancy, as stated in Section \ref{vibrancysection}: *Vibrancy Background*, provides saturation in a non-linear fashion. In the case of flam3, the actual implementation details to visually produce vibrancy are not found in the common literature. The concept that flam3 uses to alter vibrancy is by what factor the gamma correction should be applied (independently or simulatenously). Vibrancy is a setting in flam3 which the user defines and is a *float* from 0.0 to 1.0. A value of 0.0 denotes to apply gamma correction to each channel independently whereas a value of 1.0 denotes to apply gamma corrections to color channels simulatenously. Applying gamma correction to each channel independently results in *pastel* or *washed out* images of low saturation. Consequently, applying gamma correction to color channels simulatenously results in colors becomming saturated. The 12 different vibrancy values that were applied to the baseline image are show in Table \ref{vibrancytable}.
 
 [TODO ANALYSIS]
 
 \begin{table}[htp!]
+	\centering
 	\begin{tabular}{|l|l|}
 		\hline
 		Flame Number					&	Vibrancy Value	\\
@@ -530,11 +603,23 @@ Vibrancy, as stated in the *Vibrancy Background* (Section \ref{vibrancysection})
 		\label{vibrancytable}
 \end{table}
 
-<!-- move pictures to the end -->
+
+The resulting images from the altered vibrancy values can be seen in Figure \ref{vibrancyflame}.
+
+\newpage
+
+\begin{figure}[!ht]
+	\centering
+	\includegraphics{./color_and_log_scale/flame_vibrancy.jpg}
+	\caption{12 different vibrancy values are presented on the baseline flame.}
+	\label{vibrancyflame}
+\end{figure}
+
+\newpage
 
 ####Early Clipping
 \label{earlyclipsection}
-Earlier it was discussed that the user may experience regions of the flame that become so dense that the colors to fall outside of the representable range of color. These creates regions of uniform density which results in a loss of detail. More background information on this can be found in *Color Clipping Background* (Section \ref{colorclippingsection}).
+Earlier it was discussed that the user may experience regions of the flame that become so dense that the colors to fall outside of the representable range of color. These creates regions of uniform density which results in a loss of detail. More background information on this can be found in Section \ref{colorclippingsection}: *Color Clipping Background*.
 
 Early clip takes this idea of color clipping and provides a means to rectify the problem. The problem occurs because in the typical algorithm all of the log scaled histrogram of points is mapped to the RGB color space *after* applying the filter kernel. A potential problem that can happen is that the spatial filter can blur dense regions of the image and then when color correction techniques are applied these blurred regions can become saturated[@DravesReckase2011]. Visually, this produces regions that look smeared and more dense than it was intended to look. This deviation between the output image and what was intended is a form of detail loss. The rectification of this problem lies in clipping the RGB color material before applying the filter which fixes this issue. This setting can either be turned on or off and can be set by the user.
 
@@ -542,10 +627,10 @@ Early clip takes this idea of color clipping and provides a means to rectify the
 
 ####Highlight Power
 \label{highlightpowersection}
-Highlight power is a value (the data type is a *float*) which controls how fast the flame's colors converge to white. The visual effect of this is to blend areas that have drastic color differences that were caused by unintended side effects. The implementation works by keeping the color vector (RGB) pointed in the intended direction until it begins to saturation. When this happens the color starts getting pulled towards white as the iterations continue. A highlight power of 0.0 indicates that saturated colors will not converge to white whereas any value higher than 0.00 is the rate at which saturated colors converge to white[@DravesReckase2011]. The 12 different highlight power values that were applied to the baseline image are show in Table \ref{highlighttable}. The resulting images from the altered highlight power values can be seen in Figure \ref{highlightflame}.
-
+Highlight power is a value (the data type is a *float*) which controls how fast the flame's colors converge to white. The visual effect of this is to blend areas that have drastic color differences that were caused by unintended side effects. The implementation works by keeping the color vector (RGB) pointed in the intended direction until it begins to saturation. When this happens the color starts getting pulled towards white as the iterations continue. A highlight power of 0.0 indicates that saturated colors will not converge to white whereas any value higher than 0.00 is the rate at which saturated colors converge to white[@DravesReckase2011]. The 12 different highlight power values that were applied to the baseline image are show in Table \ref{highlighttable}.
 
 \begin{table}[htp!]
+	\centering
 	\begin{tabular}{|l|l|}
 		\hline
 		Flame Number					&	Highlight Power Value	\\
@@ -579,7 +664,18 @@ Highlight power is a value (the data type is a *float*) which controls how fast 
 		\label{highlighttable}
 \end{table}
 
-<!-- move pictures to the end -->
+The resulting images from the altered highlight power values can be seen in Figure \ref{highlightflame}.
+
+\newpage
+
+\begin{figure}[!ht]
+	\centering
+	\includegraphics{./color_and_log_scale/flame_highlight.jpg}
+	\caption{12 different highlight power values are presented on the baseline flame.}
+	\label{highlightflame}
+\end{figure}
+
+\newpage
 
 [TODO look in stashed color and log scale notes for this info]
 
@@ -590,54 +686,3 @@ The challenge with deviating from the log-scaled and color correction process is
 One of the complications of log-scaling is that an exponentially more amount of points will be needed in the bright areas than in the darker less dense areas. This results in high quality images needing a whoppingly high number of iterations which increases the run time greatly. This is one of the issues that needs to be addressed in the new implementation.
 
 [TODO New Approach]
-
-
-\begin{figure}[htpb]
-	\centering
-	\includegraphics{./color_and_log_scale/flame_palette.jpg}
-	\caption{4 different predefine color palettes applied to the baseline flame.}
-	\label{paletteflame}
-\end{figure}
-
-\begin{figure}[htpb]
-	\centering
-	\includegraphics{./color_and_log_scale/flame_gamma.jpg}
-	\caption{12 different gamma threshold values are presented one the baseline flame.}
-	\label{gammaflame}
-\end{figure}
-
-
-\begin{figure}[htpb]
-	\centering
-	\includegraphics{./color_and_log_scale/flame_gamma_threshold.jpg}
-	\caption{12 different gamma threshold values are presented on the baseline flame.}
-	\label{gammathresholdflame}
-\end{figure}
-
-\begin{figure}[htpb]
-	\centering
-	\includegraphics{./color_and_log_scale/flame_hue.jpg}
-	\caption{12 different hue values are presented to the baseline flame with a non-vibrant color palette.}
-	\label{hueflame}
-\end{figure}
-
-\begin{figure}[htpb]
-	\centering
-	\includegraphics{./color_and_log_scale/flame_brightness.jpg}
-	\caption{12 brightness correction values are presented on the baseline flame.}
-	\label{brightnessflame}
-\end{figure}
-
-\begin{figure}[htpb]
-	\centering
-	\includegraphics{./color_and_log_scale/flame_vibrancy.jpg}
-	\caption{12 different vibrancy values are presented on the baseline flame.}
-	\label{vibrancyflame}
-\end{figure}
-
-\begin{figure}[htpb]
-	\centering
-	\includegraphics{./color_and_log_scale/flame_highlight.jpg}
-	\caption{12 different highlight power values are presented on the baseline flame.}
-	\label{highlightflame}
-\end{figure}
