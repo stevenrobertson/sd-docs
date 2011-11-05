@@ -147,8 +147,10 @@ implementation operates quite differently from the traditional flame algorithm,
 and we're still working out the necessary mathematics, so it is not documented
 here — but when it is ready to be implemented, we do intend to use OpenCL.
 
+[TODO Revise this]
+[TODO This chapter would be a good place to write some of the API calls that will be used]
+<!--
 ## Host language
-
 The recommended host language for CUDA development is C++. The CUDA toolchain
 includes compiler extensions and syntactic sugar to make many tasks simple, and
 the device code compiler supports a subset of C++ features, including classes
@@ -199,7 +201,7 @@ require additional bindings to be written. Microsoft's F# is an interesting
 effort from the company, but its type system inherits much from its
 object-oriented underpinnings and is less suitable for expressing the desired
 strong constraints.
-
+-->
 <!--
 
 ## Interface language

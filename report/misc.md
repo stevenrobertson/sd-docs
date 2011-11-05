@@ -89,6 +89,7 @@ In either case, the compiler and assembler is located on the client system with
 a simple, standard API; there is no need to include a development environment
 with the resulting binary or write our own assembler.
 
+[TODO: Salvage what we can and rewrite]
 ## Dynamic code, static types
 
 Both OpenCL and CUDA provide mechanisms for loading dynamically-generated code,
@@ -152,6 +153,7 @@ code, so that a program will refuse to compile even if two values with
 different meanings but the same OpenCL or CUDA type are used together. This
 checking happens entirely at compile-time, and carries no run-time overhead.
 
+[TODO: Salvage what we can and rewrite]
 ## Testing — or lack thereof
 
 Haskell's type system is not limited to ensuring variables are not erroneously
@@ -197,6 +199,7 @@ prototype implementations, as well as libraries that use similar methods in
 different domains, provide strong evidence that the concept is viable. Further
 revisions are focused on finding the correct balance between strictness of type
 system verification and conciseness of expressed code.
+
 
 # Function selection
 \label{ch:funsel}

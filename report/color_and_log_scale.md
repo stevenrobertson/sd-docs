@@ -73,6 +73,7 @@ Let's take a look at what this table really means in the case of imagery. The ta
 
 Luckily, we can work within our imposed limitations and there are many imaging techniques that can be applied to attempt to remedy the situation.  The following techniques described below are not only for aesthetics but also are some of the core techniques for representing HDR images on LDR mediums. This coincides with the goal the entire algorithm wishes to achieve and is paramount to fix our LDR dilemma.
 
+[TODO Is this really necessary? Needs to tie into report more]
 ###A RGB Color Model: Hue, Saturation, and Brightness Value (HSV)
 To attempt to mathematically define certain color concepts (e.g. brightness, saturation, vibrancy) a color model for how our colors will be represented spatially is chosen so the relationship between colors can be talked about.
 
@@ -677,7 +678,6 @@ The resulting images from the altered highlight power values can be seen in Figu
 
 \newpage
 
-[TODO look in stashed color and log scale notes for this info]
 
 ##Challenge
 
@@ -685,4 +685,4 @@ The challenge with deviating from the log-scaled and color correction process is
 
 One of the complications of log-scaling is that an exponentially more amount of points will be needed in the bright areas than in the darker less dense areas. This results in high quality images needing a whoppingly high number of iterations which increases the run time greatly. This is one of the issues that needs to be addressed in the new implementation.
 
-[TODO New Approach]
+[TODO Write all things related to what we actually implemented after challenge]

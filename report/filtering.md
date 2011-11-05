@@ -477,4 +477,4 @@ single, definite point in time and contains absolutely no blurring due to
 motion.  Even at relatively high frame rates, this can cause the animation to
 look jerky.  [TODO: FINISH][TODO: CITE]
 
-[TODO: Technical details]
+[TODO: Write Technical details of what we decided to do]

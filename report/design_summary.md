@@ -1,5 +1,5 @@
 # Design summary
-
+[TODO: Revise the intro]
 This implementation of the fractal flame algorithm is split into several
 Haskell libraries, with a small front-end application for demonstration
 purposes. Together, these programs build, run, and retrieve the results of a
@@ -11,7 +11,7 @@ rationale on those portions of the project which have not been covered
 elsewhere in the document.
 
 ## Host software
-
+[TODO: Redo]
 This project will produce a platform-independent console application that will
 accept one or more flames in the standard `flam3` XML genome format and save a
 fractal flame image for each input flame. More elaborate applications, such as
@@ -50,6 +50,7 @@ been scheduled. Once any render is complete, its final framebuffer is copied
 from the device, and an output thread is spawned to save the contents of this
 image to disk.
 
+[TODO: Scrap]
 ### `flam3-hs` and `flam3-types`
 
 The `flam3` library is written in C, and is designed to be used as a dynamic
@@ -81,6 +82,7 @@ counterparts; while the raw data can be maintained for fast consecutive
 function calls, the only means of turning a native Haskell genome into one
 compatible with `flam3` is to use XML as an intermediate format.
 
+[TODO: Rewrite]
 ### Shard and `cuburn`
 
 The `cuburn` library contains the actual code used to render fractal flames.
@@ -102,6 +104,7 @@ The full API is not difficult to use; while the full flow presented in Figure
 \ref{fig:host_design} may appear to be intimidating, it lends itself to concise
 expression under idiomatic Haskell.
 
+[TODO: looks ok!]
 ## Device software
 
 Code on the device is split into either two or three kernels. Together, these
@@ -132,6 +135,7 @@ accumulated color and density information into a final image. When these
 threads exit, the device signals to the host that the image is complete, copies
 the final framebuffer to the device, and begins rendering the next image.
 
+[TODO: Looks good!]
 ### Rendering
 
 Upon invocation, a rendering thread uses its global thread ID to load a unique
@@ -213,6 +217,7 @@ the work-group once again waits for data by polling global memory.
 
 [REF in here to writeback sections if/when they're done]
 
+[TODO expand on?]
 ### Filtering
 
 The filtering kernels perform the log scaling process described in Chapter

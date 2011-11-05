@@ -14,7 +14,7 @@ below.
 ## `flam3`
 
 \label{flameimplementation}
-
+[TODO  fix TK]
 Considered by most to be the "reference implementation" of the flame
 algorithm, `flam3` [@flam3] was created in 1991 by Scott Draves, the
 creator of the fractal flame algorithm. In TK, Erik Reckase took over

@@ -37,7 +37,6 @@ This new geometry Benoît Mandelbrot writes about in his book, he calls fractals
 
 The properties in which Mandelbrot and his predecessors have found are summarized. They later will be freely referenced from this point forward when they are needed to explain additional concepts.
 
-[TODO Allude to glossary]
 
 ###Self Similarity
 

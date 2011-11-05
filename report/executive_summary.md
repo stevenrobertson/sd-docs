@@ -59,9 +59,6 @@ objectives have been set:
 
 - Independently implement a working version of the fractal flame algorithm.
 
-- Develop a ruthlessly optimized, composable, typesafe dialect of CUDA.
-  Implement portions of a standard library with it.
-
 - Develop a concrete and functionally complete understanding of GPU performance
   (for the particular architecture we select) through targeted
   microbenchmarking and statistical analysis.
@@ -86,6 +83,9 @@ Optionally:
     - Real-time interactivity
     - Real-time evolution using genetic algorithms and user feedback
 
+- Develop a ruthlessly optimized, composable, typesafe dialect of CUDA.
+  Implement portions of a standard library with it.
+	
 ## Usage Requirements
 
 Being that this project is a software application developed for use on personal
@@ -97,7 +97,7 @@ have less strict requirements and are more or less presented as a
 recommendation.  The required operating systems and software needed to run
 Cuburn are relatively easy to come by and available freely, but will nonetheless
 still be required.
-
+[TODO Still 2.1?]
 - NVIDIA CUDA-enabled GPU supporting Compute Capability 2.1
 
 - 2GHz or faster CPU
@@ -118,7 +118,7 @@ generation, programming lanaguages, and more.  Accelerating these standard
 algorithms for use on GPU's is key for this software to function optimally.
 
 ## Design
-
+[TODO REVISE]
 The software will be broken up into a small collection of libraries that perform
 the operations necessary for rendering a fractal flame.  The libraries that
 will be developed will be known as `cuburn`, `flam3-types`, and `flam3-hs`.

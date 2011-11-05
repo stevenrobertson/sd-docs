@@ -124,8 +124,8 @@ The most common way of constructing an Iterated Function System is referred to a
 
 \newpage
 
-[TODO This is because Mote Carlo Sampling]
 
+[TODO get rid of bold]
 \begin{figure}[!ht]
 	\centering
 	\includegraphics{./flame/ifs_flowchart.png}
@@ -403,6 +403,7 @@ Fractal flames are a member of the Iterated Function System however differ from 
 1.	Instead of affine transformations presented in the previous section non-linear functions are used.
 2.	Log-density display is used instead of linear or binary.
 3.	Structural Coloring
+
 On top of the core differences, additional pyschovisual techniques such as spatial filtering and temporal filtering (motion blur) give rise to more aesthetically pleasing images with the illusion of motion.
 
 ###History
@@ -534,7 +535,7 @@ c_{f} = \frac{c + c_{f}}{2}
 Furthermore, when peforming log-density display we run into issues if we are only keeping information about the RGB values associated with each point. By logarithmically scaling each color channel we do not get the desired results. For more information on why please see Section \ref{brightnesssection} on brightness and that red , green, and blue wavelengths are not treated equal. The fractal flame algorithm remedies this by using RGB and also an additional variable called $\alpha$ which is the transparency value. This value is accumulated and scalled by $\frac{\log \alpha}{\alpha}$ at the end of the chaos game.
 
 ####Gamma Correction and Company
-Now that our flame is colored the process is complete, right? Wrong. Many complications still are presented. The next being the concept of gamma correction. To correctly display the flame image on a lower dynamic range (such as an LCD or CRT monitor or printer) we need to map our high dynamic range to the lower dynamic range. A full discussion of this topic can be seen in Section \ref{gammasection} and Section \ref{hdrsection}.
+Now that our flame is colored the process is complete, right? Wrong. Many complications still are not yet resolved. The next being the concept of gamma correction. To correctly display the flame image on a lower dynamic range (such as an LCD or CRT monitor or printer) we need to map our high dynamic range to the lower dynamic range. A full discussion of this topic can be seen in Section \ref{gammasection} and Section \ref{hdrsection}.
 
 Additional color correction techniques can be applied to the flame. A full survey of what kind of color correction techniques are available and what kind of benefit they provide are mentioned in Section \ref{flamecoloringimpsection}.
 
@@ -603,12 +604,13 @@ Initially presenting the fractal algorithm usually results in a lengthy discussi
 
 [^simplicity]:For simplicty's sake we ignore the effects that Early Clip (Section \ref{earlyclipsection}) and Highlight Power (Section \ref{highlightpowersection}) have upon the algorithm and the way they reorder or modifications of core steps.
 
-
+[TODO verify correctness]
 The procedure is as follows: First, a random point is picked on the biunit square. The user picks the quality of the flame they wish to render and the program enters into a loop for Q iterations (where Q is quality). At each iteration a transformation is applied based on a probabilistic weighting similar to Barnsley's Fern in Section \ref{fernsection}. This transformation will apply an affine transformation (which applies scaling, rotation, sheer, and translation), a variation transformation (to change the characteristics of the point), and a post function (to change the coordinate system). When the variation transform is applied a color associated with it is also applied which is explained in Section \ref{coloringflame}. After the new point and color are selected this vector is accumulated in it's respective histogram bin representing the density of each point. The points are not accumulated in the bins for the first 20 points in order to allow the system to settle.
 
 This process happens until the final iteration. On the final iteration, many final processing steps happen. First, the histogram bins of point densities are log scaled. Next, filtering is performed. Supersampling removes the aliases. Density Estimation allows the reduction of noise. As an added note, motion blur can also occur next and requires a second buffer of points to be filtered down. The final transform is now applied which is a non-linear camera transform. This final transform also applies a color associated with it. Now that the correctly filtered, log scaled and colored image has been produced color correction is now applied. This provides hue, brightness, gamma, and other corrections. The image is then written to a file and the procedure ends.
 
-
+[TODO: Remove bold from flowcharts]
+[TODO: Do we want to redo these flowcharts?]
 \begin{figure}[!ht]
 	\centering
 	\includegraphics{./flame/flame_flowchart_1.png}
