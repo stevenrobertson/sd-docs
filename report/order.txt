@@ -8,6 +8,7 @@ rng.md
 color_and_log_scale.md
 filtering.md
 misc.md
+benchmarking.md
 design_summary.md
 glossary.md
 biblio.md
