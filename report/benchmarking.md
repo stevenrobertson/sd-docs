@@ -33,23 +33,42 @@ After several empircal tests and observations it was noted that GPU time was one
 
 ### Auto generation of flames
 
-The procedure is as follows. First, all of the variations needed to be auto-generated into respective `flam3` files which could be used as input for cuburn. Cuburn can run these `flam3` files individually and the CUDA profiler can produce output statistics (using methods described above). Immediately, using this approach a complication arises. A valid iterated function system must be contractive or contractive on average. Using a single transform of our selected variation is therefore not a valid iterated function system and cuburn may prematurely abort rendering the frame. Because of this, we chose a baseline iterated function system that each variation would be applied to. This baseline iterated function consisted of two linear transforms.
+The procedure is as follows. First, all of the variations needed to be auto-generated into respective `flam3` files which could be used as input for cuburn. Cuburn can run these `flam3` files individually and the CUDA profiler can produce output statistics (using methods described above). Immediately, using this approach a complication arises. A valid iterated function system must be contractive or contractive on average. Using a single transform that is soley our selected variation is not a valid iterated function system and cuburn may prematurely abort rendering the frame. Because of this, we chose a baseline iterated function system that each variation would be applied to. This baseline iterated function consisted of two linear transforms.  The transform code is the following:
 
-[TODO: show code]
+\begin{figure}
+$<xform/ weight="0.33"/ coefs="-0.26/ 0.0/ 0.0/ -0.26/ 0.0/ 0.020"/ //>$
+$<xform/ weight="1"/ linear="1"/ coefs="0.70/ 0.70/ -0.70/ 0.70 0.51 -1.18"/ //>$
+\end{figure}
+
+This produces a system which looks like the following:
 
 [TODO: show what it looks like]
 
+
+Because all of the same variation is applied to each
+
+
+
 [TODO: note that everything else is fixed]
- 
+
 - each auto generated flame variation contains that flame variation with a low weighting $\approx 1E7$
 - b/c of dynamic code generation  this xform variation would now have to be loaded onto the device (GPU) and executed (...)?
 - only variable performance differences were noted in the iter kernel which is the main iteration kernel for the entire flame algorithm.
-
+- run for only 1 frame
 
 ### Accumulating
 
+The `iter` kernel is executed multiple times per frame.
+
+
+CUDA Profiler reports all single instances
+not useful for analysis between flames
+all of the iter kernels GPU time was summed together to
+
 - iter kernel is executed numerous times per frame rendering.
 - all instances of iter kernel summed to give total iter kernel execution time.
+
+Still missing a critical part
 
 ### Convincing ourselves, and you
 
