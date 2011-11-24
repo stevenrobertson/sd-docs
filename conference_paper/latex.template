@@ -1,0 +1,111 @@
+%!TEX encoding = UTF-8 Unicode
+
+\documentclass[technote]{IEEEtran}
+\usepackage{geometry}
+\geometry{letterpaper, textwidth=6.8in, textheight=8.75in}
+\usepackage{stfloats}
+
+\makeatletter
+\gdef\@maketitle{\begin{center}{\huge \@title\par}\vskip 1.3em%
+    {\lineskip .5em\large\@IEEEcompsoconly{\sffamily}\@author%
+    \vskip 1.0em School of Electrical Engineering and Computer Science, %
+    University of Central Florida, Orlando, Florida, 32816%
+    }\end{center}%
+}
+\def\abstract{\@IEEEabskeysecsize\bfseries\hskip 0.125in%
+    \textit{Abstract} --- \relax\@IEEEgobbleleadPARNLSP}
+\makeatother
+
+\usepackage{graphicx}
+\usepackage{amssymb,amsmath}
+\usepackage{wrapfig}
+\usepackage{afterpage}
+\usepackage[english]{babel}
+
+\usepackage{fontspec,xltxtra,xunicode}
+\defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+\setromanfont {Times New Roman}
+\tolerance=500
+\usepackage{fancyvrb}
+
+$if(fancy-enums)$
+% Redefine labelwidth for lists; otherwise, the enumerate package will cause
+% markers to extend beyond the left margin.
+\makeatletter\AtBeginDocument{%
+  \renewcommand{\@listi}
+    {\setlength{\labelwidth}{4em}}
+}\makeatother
+\usepackage{enumerate}
+$endif$
+
+\usepackage{array}
+% This is needed because raggedright in table elements redefines \\:
+\newcommand{\PreserveBackslash}[1]{\let\temp=\\#1\let\\=\temp}
+\let\PBS=\PreserveBackslash
+\usepackage{multirow}
+
+\usepackage{url}
+\usepackage[xetex,breaklinks]{hyperref}
+$if(print)$
+\hypersetup{colorlinks=false}
+\usepackage{color}
+$else$
+\hypersetup{linkcolor=blue,citecolor=blue,filecolor=black,urlcolor=blue,colorlinks=true}
+$endif$
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{1}
+
+\newcommand{\imfig}[3]{
+\begin{figure}[htpb]
+	\centering
+	\includegraphics{#1}
+	\caption{#2}
+	\label{#3}
+\end{figure}
+}
+
+\newcommand{\clrimfig}[3]{
+    \afterpage{
+        \clearpage
+        \imfig{#1}{#2}{#3}
+    }
+}
+
+$if(verbatim-in-note)$
+\VerbatimFootnotes % allows verbatim text in footnotes
+$endif$
+
+$if(title)$
+\title{$title$}
+$endif$
+$if(author)$
+\author{$for(author)$$author$$sep$\\$endfor$}
+$endif$
+$if(date)$
+\date{$date$}
+$endif$
+
+\begin{document}
+$if(title)$
+\maketitle
+$endif$
+\pagestyle{empty}
+\thispagestyle{empty}
+
+$for(include-before)$
+$include-before$
+
+$endfor$
+$if(toc)$
+\tableofcontents
+\newpage
+\pagenumbering{arabic}
+$endif$
+
+$body$
+$for(include-after)$
+
+$include-after$
+$endfor$
+
+\end{document}
