@@ -75,6 +75,7 @@ $endif$
 
 % For performance benchmarking
 \usepackage{longtable}
+\usepackage{moreverb}
 
 % We will generate all images so they have a width \maxwidth. This means
 % that they will get their normal width if they fit onto the page, but
