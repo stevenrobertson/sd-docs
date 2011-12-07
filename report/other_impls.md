@@ -86,8 +86,9 @@ does.  Thomas Ludwig, Chaotica's author, is also a developer of Indigo
 Renderer, a professional ray-tracing application. Many performance and
 quality techniques employed in the field of ray-tracing are applicable to
 the rendering of fractal flames, and it is likely that newer advances in
-the field are being used in Chaotica. This is speculation, however, as the
-developer has been notoriously quiet about the nature of his improvements.
+the field are being used in Chaotica. However, since it is not an open
+product, we cannot directly adopt these techniques for our GPU-based
+implementation.
 
 ## Our implementation
 
