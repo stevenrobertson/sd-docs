@@ -197,7 +197,7 @@ This data can easily be visualized on a bar graph and as an additional feature e
 
 \begin{figure}[!ht]
 	\centering
-	\includegraphics{benchmarking/kernel_execution_times.pdf}}
+	\includegraphics{benchmarking/kernel_execution_times.pdf}
 	\caption{Bar graph of `iter` kernel performance results on each variation.}
 	\label{iter_execution_graph}
 \end{figure}
