@@ -25,7 +25,7 @@ the GPU's asynchronous task dispatch queue, each frame that gets read triggers
 the dispatch of another frame for later reading. In blocking mode, if a frame
 is requested when none is available, the thread will repeatedly sleep until a
 frame is ready to return, allowing other tasks to execute in different
-threads. When blocking is disabled, even this behavior is gone; the generator
+threads. When blocking is disabled, even this behavior is gone: the generator
 simply returns `None` immediately if no frames are available. This allows
 rendering to be used from, say, a GUI-driven application without the
 inconvenience of threading *or* the performance loss that comes from
@@ -63,7 +63,7 @@ abbreviated form in Figure \ref{fig:task_model}.
 
 \begin{figure}
 \centering
-\Oldincludegraphics[height=9in]{task_model}
+\Oldincludegraphics[height=8.5in]{task_model}
 \caption{One example of the task dispatch pattern for a particular
 flame animation rendered using deferred writeback. Solid arrows indicate host
 dispatch order; dashed arrows indicate buffer contention and event barriers;
