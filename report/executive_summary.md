@@ -72,40 +72,6 @@ objectives have been set:
 - Use statistical, graphical, and psychovisual techniques to improve the
   perceived quality per clock ratio.
 
-Optionally:
-
-- Add 3D support.
-
-- Apply resulting renderers in real-world applications, including but not
-  limited to:
-    - Music visualization
-    - Reactivity to environment
-    - Real-time interactivity
-    - Real-time evolution using genetic algorithms and user feedback
-
-- Develop a ruthlessly optimized, composable, typesafe dialect of CUDA.
-  Implement portions of a standard library with it.
-	
-## Usage Requirements
-
-Being that this project is a software application developed for use on personal
-computers, this section will outline what is required to run and use the
-software.  It should be clear that this project relies very much on a specific
-hardware device, the GPU.  Therefore, the designers have set strict requirements
-for this piece of hardware.  Other hardware devices such as the CPU and memory
-have less strict requirements and are more or less presented as a
-recommendation.  The required operating systems and software needed to run
-Cuburn are relatively easy to come by and available freely, but will nonetheless
-still be required.
-[TODO Still 2.1?]
-- NVIDIA CUDA-enabled GPU supporting Compute Capability 2.1
-
-- 2GHz or faster CPU
-
-- 2GB or more RAM
-
-- CUDA compatible NVIDIA drivers
-
 ## Research
 
 The cutting-edge nature of this project requires that the latest and greatest
@@ -116,13 +82,4 @@ research topics include iterated function systems, psuedo-random number
 generators, coloring and log scaling, antialiasing, denoising, dynamic kernel
 generation, programming lanaguages, and more.  Accelerating these standard
 algorithms for use on GPU's is key for this software to function optimally.
-
-## Design
-[TODO REVISE]
-The software will be broken up into a small collection of libraries that perform
-the operations necessary for rendering a fractal flame.  The libraries that
-will be developed will be known as `cuburn`, `flam3-types`, and `flam3-hs`.
-`cuburn` will do the actual flame rendering, `flam3-types` contains flame
-genome datatypes and a basic flame parse, and `flam3-hs` provides Haskell
-bindings to the original flam3 library for the purpose of compatibility.
 
