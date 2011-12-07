@@ -147,74 +147,72 @@ implementation operates quite differently from the traditional flame algorithm,
 and we're still working out the necessary mathematics, so it is not documented
 here — but when it is ready to be implemented, we do intend to use OpenCL.
 
-[TODO Revise this]
-[TODO This chapter would be a good place to write some of the API calls that will be used]
-<!--
-## Host language
-The recommended host language for CUDA development is C++. The CUDA toolchain
+## Host language and intermediate language
+
+The typical host language for CUDA development is C++. The CUDA toolchain
 includes compiler extensions and syntactic sugar to make many tasks simple, and
 the device code compiler supports a subset of C++ features, including classes
 and templates. Despite its name, however, the runtime API used for native C++
 development with CUDA does not support run-time code generation, and is thus
-unsuitable for this project. No host code lies in a performance-critical path;
-without the tight integration offered by the CUDA toolchain, there is little
-incentive to use systems programming languages like C or C++.
+unsuitable for this project. No Cuburn host code lies in a
+performance-critical path, so without the tight integration offered by the
+CUDA toolchain, there is little incentive to use systems programming languages
+like C or C++.
 
-Python was strongly considered as a host language. Python is a dynamic,
-interpreted programming language with high-quality bindings to CUDA and flam3.
-Its rich object model, duck-typing of numerics, and monad-like ContextManager
-allows for the extraction of instruction streams from "pure" mathematical code.
-This approach was in fact followed by one of the authors before this project
-began, resulting in the PyPTX library for dynamic GPU kernel generation
-[@pyptx] and a modest but functioning prototype implementation of the fractal
-flame algorithm on top of PyPTX [@cuburn].
+In order to produce code at runtime in a structured, stable way, we would need
+a powerful intermediate language whose capabilities exceed those of, say, the C
+preprocessor by a considerable margin. Most of the host code will have similar
+structure regardless of language, so the differences that should be considered
+most closely are in language construction. From the set of languages with which
+the authors were familiar, two stood out as being suitable for this task:
+Python and Haskell.
 
-Experimentation with PyPTX revealed shortcomings inherent in the expression of
-EDSLs in Python. Inside a code generation context, operations on PTX variables
-would trigger code generation, whereas normal operations would not; the
-inclusion of a block of code in the output was contingent on whether that code
-was evaluated on the host. It became extremely difficult to separate both host
-and device flow, and complicated bugs would arise in edge cases along code
-generation paths which could not be detected in advance.  For similar reasons,
-the backtracking context needed to provide type and data inference in the EDSL
-was complex and error-prone, and loops could not be tracked across host
-function call boundaries. In short, Python's flexibility in host code provided
-too many opportunities for improper code generation.
+Haskell is a lazy, pure, functional language with a remarkably expressive
+static type system and excellent support for both traditional domain-specific
+languages (with excellent native parsers such as Parsec and compile-time
+evaluation of native expressions using Template Haskell) and embedded DSLs (via
+infix operators, rebindable syntax, and other language features
+[@haskell2010]). Haskell's purity and type safety make it an ideal host
+language to build run-time code generation facilities that feature compile-time
+analysis. However, Haskell also has a steep learning curve, which would place a
+significant burden on those developers not already familiar with it.
 
-In place of Python, Haskell was considered. Haskell is a lazy, pure, functional
-language with a remarkably expressive static type system and excellent support
-for both traditional domain-specific languages (with excellent native parsers
-such as Parsec and compile-time evaluation of native expressions using Template
-Haskell) and embedded DSLs (via infix operators, rebindable syntax, and other
-language features [@haskell2010]). The Haskell and Python communities are
-intermixed, with both programmers and language features frequently crossing the
-gap between the two [CITE], but at its core, Haskell's purity and type safety
-make it an ideal host language to build run-time code generation facilities
-that feature compile-time analysis [CITE].
+Python is a dynamic, interpreted programming language often cited as a
+counterpoint to Haskell (though truthfully these languages agree more than not
+on problem-solving approach, both in philosophy and implementation). Its rich
+object model, duck-typing of numerics, and monad-like ContextManager allow for
+the extraction of instruction streams from "pure" mathematical code, a
+technique employed by one of the authors in the PyPTX library for dynamic GPU
+kernel generation [@pyptx]. Experimentation with PyPTX, however, revealed
+shortcomings inherent in the expression of EDSLs in Python. Inside a code
+generation context, operations on PTX variables would trigger code generation,
+whereas normal operations would not; the inclusion of a block of code in the
+output was contingent on whether that code was evaluated on the host. It became
+extremely difficult to separate both host and device flow, and complicated bugs
+would arise in edge cases along code generation paths which could not be
+detected in advance.  For similar reasons, the backtracking context needed to
+provide type and data inference in the EDSL was complex and error-prone, and
+loops could not be tracked across host function call boundaries. In short,
+Python's flexibility in host code provided too many opportunities for improper
+code generation.
 
-Other languages were also considered. Ruby is considered to be EDSL-friendly
-due to its rich, rebindable syntax [CITE], but as a dynamic language, it would
-require reimplementing the same roundabout strictness measures as Python, with
-no expected improvement. Despite also having rebindable syntax, Scala's
-reliance on the JVM would complicate the memory model and FFI tasks, and would
-require additional bindings to be written. Microsoft's F# is an interesting
-effort from the company, but its type system inherits much from its
-object-oriented underpinnings and is less suitable for expressing the desired
-strong constraints.
--->
-<!--
+During initial development of cuburn, we elected to pursue a Haskell-based
+EDSL, relying on the language's own flexible static type checker to guarantee
+properties of the program. What we found in this approach is that the process
+of constructing these guarantees for our own program exceeded the time spent
+experimenting with the algorithms and hardware we were writing. Since our
+software is non-critical and offline, even severe bugs would have relatively
+low impact, so we decided to abandon the static guarantees of Haskell's type
+system and the tight integration with host code afforded by EDSL generation.
+With these considerations, the learning curve of Haskell outweighed its
+potential benefits, and we elected to use Python.
 
-## Interface language
+As an intermediate language, we chose a textual templating system with little
+semantic awareness but an ability to call on native code, and augmented that
+with Python code that echoed the monadic style of Haskell during code
+generation. This enabled the use of a hybrid of literal CUDA code inline
+template operators, much like typical HTML template engines, but in this case
+instead of accessing application data the templated statements actually create
+it.
 
-- Dynamic compilation required.
-
-- C-style templates? Oh, heck no. What a nightmare.
-
-- Really, choice comes down to DSL versus EDSL. Explain more...
-
-- Reference PyPTX, Shard somehow
-
-- Final decision: SSA-based EDSL, with stackless recursive notation for
-  loops. Easy to port to LLVM if we need to.
-
--->
+[TODO: example? Talk about precalculation system?]
