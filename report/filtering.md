@@ -13,14 +13,14 @@ decreased such that the resulting images will be a clear improvement over the
 original.
 
 When rendering flames, there are two kinds of artifacts that need to be
-minimized in order to create more visually attactive flames: aliasing and noise.
-While these two problems and their solutions are related, they will need to
-be approached with different techniques.  Much research has been done regarding
-these problems and their solutions and great improvements have been made over
-the past couple decades with respect to quality and performance.  Just recently,
-with the increasing popularity of GPGPU computing, new solutions have been
+minimized in order to create more visually attactive flames: aliasing and
+noise. While these two problems and their solutions are related, they will
+need to be approached with different techniques. Much research has been done
+regarding these problems and their solutions and great improvements have been
+made over the past couple decades with respect to quality and performance.
+With the increasing popularity of GPGPU computing, new solutions have been
 proposed to parallelize these algorithms so that significant performance gains
-can be had exploiting the highly parallel architecture of GPU's.  These problems
+can be had exploiting the highly parallel architecture of GPUs. These problems
 and their many solutions are discussed in more detail below.
 
 ## Aliasing
@@ -108,8 +108,8 @@ higher quality filtering will need more sampling points. This directly affects
 the performance of the filter and is the biggest factor of cost in
 antialiasing. Turning on 4x SSAA (4 samples per pixel) will require four times
 as many samples to rendered, causing the fill rate to be four times longer
-(meaning animations will have a quarter of the original frame-rate
-[@Beets2000]. Going back to sample locations, the specific supersampling
+(meaning real-time graphics will have a quarter of the original frame-rate
+[@Beets2000]). Going back to sample locations, the specific supersampling
 algorithm will decide how these samples will be chosen. These algorithms are
 explained below.
 
@@ -420,9 +420,10 @@ balanced. Building a balanced tree can be accomplished by finding the bounding
 box of all the points being looked at, finding the diagonal length of the box,
 and if that length is less than the standard deviation, a leaf node is created
 and a point is set for the center of the bounding box. If the length is not
-less than the standard deviation, split the box in the middle along the longest
-dimension and continue recursively. The building of a tree is expected to have
-a time complexity of $O(nd \log m)$ with $m$ being the number of leaf nodes.
+less than the standard deviation, split the box in the middle along the
+longest dimension and continue recursively. The building of a tree is expected
+to have a time complexity of $O(nd \log m)$ with $m$ being the number of leaf
+nodes.
 
 The second step in the algorithm is querying the tree. Queries are used to
 find all the values and their weights given a position. To be specific, a
@@ -440,41 +441,101 @@ converted to an interative algorithm but that will not give us any more
 performance. But, the querying portion of the algorithm — where most of the
 computation time comes from — is highly parallelizable.
 
-## Spatial Filtering
+## Filtering in cuburn
 
-A *window function* is a mathematical function that is zero-valued outside of
-some chosen interval while manipulating the values inside that interval.  The
-simplest window is the rectangular window.  It simply takes a chunk the portion
-of the signal fitting inside in the window leaving discontinuities at the edges
-(unless the signal is entirely within the limits of the window).  Filter shapes
-available in flam3 are the Guassian (default), Bell, Blackman, Box, Bspline,
-Hamming, Hanning, Hermite, Mitchell, Quadratic, and Triangle [@flam3]. See Figure
-\ref{nofilter} for fractal flame image without filtering and Figure
-\ref{gaussianfilter} for fractal flame image with Gaussian filtering.
+The chaos game is fundamentally related to Monte Carlo integration, and
+collects thousands of samples per pixel on average. This is a natural fit for
+multisample antialiasing.
 
-\imfig{filtering/nofilter.png}{Electric Sheep 244 36724 fractal flame with no
-    filtering.}{nofilter}
+During precalculation of the camera transform, which maps IFS coordinates to
+accumulation buffer indices, the sampling grid for each temporal sample is
+offset according to a 2D Gaussian distribution with a user-controlled standard
+deviation that defaults to one-third of a pixel for compatibility with flam3.
+With thousands of samples per image pixel taken on average, this technique
+gives very high quality antialiasing with essentially zero overhead.
 
-\imfig{filtering/original.png}{Electric Sheep 244 36724 fractal flame with
-    Gaussian filtering.}{gaussianfilter}
+After iteration and accumulation have finished, a density estimation kernel
+processes the output. The DE kernel again avails itself of copious amounts of
+shared memory to accelerate processing of image elements. Because
+variable-width Gaussian filters are nonseparable, the DE filter is applied in
+square 2D blocks of size $2R + 32$ pixels in each dimension, where $R = 10$ is
+a constant governing the maximum permissible filter radius and consequently the
+gutter size, and $32$ is is both the horizontal and vertical size of the thread
+block. Each thread in the block loads a point from the accumulation buffer
+(with thread $[0,0]$ loading the value corresponding to a local offset of
+$[R,R]$, and thread $[31,31]$ loading $[R+31,R+31]$), calculates the filter
+radius, and proceeds to write the offsets in a spiral pattern designed to avoid
+bank conflicts and enable early termination without warp divergence. After the
+1,024 pixels in the current block have been processed, the entire shared memory
+region is added to the output buffer, including gutters, and the column
+advances vertically by 32 pixels. This pattern treats every input pixel exactly
+once, but due to gutter overlap, output pixels may be handled by as many as
+four separate thread blocks. Nevertheless, this kernel operates efficiently,
+taking less than one percent of a typical frame's GPU time.
 
-## Motion Blurring
+[TODO: expand DE kernel section]
 
-Motion blur is the visual effect that occurs when a moving object is caputered
-as an image over a certain period of time rather than a single point in time.  It
-appears as smear or blur in the direction of movement.  Motion blurring
-occurs in all physically captured images to some degree, although it's effect
-can be significantly diminished with extermely low shutter speeds.  It occurs
-naturally in human eyesight as well; try waving your finger back in forth in
-front of your face, does it look blurry?  Yes, it does.
+In cuburn, the grid jittering is applied entirely before DE, which can in some
+instances create image artifacts. Edges that have been smoothed by JGAA whose
+tangents lie close to but not exactly on the image grid will have a strong
+density gradient adjacent to the edge, including one point at every pixel step
+which will receive a small fraction of the edge's full density.  When this
+occurs on a strong edge adjacent to a very low density area, DE will blur this
+lowest-intensity point very strongly, leading to "edge bloom" (see Figure
+\ref{bloom}).
 
-This is the way we percieve the world and it doesn't usually occur to us
-consciously, our brain takes care of deblurring the image for us.  In fact, it
-is so much a part of the way we percieve the world such that if we didn't see a
-motion blur, the moving object would appear jerky in motion.  This is a problem
-with animated, computer generated sequences.  Each frame is rendered at a
-single, definite point in time and contains absolutely no blurring due to
-motion.  Even at relatively high frame rates, this can cause the animation to
-look jerky.  [TODO: FINISH][TODO: CITE]
+\begin{figure}[htb]
+\centering
+\begin{tabular}{c c c}
+\Oldincludegraphics[width=2in]{../conference_paper/bloom} &
+\Oldincludegraphics[width=2in]{../conference_paper/edge} &
+\Oldincludegraphics[width=2in]{../conference_paper/still} \\
+(a) & (b) & (c)
+\end{tabular}
 
-[TODO: Write Technical details of what we decided to do]
+\caption{(a) An example of edge bloom caused by improper handling of
+antialiased edges during density estimation. (b) A view of the same image
+highlighting detected strong edges. (c) The results of applying edge detection
+and filter clamping to density estimation.}
+\label{bloom}
+\end{figure}
+
+Cuburn adds an edge-detection filter to the DE process. When a weak pixel
+adjacent to a strong edge in a low-density area is detected, the filter's
+radius is clamped to prevent edge bloom. Different edge detection methods were
+tested, including the common Sobel and Roberts cross image kernels, but these
+methods resulted in incorrect detection, with higher sensitivities resulting
+in excessive false positives and lower ones allowing some bloom to escape
+detection. In keeping with the authors' penchant for reinventing the wheel,
+cuburn uses the $L^2$ norm of a pair of three-pixel-wide convolution kernels
+given in \eqref{cross}, which are essentially stretched versions of the
+Roberts cross. Desipte their simplicity and ad-hoc origins, these kernels have
+been found to perform admirably at edge detection while rejecting noise.
+
+\begin{equation}
+  A = \begin{bmatrix}
+        -1 & 0 & 0 \\
+         0 & 0 & 0 \\
+         0 & 0 & 1
+  \end{bmatrix}
+  \quad
+  B =
+  \begin{bmatrix}
+         0 & 0 & 1 \\
+         0 & 0 & 0 \\
+        -1 & 0 & 0
+  \end{bmatrix}
+\label{cross}
+\end{equation}
+
+Currently, some parameters involved in cuburn's approach to filtering are
+derived empirically via trial and error. While these constants produce
+satisfying images for most flames, they fail to account for certain
+exceptional conditions, such as a combination of extremely high brightness,
+positive highlight power, and localized singularities along a density curve.
+In these cases, small artifacts such as noticeable aliasing may remain in the
+output. Deriving these parameters analytically in response to image parameters
+is challenging, due to the presence of the variable-width density estimation
+step, but we look forward to examining possibilities for such an analytical
+framework.
+
