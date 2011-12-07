@@ -590,7 +590,7 @@ Supersampling the image takes care of the alias issues but does not take care of
 
 The importance of both steps are paramount to providing an aethestically pleasing image as aliasing and noise are extremely noticable to the eye and can render even the most beautiful flame, atrocious.
 
-A more in depth look at filtering can be found in Section \ref{filteringsection}. This section cover ant-aliasing methods, filtering methods, and more information on the ``flame3`` specific approach.
+A more in depth look at filtering can be found in Chapter \ref{ch:filt}. This section cover ant-aliasing methods, filtering methods, and more information on the ``flame3`` specific approach.
 
 ####Motion Blur
 Finally, we address one of the last issues. We have taken care of spatial aliasing but when the multiple images of flames 'in motion' are outputted we experience a new form of aliasing: temporal aliasing. Temporal aliasing can not be addressed correctly mearly by supersampling and one implementation that the flame algorithm uses is by using an extra buffer. The first buffer accumulates the histogram of points in a linear fashion. The second buffer accumulates logarithmitcally filtered histograms of each temporal sample from buffer one. At the end, the second buffer is filtered and presented. [CHECK]

@@ -1,5 +1,5 @@
 # Filtering
-\label{filteringsection}
+\label{ch:filt}
 
 Image filtering is the process of enhancing an image so that inaccuracies in the
 image can be corrected.  Sources of inaccuracies can be from bad sensor
