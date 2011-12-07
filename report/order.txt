@@ -4,10 +4,11 @@ flame_algorithm.md
 other_impls.md
 gpu.md
 tools.md
+misc.md
 rng.md
 color_and_log_scale.md
+accum.md
 filtering.md
-misc.md
 benchmarking.md
 usage.md
 design_summary.md
