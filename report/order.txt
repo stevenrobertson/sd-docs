@@ -5,6 +5,7 @@ other_impls.md
 gpu.md
 tools.md
 misc.md
+animation.md
 rng.md
 color_and_log_scale.md
 accum.md
