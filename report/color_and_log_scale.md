@@ -181,7 +181,6 @@ reference after this bug is fixed.]
 \begin{table}[!ht]
 	\centering
     \begin{tabular}{|l|l|}
-        \hline
         Model & Formula \\ 
 		\hline
         Photometric/digital ITU-R & $0.299 \times R + 0.587 \times G + 0.114 \times B$ \\
@@ -189,7 +188,6 @@ reference after this bug is fixed.]
         Digital CCIR601 &  $0.299 \times R + 0.587 \times G + 0.114 \times B$ \\
 		\hline
         HSP Color Model & $\sqrt{0.241 \times  R^2 + 0.691 \times G^2 + 0.068 \times  B^2 }$ \\
-        \hline
     \end{tabular}
 	\caption{Weighted brightness calculations models[@Finley].}
 	\label{brightnesscalcs}
