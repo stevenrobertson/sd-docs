@@ -133,7 +133,6 @@ The box counting equation can be solved by completing the pattern that shows the
 	\caption{ Box length ($\varepsilon$) and the number of boxes ($N(\varepsilon)$)  as $\varepsilon$ approaches 0. }
 		\label{bclinetable}
 \end{table}
-\end{center}
 
 From this table the following formula can be deduced by solving the pattern.
 
