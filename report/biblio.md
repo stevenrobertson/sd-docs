@@ -14,8 +14,6 @@ Fractal Section
 <!-- Koch Curve -->
 **Figure \ref{kochcurve}:** Reprinted with permission under the Creative Commons Attribution-ShareAlike 3.0 license.
 
-[TODO: STUPID UNICODE MAN!]
-
 - *Source*: Self made based on Java Appplication (http://to-campos.planetaclix.pt/fractal/koch.html).
 - *Date*: 15 May 2007
 - *Author*: António Miguel de Campos
@@ -44,8 +42,6 @@ Fractal Section
 
 <!-- Random Fractal-->
 **Figure \ref{randomfractal} (Left):** Reprinted with permission under the Creative Commons Attribution-ShareAlike 3.0 license.
-
-[TODO: STUPID UNICODE MAN!]
 
 - *Source*: Self made based on Java Appplication (http://en.wikipedia.org/wiki/File:Animated_fractal_mountain.gif).
 - *Date*: March 2006
