@@ -17,13 +17,18 @@ $if(leftspace)$
 \setlength{\hoffset}{0.5in}
 $endif$
 
+\usepackage[titles]{tocloft}
+\renewcommand{\cftchapfont}{\sffamily\bfseries\normalsize}
+
 $if(draft)$
 \usepackage[draft]{graphicx}
 $else$
 \usepackage{graphicx}
 $endif$
 \usepackage{amssymb,amsmath}
+\usepackage[font=sf,labelfont=bf]{caption}
 \usepackage{wrapfig}
+\usepackage{subfig}
 \usepackage{afterpage}
 \usepackage[english]{babel}
 
@@ -36,10 +41,6 @@ $else$
 \raggedright
 $endif$
 
-\usepackage[titles]{tocloft}
-\renewcommand{\cftchapfont}{\sffamily\bfseries\normalsize}
-
-\usepackage[font=sf,labelfont=bf]{caption}
 
 \usepackage{sectsty}
 \usepackage[normalem]{ulem}
@@ -53,9 +54,7 @@ $if(lhs)$
 \lstnewenvironment{code}{\lstset{language=Haskell,basicstyle=\small\ttfamily}}{}
 $endif$
 
-$if(verbatim-in-note)$
 \usepackage{fancyvrb}
-$endif$
 
 $if(fancy-enums)$
 % Redefine labelwidth for lists; otherwise, the enumerate package will cause
